@@ -1,0 +1,5 @@
+bolt-distro-tools (1.1.4-1) unstable; urgency=medium
+
+  * Combine former bolt-package and new distro-info into distro-tools package.
+
+ -- Tobias Koch <tobias.koch@gmail.com>  Sun, 31 Jan 2021 22:44:47 +0300

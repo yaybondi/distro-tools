@@ -1,0 +1,257 @@
+#!/usr/bin/env python3
+# -*- encoding: utf-8 -*-
+#
+# The MIT License (MIT)
+#
+# Copyright (c) 2016-2018 Tobias Koch <tobias.koch@gmail.com>
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+#
+
+import getopt
+import logging
+import os
+import sys
+import textwrap
+
+# make relocatable
+INSTALL_DIR = os.path.normpath(os.path.dirname(
+    os.path.realpath(sys.argv[0])) + os.sep + ".." )
+sys.path.insert(1, INSTALL_DIR + os.sep + 'lib')
+
+from boltlinux.archive.config.distroinfo import DistroInfo
+from boltlinux.error import BoltError, InvocationError
+from boltlinux.miscellaneous.logformatter import LogFormatter
+from boltlinux.miscellaneous.switch import switch
+from boltlinux.miscellaneous.userinfo import UserInfo
+from boltlinux.package.boltpack.packagecontrol import PackageControl
+
+BOLT_ERR_INVOCATION = 1
+BOLT_ERR_RUNTIME    = 2
+
+LOGGER = logging.getLogger()
+
+def print_usage():
+    print(textwrap.dedent(
+        """\
+        Copyright (C) 2016-2021 Tobias Koch <tobias.koch@gmail.com>
+
+        This is the Bolt Linux package build tool.
+
+        USAGE:
+
+          bolt-pack [OPTIONS] <specfile>
+
+        MISCELLANEOUS OPTIONS:
+
+          -h, --help           Print this help message.
+
+          --list-deps          List all build dependencies.
+          --work-dir=<dir>     Change to the given directory before doing anything
+                               else.
+          --release=<release>  The Bolt release to build for. The default is the
+                               latest release.
+
+        PACKAGE BUILD OPTIONS:
+
+          --ignore-deps        Ignore missing build dependencies.
+          --no-debug-pkgs      Don't generate debug packages.
+          --force-local        Use only local sources, don't look in package repo.
+
+          -o, --outdir=<dir>   Place resulting binary packages in this directory.
+
+          -u, --unpack         Unpack and patch the sources.
+          -p, --prepare        Run the prepare target defined in the rules file.
+          -b, --build          Run the build target defined in the rules file.
+          -i, --install        Run the install target defined in the rules file.
+          -r, --repackage      Run the install target and generate binary packages.
+
+        FILTER OPTIONS:
+
+          --enable-packages=<list>
+                               A comma-separated list of binary packages. Only the
+                               binary packages in this list will be generated.
+
+          --disable-packages=<list>
+                               A comma-separated list of binary packages. The
+                               packages in this list will not be generated.
+
+          --build-for=<what>   Specify if a package should be built for the target
+                               or for the tools folder. `what` must be one of
+                               'target' (default), 'tools' or 'cross-tools'.
+        """
+    ))
+#end function
+
+def parse_cmd_line():
+    # define default configuration
+    config = {
+        "action": "default",
+        "build_for": "target",
+        "build_type": None,
+        "debug_pkgs": True,
+        "disable_packages": [],
+        "enable_packages": [],
+        "force_local": False,
+        "format": "deb",
+        "host_type": None,
+        "ignore_deps": False,
+        "outdir": None,
+        "release": None,
+        "target_type": None,
+        "work_dir": None,
+    }
+
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "ho:upbir", [
+            "build",
+            "build-for=",
+            "disable-packages=",
+            "enable-packages=",
+            "force-local",
+            "help",
+            "list-deps",
+            "ignore-deps",
+            "install",
+            "no-debug-pkgs",
+            "outdir=",
+            "prepare",
+            "release=",
+            "repackage",
+            "unpack",
+            "work-dir=",
+        ])
+    except getopt.GetoptError as e:
+        raise InvocationError("Error parsing command line: %s" % str(e))
+
+    for o, v in opts:
+        for case in switch(o):
+            if case("--build", "-b"):
+                config["action"] = "build"
+                break
+            if case("--build-for"):
+                if not v in ["target", "tools", "cross-tools"]:
+                    raise InvocationError("cannot build for '%s'." % v)
+                config["build_for"] = v
+                break
+            if case("--disable-packages"):
+                config["disable_packages"] = [x.strip() for x in v.split(",")]
+                break
+            if case("--enable-packages"):
+                config["enable_packages"] = [x.strip() for x in v.split(",")]
+                break
+            if case("--force-local"):
+                config["force_local"] = True
+                break
+            if case("--help", "-h"):
+                print_usage()
+                sys.exit(0)
+                break
+            if case("--list-deps"):
+                config["action"] = "list_deps"
+                break
+            if case("--ignore-deps"):
+                config["ignore_deps"] = True
+                break
+            if case("--install", "-i"):
+                config["action"] = "install"
+                break
+            if case("--no-debug-pkgs"):
+                config["debug_pkgs"] = False
+                break
+            if case("--outdir", "-o"):
+                if not os.path.isdir(v):
+                    raise InvocationError("no such directory '%s'" % v)
+                config["outdir"] = v
+                break
+            if case("--prepare", "-p"):
+                config["action"] = "prepare"
+                break
+            if case("--repackage", "-r"):
+                config["action"] = "repackage"
+                break
+            if case("--release"):
+                config["release"] = v
+                break
+            if case("--unpack", "-u"):
+                config["action"] = "unpack"
+                break
+            if case("--work-dir"):
+                if not os.path.isdir(v):
+                    raise InvocationError("no such directory '%s'." % v)
+                config["work_dir"] = v
+                break
+        #end switch
+    #end for
+
+    return config, args
+#end function
+
+def configure_logging():
+    fmt = LogFormatter("bolt-pack")
+    handler = logging.StreamHandler()
+    handler.setFormatter(fmt)
+    LOGGER.addHandler(handler)
+    LOGGER.setLevel(logging.INFO)
+#end function
+
+if __name__ == "__main__":
+    try:
+        configure_logging()
+
+        options, args = parse_cmd_line()
+
+        if len(args) != 1:
+            print_usage()
+            sys.exit(BOLT_ERR_INVOCATION)
+
+        if options["work_dir"]:
+            try:
+                os.chdir(options["work_dir"])
+            except OSError as e:
+                raise BoltError("failed to set working directory: " + str(e))
+
+        distro_info = DistroInfo()
+
+        try:
+            latest_release = list(distro_info.list(supported=True).keys())[-1]
+        except KeyError:
+            latest_release = None
+
+        if options.get("release") is None:
+            options["release"] = latest_release
+
+        if not options["release"]:
+            raise BoltError(
+                "unable to determine latest release and no release specified."
+            )
+
+        PackageControl(args[0], cache_dir=UserInfo.cache_dir(), **options)\
+            (options["action"])
+    except InvocationError as e:
+        LOGGER.error(e)
+        sys.exit(BOLT_ERR_INVOCATION)
+    except BoltError as e:
+        LOGGER.error(e)
+        sys.exit(BOLT_ERR_RUNTIME)
+    except KeyboardInterrupt:
+        LOGGER.warn("caught keyboard interrupt, exiting.")
+        sys.exit(0)
+    #end try
+#end __main__

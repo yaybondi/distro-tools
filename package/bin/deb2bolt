@@ -1,0 +1,265 @@
+#!/usr/bin/env python3
+# -*- encoding: utf-8 -*-
+#
+# The MIT License (MIT)
+#
+# Copyright (c) 2016-2018 Tobias Koch <tobias.koch@gmail.com>
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+#
+
+import os
+import sys
+import getopt
+import logging
+import textwrap
+
+# make relocatable
+INSTALL_DIR = os.path.normpath(os.path.dirname(
+    os.path.realpath(sys.argv[0])) + os.sep + ".." )
+sys.path.insert(1, INSTALL_DIR + os.sep + 'lib')
+
+from boltlinux.archive.config.distroinfo import DistroInfo
+from boltlinux.error import BoltError, InvocationError
+from boltlinux.miscellaneous.appconfig import AppConfig
+from boltlinux.miscellaneous.logformatter import LogFormatter
+from boltlinux.miscellaneous.switch import switch
+from boltlinux.miscellaneous.userinfo import UserInfo
+from boltlinux.package.deb2bolt.debianpackagecache import DebianPackageCache
+from boltlinux.package.deb2bolt.converter import Deb2BoltPackageConverter
+
+BOLT_ERR_INVOCATION = 1
+BOLT_ERR_RUNTIME    = 2
+
+LOGGER = logging.getLogger()
+
+def print_usage():
+    print(textwrap.dedent(
+        """\
+        Copyright (C) 2016-2021 Tobias Koch <tobias.koch@gmail.com>
+
+        This tool converts Debian source packages to Bolt source packages with some
+        loss of information.
+
+        USAGE:
+
+          deb2bolt [OPTIONS] <pkg_name>
+
+        OPTIONS:
+
+          -h, --help             Print this help message.
+
+          --arch=<arch>          Analyze packages for given arch (default: amd64).
+          --release=<release>    The Debian release to work against (default: stable).
+
+          --run-rules=<target>   Invoke debian/rules target after unpacking the
+                                 sources. This option can be supplied multiple times.
+
+          --disable-updates      Ignore the release-updates pocket.
+          --disable-security     Ignore security updates.
+
+          --set-maintainer       Write maintainer info to changelog (initial import).
+
+          --no-update-cache      Do not update the package cache.
+          --no-load-contents     Do not load and analyze binary package contents.
+          --no-gpg-checks        Do not verify GPG signature on Release files.
+          """
+    ))
+#end function
+
+def parse_cmd_line():
+    # define default configuration
+    config = {
+        "release":
+            None,
+        "arch":
+            "amd64",
+        "do_gpg_checks":
+            True,
+        "do_update_cache":
+            True,
+        "do_load_contents":
+            True,
+        "set_maintainer":
+            False,
+        "updates_enabled":
+            True,
+        "security_enabled":
+            True,
+        "run_rules":
+            []
+    }
+
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "h",
+            [
+                "help",
+                "set-maintainer",
+                "disable-updates",
+                "disable-security",
+                "no-gpg-checks",
+                "no-update-cache",
+                "no-load-contents",
+                "arch=",
+                "release=",
+                "run-rules="
+            ]
+        )
+    except getopt.GetoptError as e:
+        raise InvocationError("error parsing command line: {}".format(str(e)))
+
+    for o, v in opts:
+        for case in switch(o):
+            if case("--help", "-h"):
+                print_usage()
+                sys.exit(0)
+                break
+            if case("--set-maintainer"):
+                config["set_maintainer"] = True
+                break
+            if case("--disable-updates"):
+                config["updates_enabled"] = False
+                break
+            if case("--disable-security"):
+                config["security_enabled"] = False
+                break
+            if case("--no-gpg-checks"):
+                config["do_gpg_checks"] = False
+                break
+            if case("--no-update-cache"):
+                config["do_update_cache"] = False
+                break
+            if case("--no-load-contents"):
+                config["do_load_contents"] = False
+                break
+            if case("--arch"):
+                config["arch"] = v.strip()
+                break
+            if case("--release"):
+                config["release"] = v.strip()
+                break
+            if case("--run-rules"):
+                config["run_rules"].append(v.strip())
+                break
+        #end switch
+    #end for
+
+    return config, args
+#end function
+
+def configure_logging():
+    fmt = LogFormatter("deb2bolt")
+    handler = logging.StreamHandler()
+    handler.setFormatter(fmt)
+    LOGGER.addHandler(handler)
+    LOGGER.setLevel(logging.INFO)
+#end function
+
+if __name__ == "__main__":
+    try:
+        options, args = parse_cmd_line()
+
+        if len(args) != 1:
+            print_usage()
+            sys.exit(BOLT_ERR_INVOCATION)
+        #end if
+
+        configure_logging()
+
+        if not options["set_maintainer"]:
+            maintainer_info = None
+        else:
+            maintainer_info = AppConfig().get("maintainer-info", {})
+            if not maintainer_info:
+                raise InvocationError(
+                    "no maintainer-info found, please fix your config file."
+                )
+            #end if
+        #end if
+
+        distro_info = DistroInfo()
+
+        if not options.get("release"):
+            try:
+                latest_bolt_release = \
+                    list(distro_info.list(supported=True).values())[-1]
+                options["release"] = latest_bolt_release \
+                    .get("upstream", {}) \
+                    .get("id")
+            except KeyError:
+                pass
+
+            if not options["release"]:
+                raise BoltError(
+                    "unable to determine latest upstream release and no "
+                    "release specified."
+                )
+            #end if
+        #end if
+
+        keyring = None
+
+        if options["do_gpg_checks"]:
+            keyring = "/usr/share/keyrings/debian-archive-keyring.gpg"
+
+            if not os.path.exists(keyring):
+                raise BoltError(
+                    "GPG keyring file '{}' not found.".format(keyring)
+                )
+
+        cache_dir = os.path.join(UserInfo.cache_dir(), "debian")
+
+        pkg_cache = DebianPackageCache(
+            options["release"],
+            arch=options["arch"],
+            cache_dir=cache_dir,
+            updates_enabled=options["updates_enabled"],
+            security_enabled=options["security_enabled"],
+            keyring=keyring
+        )
+
+        if options["do_update_cache"]:
+            pkg_cache.update()
+        else:
+            pkg_cache.open()
+
+        # RUN ACTION
+        deb2bolt = Deb2BoltPackageConverter(
+            pkg_cache,
+            release=options["release"],
+            arch=options["arch"]
+        )
+
+        deb2bolt.convert(
+            args[0],
+            maintainer_info=maintainer_info,
+            run_rules=options["run_rules"],
+            do_load_contents=options["do_load_contents"]
+        )
+    except InvocationError as e:
+        LOGGER.error(e)
+        sys.exit(BOLT_ERR_INVOCATION)
+    except BoltError as e:
+        LOGGER.error(e)
+        sys.exit(BOLT_ERR_RUNTIME)
+    except KeyboardInterrupt:
+        LOGGER.warning("caught keyboard interrupt, exiting.")
+        sys.exit(0)
+    #end try
+#end __main__

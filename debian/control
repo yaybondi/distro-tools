@@ -1,0 +1,59 @@
+Source: bolt-distro-tools
+Section: admin
+Priority: optional
+Maintainer: Tobias Koch <tobias.koch@gmail.com>
+Build-Depends:
+ debhelper (>= 11), 
+ dh-python,
+ python3-all,
+ python3-setuptools
+Standards-Version: 4.1.3
+Homepage: https://github.com/boltlinux/bolt-distro-tools
+X-Python3-Version: >= 3.2
+
+Package: python3-bolt-ffi-libarchive
+Architecture: all
+Depends:
+ libarchive-dev,
+ ${python3:Depends},
+ ${misc:Depends}
+Description: ffi bindings to libarchive-dev (Python 3)
+ Foreign function interface bindinds to libarchive.
+
+Package: python3-bolt-misc
+Architecture: all
+Depends: ${python3:Depends}, ${misc:Depends}
+Description: Utilities shared among other Bolt Linux Python packages (Python 3)
+ Collection of scripts shared among other Bolt Linux Python packages.
+
+Package: python3-bolt-distro-info
+Architecture: all
+Depends:
+ python3-bolt-misc,
+ ${python3:Depends},
+ ${misc:Depends}
+Description: Bolt distro info tool (Python 3)
+ This package contains the bolt-distro-info tool.
+
+Package: bolt-distro-info
+Architecture: all
+Depends: python3-bolt-distro-info, ${misc:Depends}
+Description: Bolt distro info tool (meta package)
+ This pulls in python3-bolt-distro-info package which contains the
+ bolt-distro-info tool.
+
+Package: python3-bolt-package
+Architecture: all
+Depends:
+ python3-bolt-misc,
+ ${python3:Depends},
+ ${misc:Depends}
+Description: Bolt Linux packaging tools (Python 3)
+ This package contains the bolt-pack and deb2bolt tools.
+
+Package: bolt-package
+Architecture: all
+Depends: python3-bolt-package, ${misc:Depends}
+Description: Bolt Linux packaging tools (meta package)
+ This pulls in the python3-bolt-package package, which contains the bolt-pack
+ and deb2bolt tools.
