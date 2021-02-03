@@ -20,6 +20,7 @@ setup(
     author_email='tobias.koch@gmail.com',
     license='MIT',
     packages=[
+        'boltlinux',
         'boltlinux.miscellaneous',
     ],
     package_dir={'': 'lib'},
