@@ -2,3 +2,16 @@
 /.pythonpath/
 /*/.tox/
 __pycache__/
+*.egg-info/
+/debian/*.substvars
+/debian/*.debhelper
+/debian/*-stamp
+/debian/files
+/debian/bolt-distro-info/
+/debian/bolt-package/
+/debian/bolt-repo-index/
+/debian/python3-bolt-distro-info/
+/debian/python3-bolt-ffi-libarchive/
+/debian/python3-bolt-misc/
+/debian/python3-bolt-package/
+/debian/python3-bolt-repository/
