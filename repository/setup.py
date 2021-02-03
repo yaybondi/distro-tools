@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""Bolt miscellaneous Python modules."""
+"""Bolt OS repository index generator."""
 
 import os
 
@@ -13,27 +13,32 @@ here = path.abspath(path.dirname(__file__))
 VERSION = os.environ.get("BOLT_DISTRO_TOOLS_VERSION", "0.0.0")
 
 setup(
-    name='bolt-misc',
+    name='bolt-repository',
     version=VERSION,
-    url='https://github.com/boltlinux/bolt-distro-tools',
+    url='https://github.com/tobijk/bolt-package',
     author='Tobias Koch',
     author_email='tobias.koch@gmail.com',
     license='MIT',
     packages=[
-        'boltlinux.miscellaneous',
+        'boltlinux.repository',
     ],
     package_dir={'': 'lib'},
+    data_files=[
+        ('bin', [
+            'bin/bolt-repo-index',
+        ]),
+    ],
     platforms=['Linux'],
 
     classifiers=[
         'Development Status :: 5 - Production/Stable',
-        'Intended Audience :: Cool Kids',
-        'Topic :: Admin :: Configuration',
+        'Intended Audience :: Developers',
+        'Topic :: Software Development :: Build Tools',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 3'
     ],
 
-    keywords='Bolt Linux shared modules',
-    description='Python modules shared between Bolt Linux Python projects',
-    long_description='Python modules shared between Bolt Linux Python projects',
+    keywords='Bolt Linux package repository index',
+    description='Bolt Linux package repository index generator',
+    long_description='Bolt Linux package repository index generator',
 )

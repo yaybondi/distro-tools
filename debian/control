@@ -59,3 +59,19 @@ Depends: python3-bolt-package, ${misc:Depends}
 Description: Bolt Linux packaging tools (meta package)
  This pulls in the python3-bolt-package package, which contains the bolt-pack
  and deb2bolt tools.
+
+Package: python3-bolt-repository
+Architecture: all
+Depends:
+ python3-bolt-package,
+ ${python3:Depends},
+ ${misc:Depends}
+Description: Bolt Linux repo management tools (Python 3)
+ This package contains the bolt-repo-index tool.
+
+Package: bolt-repo-index
+Architecture: all
+Depends: python3-bolt-repository, ${misc:Depends}
+Description: Bolt Linux package repo index generator (meta package)
+ This pulls in the python3-bolt-repository package, which contains the
+ bolt-repo-index tool.

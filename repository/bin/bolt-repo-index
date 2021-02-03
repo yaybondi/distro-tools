@@ -1,0 +1,114 @@
+#!/usr/bin/env python3
+# -*- encoding: utf-8 -*-
+#
+# The MIT License (MIT)
+#
+# Copyright (c) 2016-2018 Tobias Koch <tobias.koch@gmail.com>
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+#
+
+import os
+import sys
+import getopt
+import textwrap
+
+# make relocatable
+INSTALL_DIR = os.path.normpath(os.path.dirname(
+    os.path.realpath(sys.argv[0])) + os.sep + ".." )
+sys.path.insert(1, INSTALL_DIR + os.sep + 'lib')
+
+from boltlinux.error import BoltError, InvocationError
+from boltlinux.miscellaneous.switch import switch
+from boltlinux.repository.repoindexer import RepoIndexer
+
+BOLT_ERR_INVOCATION = 1
+BOLT_ERR_RUNTIME    = 2
+
+def print_usage():
+    print(textwrap.dedent(
+        """\
+        Copyright (C) 2016-2021 Tobias Koch <tobias.koch@gmail.com>
+
+        This tool generates (signed) package indexes from collections of Bolt binary
+        packages.
+
+        USAGE:
+
+          bolt-repo-index <repo_dir>
+
+        OPTIONS:
+
+          -h --help              Print this help message.
+          --force-full           Force a full update ignoring existing Packages files.
+          --sign-with <keyfile>  Sign the Packages.gz file with the given usign key.
+        """
+    ))
+#end function
+
+def parse_cmd_line():
+    # define default configuration
+    config = {
+       "force_full": False,
+       "sign_with": None
+    }
+
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "h", ["help", "force-full",
+            "sign-with="])
+    except getopt.GetoptError as e:
+        raise InvocationError("Error parsing command line: %s" % str(e))
+
+    for o, v in opts:
+        for case in switch(o):
+            if case("--help", "-h"):
+                print_usage()
+                sys.exit(0)
+                break
+            if case("--force-full"):
+                config["force_full"] = True
+                break
+            if case("--sign-with"):
+                config["sign_with"] = v.strip()
+                break
+        #end switch
+    #end for
+
+    return config, args
+#end function
+
+if __name__ == "__main__":
+    # PARSE CMD LINE
+    options, args = parse_cmd_line()
+
+    if len(args) != 1:
+        print_usage()
+        sys.exit(BOLT_ERR_INVOCATION)
+    #end if
+
+    repo_dir = args[0]
+
+    try:
+        indexer = RepoIndexer(repo_dir, **options)
+        indexer.update_package_index()
+    except BoltError as e:
+        sys.stderr.write("bolt-repo-index: %s\n" % str(e))
+        sys.exit(BOLT_ERR_RUNTIME)
+    #end try
+#end __main__
