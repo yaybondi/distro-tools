@@ -63,6 +63,7 @@ Description: Bolt Linux packaging tools (meta package)
 Package: python3-bolt-repository
 Architecture: all
 Depends:
+ usign,
  python3-bolt-package,
  ${python3:Depends},
  ${misc:Depends}
