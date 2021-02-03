@@ -1,3 +1,9 @@
+bolt-distro-tools (1.1.5-1) unstable; urgency=medium
+
+  * Add bolt-repo-index tool.
+
+ -- Tobias Koch <tobias.koch@gmail.com>  Wed, 03 Feb 2021 22:27:23 +0300
+
 bolt-distro-tools (1.1.4-1) unstable; urgency=medium
 
   * Combine former bolt-package and new distro-info into distro-tools package.
