@@ -45,9 +45,18 @@ Description: Bolt distro info tool (meta package)
 Package: python3-bolt-package
 Architecture: all
 Depends:
+ autotools-dev,
+ binutils,
+ chrpath,
+ patch,
  python3-bolt-ffi-libarchive,
  python3-bolt-misc,
  python3-bolt-distro-info,
+ python3-dateutil,
+ python3-html2text,
+ python3-lxml,
+ python3-magic,
+ usign,
  ${python3:Depends},
  ${misc:Depends}
 Description: Bolt Linux packaging tools (Python 3)
