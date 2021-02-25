@@ -1,3 +1,9 @@
+bolt-distro-tools (1.1.5.4-1) unstable; urgency=medium
+
+  * Remove stray print in deb2bolt/copyright.py
+
+ -- Tobias Koch <tobias.koch@gmail.com>  Thu, 25 Feb 2021 06:59:19 +0300
+
 bolt-distro-tools (1.1.5.3-1) unstable; urgency=medium
 
   * deb2bolt handles entries with no license in copyright file (for
