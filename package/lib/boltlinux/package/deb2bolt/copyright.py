@@ -109,8 +109,9 @@ class CopyrightInfo:
         result = '<copyright>\n'
 
         for meta in self._metadata:
+            print(meta)
             result += '    <files license="{}">\n'.format(
-                xml_escape(meta["license"])
+                xml_escape(meta.get("license", "unknown"))
             )
 
             for file_ in meta["files"]:
