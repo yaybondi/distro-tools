@@ -1,3 +1,10 @@
+bolt-distro-tools (1.1.5.3-1) unstable; urgency=medium
+
+  * deb2bolt handles entries with no license in copyright file (for
+    example if the code is in the public domain).
+
+ -- Tobias Koch <tobias.koch@gmail.com>  Thu, 25 Feb 2021 06:51:24 +0300
+
 bolt-distro-tools (1.1.5.2-1) unstable; urgency=medium
 
   * Fix package dependencies of python3-bolt-package
