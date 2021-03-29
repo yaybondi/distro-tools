@@ -448,6 +448,8 @@ class BinaryPackage(BasePackage):
                 continue
             if attr.stats.is_stripped:
                 continue
+            if attr.stats.machine == "no machine":
+                continue
 
             dev = attr.stats.device
             ino = attr.stats.inode
@@ -458,8 +460,17 @@ class BinaryPackage(BasePackage):
 
             build_id = attr.stats.build_id
             src_path = os.path.normpath(os.sep.join([self.basedir, src]))
-            pkg_path = os.sep + os.path.join(install_prefix, "lib", "debug",
-                    ".build-id", build_id[0:2], build_id[2:] + ".debug")
+
+            if build_id:
+                pkg_path = os.sep + os.path.join(
+                    install_prefix, "lib", "debug", ".build-id", build_id[0:2],
+                    build_id[2:] + ".debug"
+                )
+            else:
+                pkg_path = os.path.normpath(os.sep + os.sep.join([
+                    install_prefix, "lib", "debug", src + ".debug"
+                ]))
+
             dbg_path = os.path.normpath(os.sep.join([self.basedir, pkg_path]))
 
             hardlinks[dev][ino] = 1
@@ -472,11 +483,24 @@ class BinaryPackage(BasePackage):
                 os.chmod(src_path, attr.stats.mode | stat.S_IWUSR)
 
             # separate debug information
-            cmd_list = [
-                ([objcopy, "--only-keep-debug", src_path, dbg_path], True),
-                ([objcopy, "--strip-unneeded",  src_path          ], True),
-                ([chrpath, "-d", src_path                         ], False)
-            ]
+            if build_id:
+                cmd_list = [
+                    ([objcopy, "--only-keep-debug", src_path, dbg_path], True),
+                    ([objcopy, "--strip-unneeded",  src_path          ], True),
+                    ([chrpath, "-d", src_path                         ], False)
+                ]
+            else:
+                dbg_file = os.path.basename(dbg_path)
+                cmd_list = [
+                    ([objcopy, "--only-keep-debug", src_path, dbg_file], True),
+                    ([objcopy, "--strip-unneeded",  src_path          ], True),
+                    (
+                        [objcopy, "--add-gnu-debuglink", dbg_file, src_path],
+                        True
+                    ),
+                    (["mv", dbg_file, dbg_path], True),
+                    ([chrpath, "-d", src_path ], False)
+                ]
 
             for cmd, check_retval in cmd_list:
                 subprocess.run(cmd, stderr=subprocess.STDOUT,

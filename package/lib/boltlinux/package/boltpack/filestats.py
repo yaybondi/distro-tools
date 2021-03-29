@@ -189,6 +189,15 @@ class FileStats:
     #end function
 
     @property
+    def machine(self):
+        regexp_machine = r"ELF \d+-bit .SB .*?, ([^,]+), .*"
+        m = re.match(regexp_machine, self._magic_obj.name)
+        if m:
+            return m.group(1)
+        return None
+    #end function
+
+    @property
     def arch_word_size(self):
         regexp_elf = r"ELF (\d+)-bit .SB.*"
         m = re.match(regexp_elf, self._magic_obj.name)
