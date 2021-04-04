@@ -1,3 +1,9 @@
+bolt-distro-tools (1.1.7-1) unstable; urgency=medium
+
+  * Handle license references in copyright file.
+
+ -- Tobias Koch <tobias.koch@gmail.com>  Sun, 04 Apr 2021 10:42:14 +0300
+
 bolt-distro-tools (1.1.6-1) unstable; urgency=medium
 
   * Ignore "no machine" ELF files while stripping debug symbols
