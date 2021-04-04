@@ -174,7 +174,10 @@ class CopyrightInfo:
                 if license is None:
                     continue
 
-                licenses[license] = meta["_license_text"]
+                try:
+                    licenses[license] = meta["_license_text"]
+                except KeyError:
+                    licenses[license] = meta["license-reference"]
             #end if
         #end for
 
