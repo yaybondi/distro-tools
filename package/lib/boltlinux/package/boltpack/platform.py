@@ -77,7 +77,7 @@ class Platform:
     #end function
 
     @staticmethod
-    def find_executable(executable_name):
+    def find_executable(executable_name, fallback=None):
         search_path = os.environ.get("PATH", "").split(os.pathsep) + [
             "/tools/bin",
             "/tools/sbin",
@@ -95,7 +95,7 @@ class Platform:
                 return location
         #end for
 
-        return None
+        return fallback
     #end function
 
     @staticmethod

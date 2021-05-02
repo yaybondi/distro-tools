@@ -437,7 +437,10 @@ class BinaryPackage(BasePackage):
     #end function
 
     def strip_debug_symbols_and_delete_rpath(self):
-        objcopy   = Platform.find_executable(self.host_type + "-objcopy")
+        objcopy = Platform.find_executable(
+            self.host_type + "-objcopy", "objcopy"
+        )
+
         chrpath   = Platform.find_executable("chrpath")
         hardlinks = {}
         install_prefix = self.install_prefix.lstrip("/")
@@ -512,7 +515,9 @@ class BinaryPackage(BasePackage):
     #end function
 
     def shlib_deps(self, shlib_cache, bin_pkgs):
-        objdump = Platform.find_executable(self.host_type + "-objdump")
+        objdump = Platform.find_executable(
+            self.host_type + "-objdump", "objdump"
+        )
 
         for src, attr in self.contents.items():
             fallback = None
