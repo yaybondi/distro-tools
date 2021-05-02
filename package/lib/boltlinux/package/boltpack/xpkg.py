@@ -215,12 +215,25 @@ class Dpkg(BaseXpkg):
                     stderr=subprocess.STDOUT, check=True)
         except subprocess.CalledProcessError:
             return None
-        #end try
 
         return procinfo.stdout\
             .decode(self.preferred_encoding)\
             .strip()\
             .split(":", 1)[0]
+    #end function
+
+    def main_architecture(self):
+        cmd = ["dpkg", "--print-architecture"]
+
+        try:
+            procinfo = subprocess.run(cmd, stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT, check=True)
+        except subprocess.CalledProcessError:
+            return None
+
+        return procinfo.stdout\
+            .decode(self.preferred_encoding)\
+            .strip()
     #end function
 
 #end class
@@ -240,12 +253,37 @@ class Opkg(BaseXpkg):
                     stderr=subprocess.STDOUT, check=True)
         except subprocess.CalledProcessError:
             return None
-        #end try
 
         return procinfo.stdout\
             .decode(self.preferred_encoding)\
             .strip()\
             .split(" - ", 1)[0]
+    #end function
+
+    def main_architecture(self):
+        cmd = ["opkg", "print-architecture"]
+
+        try:
+            procinfo = subprocess.run(cmd, stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT, check=True)
+        except subprocess.CalledProcessError:
+            return None
+
+        buf = procinfo.stdout\
+            .decode(self.preferred_encoding)\
+            .strip()
+
+        for line in [line.strip() for line in buf.splitlines()]:
+            if not line:
+                continue
+            try:
+                _, arch, _ = line.split()
+                if arch not in ["all", "tools"]:
+                    return arch
+            except ValueError:
+                continue
+
+            return None
     #end function
 
 #end class

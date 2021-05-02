@@ -28,6 +28,8 @@ import os
 import re
 import subprocess
 
+from boltlinux.package.boltpack.packagemanager import PackageManager
+
 class Platform:
 
     CONFIG_GUESS = '/usr/share/misc/config.guess'
@@ -126,6 +128,8 @@ class Platform:
     def target_machine():
         result = Platform._target_attribute("TARGET_MACHINE")
         if not result:
+            result = PackageManager.instance.main_architecture()
+        if not result:
             return Platform.config_guess().split("-")[0]
         return result
     #end function
@@ -133,6 +137,8 @@ class Platform:
     @staticmethod
     def target_type():
         result = Platform._target_attribute("TARGET_TYPE")
+        if not result:
+            result = PackageManager.instance.main_architecture()
         if not result:
             return Platform.config_guess()
         return result
@@ -142,7 +148,9 @@ class Platform:
     def tools_type():
         result = Platform._target_attribute("TOOLS_TYPE")
         if not result:
-            return "{}-tools-linux-musl".format(Platform.machine_name())
+            return "{}-tools-linux-{}".format(
+                Platform.machine_name(), Platform.libc_vendor()
+            )
         return result
     #end function
 
@@ -153,6 +161,10 @@ class Platform:
     @staticmethod
     def machine_name():
         return Platform._uname("-m")
+
+    @staticmethod
+    def libc_vendor():
+        Platform._uname("-o").lower().split("/")[0]
 
     # HIDDEN
 
