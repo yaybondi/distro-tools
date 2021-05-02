@@ -138,8 +138,6 @@ class Platform:
     def target_type():
         result = Platform._target_attribute("TARGET_TYPE")
         if not result:
-            result = PackageManager.instance().main_architecture()
-        if not result:
             return Platform.config_guess()
         return result
     #end function
