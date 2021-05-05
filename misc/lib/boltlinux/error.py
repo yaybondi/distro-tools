@@ -58,3 +58,6 @@ class RepositoryError(BoltError):
 
 class VerificationError(BoltError):
     pass
+
+class SkipBuild(BoltError):
+    pass

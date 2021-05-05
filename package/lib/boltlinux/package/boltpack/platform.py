@@ -130,7 +130,7 @@ class Platform:
         if not result:
             result = PackageManager.instance().main_architecture()
         if not result:
-            return Platform.config_guess().split("-")[0]
+            result = Platform.config_guess().split("-")[0]
         return result
     #end function
 
@@ -138,7 +138,17 @@ class Platform:
     def target_type():
         result = Platform._target_attribute("TARGET_TYPE")
         if not result:
-            return Platform.config_guess()
+            result = Platform.config_guess()
+        return result
+    #end function
+
+    @staticmethod
+    def tools_machine():
+        result = Platform._target_attribute("TOOLS_TYPE")
+        if result:
+            result = result.split("-", 1)[0]
+        if not result:
+            result = Platform.machine_name()
         return result
     #end function
 
@@ -146,7 +156,7 @@ class Platform:
     def tools_type():
         result = Platform._target_attribute("TOOLS_TYPE")
         if not result:
-            return "{}-tools-linux-{}".format(
+            result = "{}-tools-linux-{}".format(
                 Platform.machine_name(), Platform.libc_vendor()
             )
         return result

@@ -107,12 +107,19 @@ class BinaryPackage(BasePackage):
         self.architecture = \
             bin_node.get("architecture")
 
-        # This is the XML node that limits what the package will be built for.
+        # This is the XML attribute.
         self.build_for = \
             bin_node.get("build-for")
-
         if self.build_for:
             self.build_for = [v.strip() for v in self.build_for.split(",")]
+
+        # This is the XML attribute.
+        self.supported_on = \
+            bin_node.get("supported-on")
+        if self.supported_on:
+            self.supported_on = [
+                v.strip() for v in self.supported_on.split(",")
+            ]
 
         self.make_debug_pkgs = \
             parms["debug_pkgs"]

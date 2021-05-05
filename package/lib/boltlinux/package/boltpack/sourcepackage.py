@@ -78,6 +78,20 @@ class SourcePackage(BasePackage):
 
         dep_node = source_node.find("requires")
 
+        # This is the XML attribute.
+        self.build_for = \
+            source_node.get("build-for")
+        if self.build_for:
+            self.build_for = [v.strip() for v in self.build_for.split(",")]
+
+        # This is the XML attribute.
+        self.supported_on = \
+            source_node.get("supported-on")
+        if self.supported_on:
+            self.supported_on = [
+                v.strip() for v in self.supported_on.split(",")
+            ]
+
         if dep_node is None:
             dep_node = "<requires></requires>"
         elif actual_build_for is not None:

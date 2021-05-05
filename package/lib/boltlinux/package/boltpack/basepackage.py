@@ -133,4 +133,30 @@ class BasePackage:
         #end function
     #end class
 
+    def builds_for(self, build_for):
+        if not self.build_for:
+            return True
+        if build_for in self.build_for:
+            return True
+        return False
+    #end function
+
+    def is_supported_on(self, machine):
+        if not self.supported_on:
+            return True
+        if f"!{machine}" in self.supported_on:
+            return False
+
+        support_all = True
+        for entry in self.supported_on:
+            if entry and entry[0] != "!":
+                support_all = False
+
+        if support_all or "all" in self.supported_on:
+            return True
+        if machine in self.supported_on:
+            return True
+        return False
+    #end function
+
 #end class

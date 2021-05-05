@@ -64,6 +64,9 @@
                 <attribute name="build-for"/>
             </optional>
             <optional>
+                <attribute name="supported-on"/>
+            </optional>
+            <optional>
                 <attribute name="architecture-independent">
                     <choice>
                         <value>true</value>
@@ -259,6 +262,9 @@
             </optional>
             <optional>
                 <attribute name="build-for"/>
+            </optional>
+            <optional>
+                <attribute name="supported-on"/>
             </optional>
             <optional>
                 <attribute name="xml:base"/>

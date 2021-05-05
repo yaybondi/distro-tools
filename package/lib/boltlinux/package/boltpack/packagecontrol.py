@@ -26,7 +26,7 @@
 import os
 import shutil
 
-from boltlinux.error import UnmetDependency, InvocationError
+from boltlinux.error import UnmetDependency, InvocationError, SkipBuild
 
 from boltlinux.package.boltpack.basepackage import BasePackage
 from boltlinux.package.boltpack.sourcepackage import SourcePackage
@@ -87,11 +87,13 @@ class PackageControl:
             is_arch_indep = "false"
         #end try
 
+        build_for = kwargs.get("build_for", None)
+
         for pkg_node in xml_doc.xpath("/control/package"):
             pkg_node.attrib["source"] = source_name
             pkg_node.attrib["repo"] = repo_name
 
-            if self.parms["build_for"] in ["tools", "cross-tools"]:
+            if build_for in ["tools", "cross-tools"]:
                 pkg_node.attrib["architecture"] = "tools"
             elif is_arch_indep.lower() == "true":
                 pkg_node.attrib["architecture"] = "all"
@@ -108,14 +110,14 @@ class PackageControl:
             "BOLT_WORK_DIR": os.getcwd(),
             "BOLT_BUILD_TYPE": Platform.target_type(),
             "BOLT_TOOLS_TYPE": Platform.tools_type(),
-            "BOLT_BUILD_FOR": self.parms["build_for"]
+            "BOLT_BUILD_FOR": build_for
         }
 
-        if self.parms["build_for"] == "tools":
+        if build_for == "tools":
             self.defines["BOLT_HOST_TYPE"] = Platform.tools_type()
             self.defines["BOLT_TARGET_TYPE"] = Platform.tools_type()
             self.defines["BOLT_INSTALL_PREFIX"] = "/tools"
-        elif self.parms["build_for"] == "cross-tools":
+        elif build_for == "cross-tools":
             self.defines["BOLT_HOST_TYPE"] = Platform.tools_type()
             self.defines["BOLT_TARGET_TYPE"] = Platform.target_type()
             self.defines["BOLT_INSTALL_PREFIX"] = "/tools"
@@ -143,7 +145,7 @@ class PackageControl:
 
         self.src_pkg = SourcePackage(
             xml_doc.xpath("/control/source")[0],
-            build_for=self.parms["build_for"]
+            build_for=build_for
         )
         self.src_pkg.basedir = os.path.realpath(os.path.dirname(filename))
 
@@ -161,6 +163,11 @@ class PackageControl:
             #end for
         #end if
 
+        if build_for in ["tools", "cross-tools"]:
+            machine = Platform.tools_machine()
+        else:
+            machine = Platform.target_machine()
+
         self.bin_pkgs = []
         for node in xml_doc.xpath("/control/package"):
             pkg = DebianPackage(
@@ -168,7 +175,7 @@ class PackageControl:
                 debug_pkgs=self.parms["debug_pkgs"],
                 install_prefix=self.defines["BOLT_INSTALL_PREFIX"],
                 host_type=self.defines["BOLT_HOST_TYPE"],
-                build_for=self.parms["build_for"]
+                build_for=build_for
             )
 
             if self.parms["enable_packages"]:
@@ -178,12 +185,14 @@ class PackageControl:
                 if pkg.name in self.parms["disable_packages"]:
                     continue
 
-            if pkg.build_for and not self.parms["build_for"] in pkg.build_for:
+            if not pkg.builds_for(build_for):
+                continue
+            if not pkg.is_supported_on(machine):
                 continue
 
-            if self.parms["build_for"] == "tools":
+            if build_for == "tools":
                 pkg.name = "tools-" + pkg.name
-            elif self.parms["build_for"] == "cross-tools":
+            elif build_for == "cross-tools":
                 pkg.name = "tools-target-" + pkg.name
             #end if
 
@@ -200,6 +209,25 @@ class PackageControl:
 
     def __call__(self, action):
         if action not in ["list_deps", "unpack", "clean"]:
+            build_for = self.parms["build_for"]
+
+            if not self.src_pkg.builds_for(build_for):
+                raise SkipBuild(
+                    "package won't build for '{}'.".format(build_for)
+                )
+            #end if
+
+            if build_for in ["tools", "cross-tools"]:
+                machine = Platform.tools_machine()
+            else:
+                machine = Platform.target_machine()
+
+            if not self.src_pkg.is_supported_on(machine):
+                raise SkipBuild(
+                    "package is not supported on '{}'.".format(machine)
+                )
+            #end if
+
             if not self.parms.get("ignore_deps"):
                 missing_deps = self._missing_build_dependencies()
                 if missing_deps.list:

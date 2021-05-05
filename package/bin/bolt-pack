@@ -36,14 +36,15 @@ INSTALL_DIR = os.path.normpath(os.path.dirname(
 sys.path.insert(1, INSTALL_DIR + os.sep + 'lib')
 
 from boltlinux.archive.config.distroinfo import DistroInfo
-from boltlinux.error import BoltError, InvocationError
+from boltlinux.error import BoltError, InvocationError, SkipBuild
 from boltlinux.miscellaneous.logformatter import LogFormatter
 from boltlinux.miscellaneous.switch import switch
 from boltlinux.miscellaneous.userinfo import UserInfo
 from boltlinux.package.boltpack.packagecontrol import PackageControl
 
-BOLT_ERR_INVOCATION = 1
-BOLT_ERR_RUNTIME    = 2
+BOLT_ERR_INVOCATION =  1
+BOLT_ERR_RUNTIME    =  2
+BOLT_ERR_SKIPPED    = 42
 
 LOGGER = logging.getLogger()
 
@@ -247,6 +248,9 @@ if __name__ == "__main__":
     except InvocationError as e:
         LOGGER.error(e)
         sys.exit(BOLT_ERR_INVOCATION)
+    except SkipBuild as e:
+        LOGGER.error(e)
+        sys.exit(BOLT_ERR_SKIPPED)
     except BoltError as e:
         LOGGER.error(e)
         sys.exit(BOLT_ERR_RUNTIME)
