@@ -1,3 +1,11 @@
+bolt-distro-tools (1.1.9-1) unstable; urgency=medium
+
+  * New attribute 'supported-on' allows filtering by architecture.
+  * Filtering via build-for and supported-on works on source *and* binary
+    packages.
+
+ -- Tobias Koch <tobias.koch@gmail.com>  Wed, 05 May 2021 23:45:19 +0300
+
 bolt-distro-tools (1.1.8-1) unstable; urgency=medium
 
   * Package helpers: explicitly disable decimal float on powerpc.
