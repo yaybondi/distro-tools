@@ -69,8 +69,11 @@ class BasePackage:
 
             for node in dep_node.xpath("package|choice"):
                 alternatives = []
+
                 if node.tag == "choice":
                     for pkg in node.xpath("package"):
+                        if pkg.attrib.get("ignore"):
+                            continue
                         alternatives.append(
                             BasePackage.Dependency(
                                 pkg.attrib["name"],
@@ -79,13 +82,17 @@ class BasePackage:
                         )
                     #end for
                 else:
-                    alternatives.append(
-                        BasePackage.Dependency(
-                            node.attrib["name"],
-                            node.get("version")
+                    if not node.attrib.get("ignore"):
+                        alternatives.append(
+                            BasePackage.Dependency(
+                                node.attrib["name"],
+                                node.get("version")
+                            )
                         )
-                    )
                 #end if
+
+                if not alternatives:
+                    continue
 
                 for dep in alternatives:
                     spec.index[dep.name] = dep
@@ -134,27 +141,35 @@ class BasePackage:
     #end class
 
     def builds_for(self, build_for):
-        if not self.build_for:
+        return BasePackage._builds_for(self.build_for, build_for)
+
+    @staticmethod
+    def _builds_for(build_for_choices, actual_build_for):
+        if not build_for_choices:
             return True
-        if build_for in self.build_for:
+        if actual_build_for in build_for_choices:
             return True
         return False
     #end function
 
     def is_supported_on(self, machine):
-        if not self.supported_on:
+        return BasePackage._is_supported_on(self.supported_on, machine)
+
+    @staticmethod
+    def _is_supported_on(supported_on, machine):
+        if not supported_on:
             return True
-        if f"!{machine}" in self.supported_on:
+        if f"!{machine}" in supported_on:
             return False
 
         support_all = True
-        for entry in self.supported_on:
+        for entry in supported_on:
             if entry and entry[0] != "!":
                 support_all = False
 
-        if support_all or "all" in self.supported_on:
+        if support_all or "all" in supported_on:
             return True
-        if machine in self.supported_on:
+        if machine in supported_on:
             return True
         return False
     #end function

@@ -71,6 +71,13 @@ class BinaryPackage(BasePackage):
         parms = {"debug_pkgs": True}
         parms.update(kwargs)
 
+        if "machine" in kwargs:
+            machine = kwargs["machine"]
+        elif build_for in ["tools", "cross-tools"]:
+            machine = Platform.tools_machine()
+        else:
+            machine = Platform.target_machine()
+
         if isinstance(xml_config, etree._Element):
             bin_node = xml_config
         elif isinstance(xml_config, str):
@@ -108,14 +115,12 @@ class BinaryPackage(BasePackage):
             bin_node.get("architecture")
 
         # This is the XML attribute.
-        self.build_for = \
-            bin_node.get("build-for")
+        self.build_for = bin_node.get("build-for")
         if self.build_for:
             self.build_for = [v.strip() for v in self.build_for.split(",")]
 
         # This is the XML attribute.
-        self.supported_on = \
-            bin_node.get("supported-on")
+        self.supported_on = bin_node.get("supported-on")
         if self.supported_on:
             self.supported_on = [
                 v.strip() for v in self.supported_on.split(",")
@@ -131,8 +136,7 @@ class BinaryPackage(BasePackage):
         self.relations = {}
 
         # This is what the user *actually selected* with `--build-for`.
-        actual_build_for = \
-            parms.get("build_for", None)
+        actual_build_for = parms.get("build_for", "target")
 
         for dep_type in ["requires", "provides", "conflicts", "replaces"]:
             dep_node = bin_node.find(dep_type)
@@ -172,17 +176,25 @@ class BinaryPackage(BasePackage):
                     #end if
                 #end if
 
-                pkg_prefix = None
+                pkg_prefix = pkg_node.get(actual_build_for + "-prefix", None)
 
-                if actual_build_for is not None:
-                    pkg_prefix = pkg_node.get(actual_build_for +
-                            "-prefix", None)
                 if pkg_prefix is None:
                     if self.architecture == "tools":
                         pkg_prefix = "tools-"
                 if pkg_prefix is not None:
                     pkg_node.attrib["name"] = pkg_prefix + \
                             pkg_node.attrib["name"]
+
+                # This is the XML attribute.
+                supported_on = pkg_node.get("supported-on")
+                if supported_on:
+                    supported_on = [
+                        v.strip() for v in supported_on.split(",")
+                    ]
+
+                # Mark nodes which are not supported on machine.
+                if not BasePackage._is_supported_on(supported_on, machine):
+                    pkg_node.attrib["ignore"] = "true"
             #end for
 
             self.relations[dep_type] = BasePackage.DependencySpecification\

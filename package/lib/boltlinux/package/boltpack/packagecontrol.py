@@ -89,6 +89,11 @@ class PackageControl:
 
         build_for = kwargs.get("build_for", None)
 
+        if build_for in ["tools", "cross-tools"]:
+            machine = Platform.tools_machine()
+        else:
+            machine = Platform.target_machine()
+
         for pkg_node in xml_doc.xpath("/control/package"):
             pkg_node.attrib["source"] = source_name
             pkg_node.attrib["repo"] = repo_name
@@ -98,7 +103,7 @@ class PackageControl:
             elif is_arch_indep.lower() == "true":
                 pkg_node.attrib["architecture"] = "all"
             else:
-                pkg_node.attrib["architecture"] = Platform.target_machine()
+                pkg_node.attrib["architecture"] = machine
         #end for
 
         xml_doc.xpath("/control/changelog")[0].attrib["source"] = source_name
@@ -145,7 +150,8 @@ class PackageControl:
 
         self.src_pkg = SourcePackage(
             xml_doc.xpath("/control/source")[0],
-            build_for=build_for
+            build_for=build_for,
+            machine=machine
         )
         self.src_pkg.basedir = os.path.realpath(os.path.dirname(filename))
 
@@ -163,11 +169,6 @@ class PackageControl:
             #end for
         #end if
 
-        if build_for in ["tools", "cross-tools"]:
-            machine = Platform.tools_machine()
-        else:
-            machine = Platform.target_machine()
-
         self.bin_pkgs = []
         for node in xml_doc.xpath("/control/package"):
             pkg = DebianPackage(
@@ -175,7 +176,8 @@ class PackageControl:
                 debug_pkgs=self.parms["debug_pkgs"],
                 install_prefix=self.defines["BOLT_INSTALL_PREFIX"],
                 host_type=self.defines["BOLT_HOST_TYPE"],
-                build_for=build_for
+                build_for=build_for,
+                machine=machine
             )
 
             if self.parms["enable_packages"]:

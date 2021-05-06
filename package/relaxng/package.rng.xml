@@ -227,6 +227,9 @@
             <optional>
                 <attribute name="cross-tools-prefix"/>
             </optional>
+            <optional>
+                <attribute name="supported-on"/>
+            </optional>
         </element>
     </define>
 
