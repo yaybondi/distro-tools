@@ -1,3 +1,9 @@
+bolt-distro-tools (1.2.0-1) unstable; urgency=medium
+
+  * Process supported-on attribute also on dependencies.
+
+ -- Tobias Koch <tobias.koch@gmail.com>  Fri, 07 May 2021 00:56:27 +0300
+
 bolt-distro-tools (1.1.9-1) unstable; urgency=medium
 
   * New attribute 'supported-on' allows filtering by architecture.
