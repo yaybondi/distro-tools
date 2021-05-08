@@ -68,12 +68,11 @@ class BinaryPackage(BasePackage):
     #end class
 
     def __init__(self, xml_config, **kwargs):
-        parms = {"debug_pkgs": True}
-        parms.update(kwargs)
+        actual_build_for = kwargs.get("build_for", "target")
 
         if "machine" in kwargs:
             machine = kwargs["machine"]
-        elif build_for in ["tools", "cross-tools"]:
+        elif actual_build_for in ["tools", "cross-tools"]:
             machine = Platform.tools_machine()
         else:
             machine = Platform.target_machine()
@@ -127,16 +126,13 @@ class BinaryPackage(BasePackage):
             ]
 
         self.make_debug_pkgs = \
-            parms["debug_pkgs"]
+            kwargs.get("debug_pkgs", True)
         self.install_prefix = \
-            parms["install_prefix"]
+            kwargs.get("install_prefix", "/usr")
         self.host_type = \
-            parms["host_type"]
+            kwargs.get("host_type", Platform.target_type())
 
         self.relations = {}
-
-        # This is what the user *actually selected* with `--build-for`.
-        actual_build_for = parms.get("build_for", "target")
 
         for dep_type in ["requires", "provides", "conflicts", "replaces"]:
             dep_node = bin_node.find(dep_type)

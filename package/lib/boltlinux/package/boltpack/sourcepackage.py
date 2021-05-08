@@ -61,7 +61,7 @@ class SourcePackage(BasePackage):
 
         if "machine" in kwargs:
             machine = kwargs["machine"]
-        elif build_for in ["tools", "cross-tools"]:
+        elif actual_build_for in ["tools", "cross-tools"]:
             machine = Platform.tools_machine()
         else:
             machine = Platform.target_machine()
@@ -72,7 +72,7 @@ class SourcePackage(BasePackage):
             source_node = etree.fromstring(xml_config)
         else:
             msg = "expected 'etree._Element' or 'str' but got '%s'" % \
-            xml_config.__class__.__name__
+                    xml_config.__class__.__name__
             raise ValueError(msg)
         #end if
 

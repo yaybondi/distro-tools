@@ -52,6 +52,15 @@ class PackageControl:
         }
         self.parms.update(kwargs)
 
+        build_for = self.parms["build_for"]
+
+        if "machine" in kwargs:
+            machine = kwargs["machine"]
+        elif build_for in ["tools", "cross-tools"]:
+            machine = Platform.tools_machine()
+        else:
+            machine = Platform.target_machine()
+
         xml_doc = Specfile(filename).xml_doc
         self.info = {}
 
@@ -86,13 +95,6 @@ class PackageControl:
         except IndexError:
             is_arch_indep = "false"
         #end try
-
-        build_for = kwargs.get("build_for", None)
-
-        if build_for in ["tools", "cross-tools"]:
-            machine = Platform.tools_machine()
-        else:
-            machine = Platform.target_machine()
 
         for pkg_node in xml_doc.xpath("/control/package"):
             pkg_node.attrib["source"] = source_name
