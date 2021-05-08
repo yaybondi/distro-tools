@@ -1,3 +1,10 @@
+bolt-distro-tools (1.2.1-1) unstable; urgency=medium
+
+  * Allow overriding arch to get correct build-deps when running
+    bolt-pack on foreign distro.
+
+ -- Tobias Koch <tobias.koch@gmail.com>  Sun, 09 May 2021 00:06:44 +0300
+
 bolt-distro-tools (1.2.0-1) unstable; urgency=medium
 
   * Process supported-on attribute also on dependencies.
