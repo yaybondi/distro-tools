@@ -1,3 +1,10 @@
+bolt-distro-tools (1.2.2-1) unstable; urgency=medium
+
+  * distro-info: ensure that the config folder exists, before trying
+    to store a file inside it.
+
+ -- Tobias Koch <tobias.koch@gmail.com>  Sat, 29 May 2021 17:51:07 +0300
+
 bolt-distro-tools (1.2.1-1) unstable; urgency=medium
 
   * Allow overriding arch to get correct build-deps when running
