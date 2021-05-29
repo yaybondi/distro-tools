@@ -48,6 +48,8 @@ class DistroInfo:
             items_to_fetch.append("mirrors")
 
         for item in items_to_fetch:
+            os.makedirs(UserInfo.config_folder(), exist_ok=True)
+
             filename  = "{}.json".format(item)
             src_url   = '/'.join([self.base_url, filename])
             data      = self._fetch_json(src_url)
