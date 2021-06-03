@@ -37,10 +37,11 @@ LOGGER = logging.getLogger(__name__)
 
 class SourceCache:
 
-    def __init__(self, cache_dir, release, verbose=True):
-        self.cache_dir = cache_dir
-        self.release   = release
-        self.verbose   = verbose
+    def __init__(self, cache_dir, release, verbose=True, force_local=False):
+        self.cache_dir   = cache_dir
+        self.release     = release
+        self.verbose     = verbose
+        self.force_local = force_local
     #end function
 
     def find_and_retrieve(self, repo_name, pkg_name, version, filename,
@@ -49,7 +50,7 @@ class SourceCache:
             repo_name, pkg_name, version, filename, sha256sum
         )
 
-        if pkg:
+        if pkg or self.force_local:
             return pkg
 
         return self.fetch_from_repo(

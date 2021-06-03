@@ -248,17 +248,14 @@ class PackageControl:
         print(self.src_pkg.build_dependencies())
 
     def unpack(self):
-        release = self.parms["release"]
-
         directory = self.defines["BOLT_WORK_DIR"]
         if not os.path.exists(directory):
             os.makedirs(directory)
 
-        source_cache = SourceCache(self._cache_dir, release)
+        source_cache = SourceCache(self._cache_dir, self.parms["release"],
+                force_local=self.parms["force_local"])
 
-        self.src_pkg.unpack(
-            directory, source_cache, force_local=self.parms["force_local"]
-        )
+        self.src_pkg.unpack(directory, source_cache)
         self.src_pkg.patch(directory)
     #end function
 

@@ -75,7 +75,8 @@ def print_usage():
 
           --ignore-deps        Ignore missing build dependencies.
           --no-debug-pkgs      Don't generate debug packages.
-          --force-local        Use only local sources, don't look in package repo.
+          --force-local        Use local sources only (including the cache), don't
+                               perform any downloads.
 
           -o, --outdir=<dir>   Place resulting binary packages in this directory.
 
