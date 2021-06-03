@@ -46,8 +46,14 @@ class ShlibCache:
         def package_name(self):
             if self.pkg_name is None:
                 pkg_manager = PackageManager.instance()
-                self.pkg_name = \
-                        pkg_manager.which_package_provides(self.lib_path)
+
+                self.pkg_name = (
+                    pkg_manager.which_package_provides(self.lib_path) or
+                    pkg_manager.which_package_provides(
+                        os.path.realpath(self.lib_path)
+                    )
+                )
+
             return self.pkg_name
         #end function
 
@@ -107,9 +113,6 @@ class ShlibCache:
 
                 lib_name = m.group(1)
                 lib_path = m.group(3)
-
-                if "libx" in lib_path:
-                    continue
 
                 self.map.setdefault(lib_name, [])\
                         .append(ShlibCache.SharedObject(lib_path))
