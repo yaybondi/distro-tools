@@ -31,7 +31,7 @@ import urllib.request
 from boltlinux.archive.config.distroinfo import DistroInfo
 from boltlinux.error import BoltError, NetworkError
 from boltlinux.miscellaneous.progressbar import ProgressBar
-from boltlinux.miscellaneous.downloader import Downloader
+from boltlinux.miscellaneous.downloader import Downloader, DownloadError
 
 LOGGER = logging.getLogger(__name__)
 
@@ -45,7 +45,7 @@ class SourceCache:
     #end function
 
     def find_and_retrieve(self, repo_name, pkg_name, version, filename,
-            sha256sum=None):
+            upstream_source, sha256sum=None):
         pkg = self.fetch_from_cache(
             repo_name, pkg_name, version, filename, sha256sum
         )
@@ -53,9 +53,38 @@ class SourceCache:
         if pkg or self.force_local:
             return pkg
 
-        return self.fetch_from_repo(
-            repo_name, pkg_name, version, filename, sha256sum
-        )
+        errors = []
+
+        try:
+            pkg = self.fetch_from_repo(
+                repo_name,
+                pkg_name,
+                version,
+                filename,
+                sha256sum
+            )
+        except DownloadError as e:
+            if upstream_source:
+                LOGGER.warning(str(e))
+            else:
+                LOGGER.error(str(e))
+
+        if pkg or not upstream_source:
+            return pkg
+
+        try:
+            pkg = self.fetch_from_upstream(
+                upstream_source,
+                repo_name,
+                pkg_name,
+                version,
+                filename,
+                sha256sum
+            )
+        except DownloadError as e:
+            LOGGER.error(str(e))
+
+        return pkg
     #end function
 
     def fetch_from_cache(self, repo_name, pkg_name, version, filename,
@@ -135,6 +164,47 @@ class SourceCache:
         except urllib.error.URLError as e:
             raise NetworkError(
                 "failed to retrieve {}: {}".format(source_url, e.reason)
+            )
+
+        if sha256sum and sha256sum != h.hexdigest():
+            raise BoltError("file {} has invalid checksum!".format(target_url))
+
+        return target_url
+    #end function
+
+    def fetch_from_upstream(self, upstream_source, repo_name, pkg_name,
+            version, filename, sha256sum=None):
+        downloader = Downloader(progress_bar_class=ProgressBar)
+
+        if pkg_name.startswith("lib"):
+            first_letter = pkg_name[3]
+        else:
+            first_letter = pkg_name[0]
+
+        rel_path = os.sep.join([first_letter, pkg_name, version, filename])
+
+        target_url = os.sep.join([
+            self.cache_dir,
+            "bolt",
+            "dists",
+            self.release,
+            "sources",
+            repo_name,
+            rel_path
+        ])
+
+        h = hashlib.sha256()
+
+        LOGGER.info("retrieving upstream {}".format(upstream_source))
+        try:
+            os.makedirs(os.path.dirname(target_url), exist_ok=True)
+
+            with open(target_url, "wb+") as f:
+                for chunk in downloader.get(upstream_source, digest=h):
+                    f.write(chunk)
+        except urllib.error.URLError as e:
+            raise NetworkError(
+                "failed to retrieve {}: {}".format(upstream_source, e.reason)
             )
 
         if sha256sum and sha256sum != h.hexdigest():

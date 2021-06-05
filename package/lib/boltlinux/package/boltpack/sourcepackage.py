@@ -315,7 +315,12 @@ class SourcePackage(BasePackage):
 
         if not source_file:
             source_file = source_cache.find_and_retrieve(
-                self.repo, self.name, self.version, source, sha256sum
+                self.repo,
+                self.name,
+                self.version,
+                source,
+                upstream_source,
+                sha256sum
             )
             if source_file:
                 LOGGER.info("cached at: {}".format(source_file))

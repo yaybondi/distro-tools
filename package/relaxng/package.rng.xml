@@ -112,6 +112,9 @@
                                     <attribute name="subdir"/>
                                 </optional>
                                 <optional>
+                                    <attribute name="upstream-src"/>
+                                </optional>
+                                <optional>
                                     <attribute name="sha256sum"/>
                                 </optional>
                             </element>
