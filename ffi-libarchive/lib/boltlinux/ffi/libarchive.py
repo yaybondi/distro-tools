@@ -777,7 +777,7 @@ class ArchiveFileReader:
                 # Assume it is sufficient to do this for files.
                 os.utime(pathname, (entry.atime, entry.mtime))
             elif entry.is_symbolic_link:
-                if os.path.exists(pathname):
+                if os.path.exists(pathname) or os.path.islink(pathname):
                     os.unlink(pathname)
                 os.symlink(entry.symlink, pathname)
             else:
