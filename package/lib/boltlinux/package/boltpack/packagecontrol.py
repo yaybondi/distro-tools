@@ -42,6 +42,7 @@ class PackageControl:
     def __init__(self, filename, cache_dir=None, **kwargs):
         self.parms = {
             "build_for": "target",
+            "copy_archives": True,
             "debug_pkgs": True,
             "disable_packages": [],
             "enable_packages": [],
@@ -153,7 +154,8 @@ class PackageControl:
         self.src_pkg = SourcePackage(
             xml_doc.xpath("/control/source")[0],
             build_for=build_for,
-            machine=machine
+            machine=machine,
+            copy_archives=self.parms["copy_archives"]
         )
         self.src_pkg.basedir = os.path.realpath(os.path.dirname(filename))
 
@@ -255,8 +257,9 @@ class PackageControl:
         source_cache = SourceCache(self._cache_dir, self.parms["release"],
                 force_local=self.parms["force_local"])
 
-        self.src_pkg.unpack(directory, source_cache)
-        self.src_pkg.patch(directory)
+        self.src_pkg \
+            .unpack(directory, source_cache=source_cache) \
+            .patch(directory)
     #end function
 
     def prepare(self):

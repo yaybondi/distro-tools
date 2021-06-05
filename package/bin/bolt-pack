@@ -75,6 +75,7 @@ def print_usage():
 
           --ignore-deps        Ignore missing build dependencies.
           --no-debug-pkgs      Don't generate debug packages.
+          --no-copy-archives   Do not create local copies of sources archives.
           --force-local        Use local sources only (including the cache), don't
                                perform any downloads.
 
@@ -110,6 +111,7 @@ def parse_cmd_line():
         "arch": None,
         "build_for": "target",
         "build_type": None,
+        "copy_archives": True,
         "debug_pkgs": True,
         "disable_packages": [],
         "enable_packages": [],
@@ -136,6 +138,7 @@ def parse_cmd_line():
             "ignore-deps",
             "install",
             "no-debug-pkgs",
+            "no-copy-archives",
             "outdir=",
             "prepare",
             "release=",
@@ -183,6 +186,9 @@ def parse_cmd_line():
                 break
             if case("--no-debug-pkgs"):
                 config["debug_pkgs"] = False
+                break
+            if case("--no-copy-archives"):
+                config["copy_archives"] = False
                 break
             if case("--outdir", "-o"):
                 if not os.path.isdir(v):

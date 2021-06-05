@@ -28,6 +28,7 @@ import hashlib
 import logging
 import os
 import re
+import shutil
 import subprocess
 import sys
 
@@ -56,7 +57,7 @@ class SourcePackage(BasePackage):
         os.path.join(os.sep, "tools", "share", "bolt-pack", "helpers")
     ]
 
-    def __init__(self, xml_config, **kwargs):
+    def __init__(self, xml_config, copy_archives=True, **kwargs):
         actual_build_for = kwargs.get("build_for", "target")
 
         if "machine" in kwargs:
@@ -76,7 +77,8 @@ class SourcePackage(BasePackage):
             raise ValueError(msg)
         #end if
 
-        self.basedir = "."
+        self.base_dir = "."
+        self.copy_archives = copy_archives
 
         self.name = source_node.get("name")
         self.repo = source_node.get("repo")
@@ -149,6 +151,7 @@ class SourcePackage(BasePackage):
         for file_node in source_node.xpath("sources/file"):
             self.sources.append([
                 file_node.get("src", ""),
+                file_node.get("upstream-src", ""),
                 file_node.get("subdir", ""),
                 file_node.get("sha256sum", "")
             ])
@@ -176,9 +179,10 @@ class SourcePackage(BasePackage):
         return self.relations["requires"]
 
     def unpack(self, source_dir=".", source_cache=None):
-        for source, subdir, sha256sum in self.sources:
-            archive_file = self._locate_archive_file(
+        for source, upstream_source, subdir, sha256sum in self.sources:
+            archive_file = self._retrieve_archive_file(
                 source,
+                upstream_source,
                 sha256sum,
                 source_cache=source_cache,
             )
@@ -186,10 +190,10 @@ class SourcePackage(BasePackage):
             if not (archive_file and os.path.isfile(archive_file)):
                 msg = "source archive for '%s' not found." % source
                 raise PackagingError(msg)
-            #end if
 
-            source_dir_and_subdir = \
-                    os.path.normpath(source_dir + os.sep + subdir)
+            source_dir_and_subdir = os.path.normpath(
+                source_dir + os.sep + subdir
+            )
             os.makedirs(source_dir_and_subdir, exist_ok=True)
 
             LOGGER.info("unpacking {}".format(archive_file))
@@ -207,19 +211,18 @@ class SourcePackage(BasePackage):
                         continue
 
                     outfile = os.path.join(source_dir_and_subdir, m.group(1))
-
                     with open(outfile, "wb+") as f:
                         for chunk in iter(lambda: archive.read_data(4096),
                                 b""):
                             f.write(chunk)
-                    #end with
             else:
                 with ArchiveFileReader(archive_file) as archive:
                     archive.unpack_to_disk(
                         base_dir=source_dir_and_subdir,
                         strip_components=1
                     )
-        #end for
+
+        return self
     #end function
 
     def patch(self, source_dir="."):
@@ -250,6 +253,8 @@ class SourcePackage(BasePackage):
                     "couldn't apply patch \"{}\"".format(patch_name)
                 )
         #end for
+
+        return self
     #end function
 
     def run_action(self, action, env=None):
@@ -282,45 +287,62 @@ class SourcePackage(BasePackage):
 
     # PRIVATE
 
-    def _locate_archive_file(self, source, sha256sum, source_cache):
-        archive_file = None
+    def _retrieve_archive_file(self, source, upstream_source, sha256sum,
+            source_cache):
+        src_xml_dir = os.path.join(self.basedir, self.name, self.version)
+        source_file = os.path.join(src_xml_dir, source)
 
-        candidate = os.path.join(
-            self.basedir, self.name, self.version, source
-        )
-
-        if os.path.exists(candidate):
+        if not os.path.exists(source_file):
+            source_file = None
+        else:
             LOGGER.info(
-                "found local candidate '{}', computing checksum."
-                .format(candidate)
+                "found local candidate {}, computing checksum."
+                .format(source_file)
             )
-            h = hashlib.sha256()
 
-            with open(candidate, "rb") as f:
+            h = hashlib.sha256()
+            with open(source_file, "rb") as f:
                 for chunk in iter(lambda: f.read(4096), b""):
                     h.update(chunk)
-            #end with
 
-            if sha256sum == h.hexdigest():
-                LOGGER.info(
-                    "using local candidate '{}'.".format(candidate)
+            if sha256sum != h.hexdigest():
+                raise PackagingError(
+                    "local candidate {} has incorrect checksum, aborting."
                 )
-                archive_file = candidate
-            else:
-                LOGGER.error(
-                    "checksum of '{}' didn't match, ignoring."
-                    .format(candidate)
-                )
-            #end if
+
+            LOGGER.info("using local candidate {}".format(source_file))
         #end if
 
-        if not archive_file:
-            archive_file = source_cache.find_and_retrieve(
+        if not source_file:
+            source_file = source_cache.find_and_retrieve(
                 self.repo, self.name, self.version, source, sha256sum
             )
+            if source_file:
+                LOGGER.info("cached at: {}".format(source_file))
         #end if
 
-        return archive_file
+        if source_file and self.copy_archives:
+            local_dir  = os.path.join(".", "archive", self.name, self.version)
+            local_file = os.path.join(local_dir, source)
+
+            os.makedirs(local_dir, exist_ok=True)
+            try:
+                if os.path.realpath(source_file) != \
+                        os.path.realpath(local_file):
+                    LOGGER.info(
+                        "writing source archive {}".format(local_file)
+                    )
+                    shutil.copyfile(source_file, local_file)
+            except OSError as e:
+                raise PackagingError(
+                    "error while copying {} from cache: {}"
+                    .format(cached_file, str(e))
+                )
+
+            source_file = local_file
+        #end if
+
+        return source_file
     #end function
 
     def _load_helpers(self):
