@@ -1,3 +1,14 @@
+bolt-distro-tools (1.3.0-1) unstable; urgency=medium
+
+  * bolt-pack: search patches relative to XML spec before looking in work dir
+  * bolt-pack: fall back to fetching 'upstream-src' if specified
+  * bolt-pack: create local copies of source archives per default
+  * ffi-libarchive: fix error while overwriting symlinks from archive in unpack_to_disk
+  * boltpack/shlibcache: handle /usr merge on Debian systems
+  * bolt-pack: make --force-local mean 'local' (including cache)
+
+ -- Tobias Koch <tobias.koch@gmail.com>  Sun, 06 Jun 2021 11:39:54 +0300
+
 bolt-distro-tools (1.2.2-1) unstable; urgency=medium
 
   * distro-info: ensure that the config folder exists, before trying
