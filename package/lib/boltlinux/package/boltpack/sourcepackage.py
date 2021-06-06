@@ -295,7 +295,9 @@ class SourcePackage(BasePackage):
 
     def _retrieve_archive_file(self, source, upstream_source, sha256sum,
             source_cache):
-        src_xml_dir = os.path.join(self.basedir, self.name, self.version)
+        src_xml_dir = os.path.join(
+            self.basedir, "archive", self.name, self.version
+        )
         source_file = os.path.join(src_xml_dir, source)
 
         if not os.path.exists(source_file):

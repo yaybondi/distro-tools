@@ -360,7 +360,7 @@ class DebianSource(PackageUtilsMixin):
         )
 
         outdir = os.path.abspath(
-            os.path.join(target_dir, pkg_name, pkg_version)
+            os.path.join(target_dir, "archive", pkg_name, pkg_version)
         )
         os.makedirs(outdir, exist_ok=True)
 
