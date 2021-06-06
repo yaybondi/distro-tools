@@ -26,6 +26,7 @@
 import hashlib
 import os
 import re
+import shutil
 
 import boltlinux.ffi.libarchive as libarchive
 
@@ -34,7 +35,8 @@ from boltlinux.ffi.libarchive import ArchiveFileWriter
 
 class QuiltPatchSeries:
 
-    def __init__(self):
+    def __init__(self, series_file):
+        self.series  = series_file
         self.patches = []
 
     def __len__(self):
@@ -54,11 +56,11 @@ class QuiltPatchSeries:
     def insert(self, pos, item):
         self.patches.insert(pos, item)
 
-    def read_patches(self, series_file):
-        if not os.path.isfile(series_file):
-            raise BoltError("No such file: {}".format(series_file))
+    def read_patches(self):
+        if not os.path.isfile(self.series):
+            raise BoltError("No such file: {}".format(self.series))
 
-        with open(series_file, "r", encoding="utf-8") as f:
+        with open(self.series, "r", encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
                 if not line:
@@ -85,9 +87,13 @@ class QuiltPatchSeries:
         return re.sub(r"^", " " * 4 * indent, buf, flags=re.M)
     #end function
 
-    def create_tarball(self, patch_dir, tarfile):
+    def create_tarball(self, tarfile):
         """Creates a gzip-compressed tarball and writes the contents to the
         filename specified in tarfile."""
+        if not self.patches:
+            return
+
+        patch_dir = os.path.dirname(self.series)
 
         with ArchiveFileWriter(tarfile, libarchive.FORMAT_TAR_PAX_RESTRICTED,
                 libarchive.COMPRESSION_GZIP) as archive:
@@ -107,6 +113,27 @@ class QuiltPatchSeries:
         sha256sum = self._file_sha256_sum(tarfile)
 
         return (sha256sum, size)
+    #end function
+
+    def copy(self, outdir="."):
+        """Copies the patches from the internal patch_dir to the given output
+        directory."""
+        patch_dir = os.path.dirname(self.series)
+
+        if not self.patches:
+            return
+
+        os.makedirs(os.path.join(outdir, "patches"), exist_ok=True)
+
+        for p in self.patches:
+            # Remove extra parameter, e.g. -p1
+            p = re.sub(r"\s+-p\d+\s*$", r"", p)
+
+            patch_src_path = os.path.join(patch_dir, p)
+            patch_dst_path = os.path.join(outdir, "patches", p)
+
+            shutil.copy2(patch_src_path, patch_dst_path)
+        #end for
     #end function
 
     # PRIVATE

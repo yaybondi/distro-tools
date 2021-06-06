@@ -63,22 +63,24 @@ def print_usage():
 
         OPTIONS:
 
-          -h, --help             Print this help message.
+          -h, --help              Print this help message.
 
-          --arch=<arch>          Analyze packages for given arch (default: amd64).
-          --release=<release>    The Debian release to work against (default: stable).
+          --arch=<arch>           Analyze packages for given arch (default: amd64).
+          --release=<release>     The Debian release to work against (default: stable).
 
-          --run-rules=<target>   Invoke debian/rules target after unpacking the
-                                 sources. This option can be supplied multiple times.
+          --run-rules=<target>    Invoke debian/rules target after unpacking the
+                                  sources. This option can be supplied multiple times.
 
-          --disable-updates      Ignore the release-updates pocket.
-          --disable-security     Ignore security updates.
+          --create-patch-tarball  Put the patches into a tarball instead of copying
+                                  them to the "patches" folder.
+          --disable-updates       Ignore the release-updates pocket.
+          --disable-security      Ignore security updates.
 
-          --set-maintainer       Write maintainer info to changelog (initial import).
+          --set-maintainer        Write maintainer info to changelog (initial import).
 
-          --no-update-cache      Do not update the package cache.
-          --no-load-contents     Do not load and analyze binary package contents.
-          --no-gpg-checks        Do not verify GPG signature on Release files.
+          --no-update-cache       Do not update the package cache.
+          --no-load-contents      Do not load and analyze binary package contents.
+          --no-gpg-checks         Do not verify GPG signature on Release files.
           """
     ))
 #end function
@@ -90,6 +92,8 @@ def parse_cmd_line():
             None,
         "arch":
             "amd64",
+        "create_patch_tarball":
+            False,
         "do_gpg_checks":
             True,
         "do_update_cache":
@@ -111,6 +115,7 @@ def parse_cmd_line():
             [
                 "help",
                 "set-maintainer",
+                "create-patch-tarball",
                 "disable-updates",
                 "disable-security",
                 "no-gpg-checks",
@@ -132,6 +137,9 @@ def parse_cmd_line():
                 break
             if case("--set-maintainer"):
                 config["set_maintainer"] = True
+                break
+            if case("--create-patch-tarball"):
+                config["create_patch_tarball"] = True
                 break
             if case("--disable-updates"):
                 config["updates_enabled"] = False
@@ -250,7 +258,8 @@ if __name__ == "__main__":
             args[0],
             maintainer_info=maintainer_info,
             run_rules=options["run_rules"],
-            do_load_contents=options["do_load_contents"]
+            do_load_contents=options["do_load_contents"],
+            create_patch_tarball=options["create_patch_tarball"],
         )
     except InvocationError as e:
         LOGGER.error(e)

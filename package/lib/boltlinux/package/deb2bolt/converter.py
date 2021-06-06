@@ -37,7 +37,7 @@ class Deb2BoltPackageConverter:
     #end function
 
     def convert(self, pkg_name, target_dir=".", maintainer_info=None,
-            run_rules=None, do_load_contents=True):
+            run_rules=None, do_load_contents=True, create_patch_tarball=False):
         target_dir = os.path.abspath(target_dir)
 
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -46,7 +46,8 @@ class Deb2BoltPackageConverter:
                 pkg_name,
                 release=self._release,
                 arch=self._arch,
-                work_dir=tmpdir
+                work_dir=tmpdir,
+                create_patch_tarball=create_patch_tarball
             )
 
             deb_source\

@@ -122,7 +122,7 @@ SOURCE_PKG_XML_TEMPLATE = """\
 class DebianSource(PackageUtilsMixin):
 
     def __init__(self, pkg_cache, pkg_name, version=None, release="stable",
-            arch="amd64", work_dir="."):
+            arch="amd64", work_dir=".", create_patch_tarball=False):
         """
         Relies on a pre-initialized DebianPackageCache instance being passed
         in as the first parameter.
@@ -144,6 +144,7 @@ class DebianSource(PackageUtilsMixin):
         self.work_dir  = os.path.abspath(work_dir)
         self.copyright = None
 
+        self.create_patch_tarball = create_patch_tarball
         self._cache = pkg_cache
 
         try:
@@ -383,24 +384,30 @@ class DebianSource(PackageUtilsMixin):
 
         # Collect patches
 
-        patches = QuiltPatchSeries()
+        patches = QuiltPatchSeries("series")
 
         for patch_subdir in ["patches-applied", "patches"]:
-            series_file = os.path.join(unpacked_source_dir,
-                "debian", patch_subdir, "series")
+            series_file = os.path.join(
+                unpacked_source_dir, "debian", patch_subdir, "series"
+            )
             if not os.path.isfile(series_file):
                 continue
 
-            patches.read_patches(series_file)
+            patches = QuiltPatchSeries(series_file)
+            patches.read_patches()
+
             if not patches:
                 continue
 
-            tarfile = "debian-patches-{}.tar.gz"\
-                .format(self.version.revision)
-            self.files[tarfile] = patches.create_tarball(
-                os.path.dirname(series_file),
-                os.path.join(outdir, tarfile)
-            )
+            if not self.create_patch_tarball:
+                patches.copy(outdir=".")
+            else:
+                tarfile = "debian-patches-{}.tar.gz"\
+                    .format(self.version.revision)
+                self.files[tarfile] = patches.create_tarball(
+                    os.path.join(outdir, tarfile)
+                )
+            #end if
 
             break
         #end for
@@ -683,39 +690,61 @@ class DebianSource(PackageUtilsMixin):
 
     def _sources_xml_part(self, orig_tarball, orig_components, deb_tarball,
             deb_patches, debdiff_gz):
-        template = '<file src="{tarball}" subdir="{subdir}"\n' \
-            '    sha256sum="{sha256sum}"/>'
+        pool_dir = self.metadata.get("Directory")
+
+        template = '<file \n' \
+            '    subdir="{subdir}"\n' \
+            '    src="{tarball}"\n' \
+            '    upstream-src="{upstream_src}"\n' \
+            '    sha256sum="{sha256sum}"\n' \
+            '/>'
 
         sources = []
 
+        upstream_src = "/".join(
+            [self.metadata.base_url, pool_dir, orig_tarball]
+        )
+
         sources.append(template.format(
-            tarball=self._orig_tarball_dist_name(orig_tarball),
             subdir="sources",
+            tarball=self._orig_tarball_dist_name(orig_tarball),
+            upstream_src=upstream_src,
             sha256sum=self.files[orig_tarball][0]
         ))
 
         for comp_filename in orig_components:
             comp_name = self._comp_name_from_comp_filename(comp_filename)
 
+            upstream_src = "/".join(
+                [self.metadata.base_url, pool_dir, comp_filename]
+            )
+
             sources.append(template.format(
-                tarball=self._orig_tarball_dist_name(comp_filename),
                 subdir=os.sep.join(["sources", comp_name]),
+                tarball=self._orig_tarball_dist_name(comp_filename),
+                upstream_src=upstream_src,
                 sha256sum=self.files[comp_filename][0]
             ))
         #end for
 
         if deb_patches:
             sources.append(template.format(
-                tarball=deb_patches,
                 subdir="patches",
+                tarball=deb_patches,
+                upstream_src="",
                 sha256sum=self.files[deb_patches][0]
             ))
         #end if
 
         if debdiff_gz:
+            upstream_src = "/".join(
+                [self.metadata.base_url, pool_dir, debdiff_gz]
+            )
+
             sources.append(template.format(
-                tarball=self._debdiff_dist_name(debdiff_gz),
                 subdir="patches",
+                tarball=self._debdiff_dist_name(debdiff_gz),
+                upstream_src=upstream_src,
                 sha256sum=self.files[debdiff_gz][0]
             ))
         #end if
