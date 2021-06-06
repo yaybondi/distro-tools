@@ -233,19 +233,25 @@ class SourcePackage(BasePackage):
 
         for patch_file, subdir, strip_components in self.patches:
             patch_name = os.path.basename(patch_file)
+            patch_abs  = None
 
-            if not os.path.isabs(patch_file):
-                patch_file = os.path.normpath(
-                    source_dir + os.sep + patch_file
+            for prefix in [self.basedir, source_dir]:
+                candidate = os.path.normpath(prefix + os.sep + patch_file)
+                if os.path.exists(candidate):
+                    patch_abs = candidate
+                    break
+
+            if not patch_abs:
+                raise PackagingError(
+                    "couldn't locate patch \"{}\"".format(patch_file)
                 )
-            #end if
 
-            LOGGER.info("applying {}".format(patch_name))
+            LOGGER.info("applying {}".format(patch_abs))
 
             e_source_dir = source_dir if not subdir else source_dir + \
                     os.sep + subdir
             cmd = [patch, "-f", "-p%s" % strip_components, "-d", e_source_dir,
-                    "-i", patch_file]
+                    "-i", patch_abs]
             try:
                 subprocess.run(cmd, stderr=subprocess.STDOUT, check=True)
             except subprocess.CalledProcessError:
