@@ -15,7 +15,7 @@ VERSION = os.environ.get("BOLT_DISTRO_TOOLS_VERSION", "0.0.0")
 setup(
     name='bolt-distro-info',
     version=VERSION,
-    url='https://github.com/boltlinux/distro-info',
+    url='https://github.com/boltlinux/bolt-distro-tools',
     author='Tobias Koch',
     author_email='tobias.koch@gmail.com',
     license='MIT',
