@@ -50,4 +50,23 @@ class DistroInfo:
     def pick_mirror(self, **kwargs):
         return self.implementation.pick_mirror(**kwargs)
 
+    def release_exists(self, name):
+        return name in self.list(supported=True, unsupported=True)
+
+    def is_supported_release(self, name):
+        return name in self.list(supported=True)
+
+    def is_supported_arch(self, release, arch, libc="musl"):
+        return arch in self\
+            .find(release=release) \
+            .get("supported-architectures", {}) \
+            .get(libc, [])
+    #end function
+
+    def latest_release(self):
+        try:
+            return list(self.list(supported=True).keys())[-1]
+        except IndexError:
+            return None
+
 #end class
