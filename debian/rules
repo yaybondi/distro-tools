@@ -11,22 +11,22 @@ export BOLT_DISTRO_TOOLS_VERSION = $(shell \
 	dh $@ --with python3 --buildsystem=pybuild
 
 override_dh_auto_configure:
-	for PROJECT in ffi-libarchive misc distro-info package repository; do \
+	for PROJECT in ffi-libarchive misc distro-info package repository image-gen; do \
 		pybuild -p 3 -d $$PROJECT --name bolt-$${PROJECT} --configure; \
 	done
 
 override_dh_auto_build:
-	for PROJECT in ffi-libarchive misc distro-info package repository; do \
+	for PROJECT in ffi-libarchive misc distro-info package repository image-gen; do \
 		pybuild -p 3 -d $$PROJECT --name bolt-$${PROJECT} --build; \
 	done
 
 override_dh_auto_install:
-	for PROJECT in ffi-libarchive misc distro-info package repository; do \
+	for PROJECT in ffi-libarchive misc distro-info package repository image-gen; do \
 		pybuild -p 3 -d $$PROJECT --name bolt-$${PROJECT} --install; \
 	done
 
 override_dh_auto_clean:
-	for PROJECT in ffi-libarchive misc distro-info package repository; do \
+	for PROJECT in ffi-libarchive misc distro-info package repository image-gen; do \
 		pybuild -p 3 -d $$PROJECT --name bolt-$${PROJECT} --clean; \
 	done
 	rm -fr */lib/*.egg-info
