@@ -24,12 +24,15 @@
 #
 
 import getopt
+import os
+import re
 import sys
 import textwrap
 
 from boltlinux.error import BoltError
 from boltlinux.miscellaneous.platform import Platform
 from boltlinux.osimage.generator import ImageGenerator
+from boltlinux.osimage.util import ImageGeneratorUtils
 from boltlinux.archive.config.distroinfo import DistroInfo
 
 EXIT_OK = 0
@@ -48,7 +51,7 @@ class ImageGenCli:
             """
             USAGE:
 
-              bolt-image bootstrap [OPTIONS] <sysroot> <specfile>
+              bolt-image bootstrap [OPTIONS] <sysroot> <specfile> ...
 
             OPTIONS:
 
@@ -105,7 +108,7 @@ class ImageGenCli:
                 kwargs["verify"] = False
         #end for
 
-        if len(args) != 2:
+        if len(args) < 2:
             print(usage)
             sys.exit(EXIT_ERROR)
 
@@ -123,12 +126,100 @@ class ImageGenCli:
                 .format(release, arch)
             )
 
+        sysroot = args[0]
+
         image_gen = ImageGenerator(**kwargs)
-        image_gen.bootstrap(sysroot=args[0], specfile=args[1])
+        image_gen.prepare(sysroot)
+        for specfile in args[1:]:
+            image_gen.customize(sysroot, specfile)
     #end function
 
     def customize(self, *args):
-        pass
+        usage = textwrap.dedent(
+            """
+            USAGE:
+
+              bolt-image customize [OPTIONS] <sysroot> <specfile> ...
+
+            OPTIONS:
+
+              -h, --help       Print this help message.
+            """
+        )
+
+        try:
+            opts, args = getopt.getopt(args, "h", ["help"])
+        except getopt.GetoptError as e:
+            raise ImageGenCli.Error(
+                "error parsing command line: {}".format(str(e))
+            )
+
+        for o, v in opts:
+            if o in ["-h", "--help"]:
+                print(usage)
+                sys.exit(EXIT_OK)
+        #end for
+
+        if len(args) < 2:
+            print(usage)
+            sys.exit(EXIT_ERROR)
+
+        sysroot = args[0]
+
+        kwargs = {
+            "release":
+                ImageGeneratorUtils.determine_target_release(sysroot),
+            "arch":
+                ImageGeneratorUtils.determine_target_arch(sysroot),
+        }
+
+        image_gen = ImageGenerator(**kwargs)
+        for specfile in args[1:]:
+            image_gen.customize(sysroot, specfile)
+    #end function
+
+    def cleanup(self, *args):
+        usage = textwrap.dedent(
+            """
+            USAGE:
+
+              bolt-image cleanup [OPTIONS] <sysroot>
+
+            OPTIONS:
+
+              -h, --help       Print this help message.
+            """
+        )
+
+        try:
+            opts, args = getopt.getopt(args, "h", ["help"])
+        except getopt.GetoptError as e:
+            raise ImageGenCli.Error(
+                "error parsing command line: {}".format(str(e))
+            )
+
+        for o, v in opts:
+            if o in ["-h", "--help"]:
+                print(usage)
+                sys.exit(EXIT_OK)
+        #end for
+
+        if len(args) != 1:
+            print(usage)
+            sys.exit(EXIT_ERROR)
+
+        sysroot = args[0]
+
+        kwargs = {
+            "release":
+                ImageGeneratorUtils.determine_target_release(sysroot),
+            "arch":
+                ImageGeneratorUtils.determine_target_arch(sysroot),
+        }
+
+        image_gen = ImageGenerator(**kwargs)
+        image_gen.cleanup(sysroot=args[0])
+    #end function
 
     def package(self, *args):
         pass

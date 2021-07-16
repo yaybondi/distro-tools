@@ -25,6 +25,7 @@
 
 import os
 import re
+import shlex
 import tempfile
 
 from boltlinux.error import BoltError
@@ -82,7 +83,51 @@ class PackageBatch:
         self.batch = packages
 
     def apply(self, sysroot, env=None, **options):
-        pass
+        if "BOLT_SYSROOT" in env:
+            del env["BOLT_SYSROOT"]
+
+        if not self.batch:
+            return
+
+        active_mode  = self.batch[0][0]
+        active_batch = []
+        iterator     = iter(self.batch)
+        finished     = False
+
+        while True:
+            try:
+                mode, package = next(iterator)
+            except StopIteration:
+                finished = True
+
+            if mode != active_mode or finished:
+                self._apply_batch(sysroot, env, active_mode, active_batch)
+
+                if finished:
+                    break
+
+                active_mode  = mode
+                active_batch = []
+            #end if
+
+            active_batch.append(package)
+        #end for
+    #end function
+
+    def _apply_batch(self, sysroot, env, mode, packages):
+        if not packages:
+            return
+
+        mode = "install" if mode == "+" else "remove"
+
+        opkg_cmd = shlex.split(
+            "opkg --offline-root '{}' {} {}".format(
+                sysroot, mode, ' '.join(packages)
+            )
+        )
+
+        Subprocess.run(sysroot, opkg_cmd[0], opkg_cmd, env=env)
+    #end function
 
 #end class
 
@@ -120,7 +165,7 @@ class SpecfileParser:
                 continue
 
             if line[0] in ['+', '-']:
-                self.parts.append(self._load_package_batch())
+                self.parts.append(self._load_package_batch(line))
             elif line.startswith("#!"):
                 where  = "host"
 
@@ -146,6 +191,8 @@ class SpecfileParser:
                 #end if
 
                 self.parts.append(self._load_script(where, m.group("interp")))
+            elif line.startswith("="):
+                pass
             else:
                 raise SpecfileParser.SyntaxError(
                     'error on line {}: syntax error.'.format(self.lineno)
@@ -162,36 +209,39 @@ class SpecfileParser:
         while True:
             self.lineno, line = self.lineno + 1, next(self.source, None)
 
-            if not (line is None or re.match(r"^=\s*$", line)):
-                lines.append(line)
-                continue
+            if line is None or line.startswith("="):
+                end_line = self.lineno - 1
 
-            end_line = self.lineno - 1
-
-            return (
-                start_line, end_line, Script(
-                    interp, "\n".join(lines), chroot=(where == "chroot")
+                return (
+                    start_line, end_line, Script(
+                        interp, "\n".join(lines), chroot=(where == "chroot")
+                    )
                 )
-            )
+            #end if
+
+            lines.append(line)
         #end while
     #end function
 
-    def _load_package_batch(self):
+    def _load_package_batch(self, line):
         start_line = self.lineno
         packages = []
 
         while True:
+            if line is None or line.startswith("="):
+                return (start_line, self.lineno - 1, PackageBatch(packages))
+
+            line = line.strip()
+
+            if line:
+                m = re.match(r"^(?P<mode>[-+])\s*(?P<package>\S+)\s*$", line)
+                if not m:
+                    raise SpecfileParser.SyntaxError(
+                        "syntax error on line {}.".format(self.lineno)
+                    )
+                packages.append((m.group("mode"), m.group("package")))
+
             self.lineno, line = self.lineno + 1, next(self.source, None)
-
-            if not line.strip():
-                continue
-            if not (line is None or re.match(r"^=\s*$", line)):
-                packages.append((line[0], line[1:].strip()))
-                continue
-
-            end_line = self.lineno - 1
-
-            return (start_line, end_line, PackageBatch(packages))
         #end while
     #end function
 

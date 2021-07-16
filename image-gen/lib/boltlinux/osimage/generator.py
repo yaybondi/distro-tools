@@ -27,6 +27,7 @@ import collections
 import logging
 import os
 import re
+import shlex
 import shutil
 import textwrap
 
@@ -34,6 +35,7 @@ from boltlinux.error import BoltError
 from boltlinux.miscellaneous.userinfo import UserInfo
 from boltlinux.miscellaneous.platform import Platform
 from boltlinux.osimage.specfile import SpecfileParser
+from boltlinux.osimage.subprocess import Subprocess
 
 LOGGER = logging.getLogger(__name__)
 
@@ -79,6 +81,81 @@ class ImageGenerator:
         "var",
     ]
 
+    ETC_PASSWD = textwrap.dedent(
+        """\
+        root:x:0:0:root:/root:/bin/sh
+        daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+        bin:x:2:2:bin:/bin:/usr/sbin/nologin
+        sys:x:3:3:sys:/dev:/usr/sbin/nologin
+        sync:x:4:65534:sync:/bin:/bin/sync
+        games:x:5:60:games:/usr/games:/usr/sbin/nologin
+        man:x:6:12:man:/var/cache/man:/usr/sbin/nologin
+        lp:x:7:7:lp:/var/spool/lpd:/usr/sbin/nologin
+        mail:x:8:8:mail:/var/mail:/usr/sbin/nologin
+        news:x:9:9:news:/var/spool/news:/usr/sbin/nologin
+        uucp:x:10:10:uucp:/var/spool/uucp:/usr/sbin/nologin
+        proxy:x:13:13:proxy:/bin:/usr/sbin/nologin
+        www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin
+        backup:x:34:34:backup:/var/backups:/usr/sbin/nologin
+        list:x:38:38:Mailing List Manager:/var/list:/usr/sbin/nologin
+        irc:x:39:39:ircd:/var/run/ircd:/usr/sbin/nologin
+        nobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin
+        """
+    )
+
+    ETC_GROUP = textwrap.dedent(
+        """\
+        root:x:0:
+        daemon:x:1:
+        bin:x:2:
+        sys:x:3:
+        adm:x:4:
+        tty:x:5:
+        disk:x:6:
+        lp:x:7:
+        mail:x:8:
+        news:x:9:
+        uucp:x:10:
+        man:x:12:
+        proxy:x:13:
+        kmem:x:15:
+        dialout:x:20:
+        fax:x:21:
+        voice:x:22:
+        cdrom:x:24:
+        floppy:x:25:
+        tape:x:26:
+        sudo:x:27:
+        audio:x:29:
+        dip:x:30:
+        www-data:x:33:
+        backup:x:34:
+        operator:x:37:
+        list:x:38:
+        irc:x:39:
+        src:x:40:
+        shadow:x:42:
+        utmp:x:43:
+        video:x:44:
+        sasl:x:45:
+        plugdev:x:46:
+        staff:x:50:
+        games:x:60:
+        users:x:100:
+        nogroup:x:65534:
+        """
+    )
+
+    ETC_HOSTS = textwrap.dedent(
+        """\
+        127.0.0.1 localhost
+
+        ::1     localhost ip6-localhost ip6-loopback
+        ff02::1 ip6-allnodes
+        ff02::2 ip6-allrouters
+        """
+    )
+
     class Error(BoltError):
         pass
 
@@ -119,18 +196,14 @@ class ImageGenerator:
         }
     #end function
 
-    def bootstrap(self, sysroot, specfile):
+    def prepare(self, sysroot):
         if not os.path.isdir(sysroot):
             raise ImageGenerator.Error("no such directory: {}".format(sysroot))
 
+        LOGGER.info("preparing system root.")
+
         sysroot = os.path.realpath(sysroot)
 
-        self.prepare(sysroot)
-        self.customize(sysroot, specfile)
-        self.cleanup(sysroot)
-    #end function
-
-    def prepare(self, sysroot):
         for dirname in self.DIRS_TO_CREATE:
             os.makedirs(os.path.join(sysroot, dirname), exist_ok=True)
 
@@ -141,13 +214,32 @@ class ImageGenerator:
         if self._copy_qemu:
             self._copy_qemu_to_sysroot(sysroot)
 
-        self._write_opkg_config(sysroot)
+        self._write_config_files(sysroot)
+
+        files_to_copy = [
+            "/etc/hosts",
+            "/etc/resolv.conf",
+        ]
+
+        for file_ in files_to_copy:
+            shutil.copy2(file_, sysroot + file_)
+
+        opkg_cmd = shlex.split(
+            "opkg --offline-root '{}' update".format(sysroot)
+        )
+
+        Subprocess.run(sysroot, opkg_cmd[0], opkg_cmd)
     #end function
 
     def customize(self, sysroot, specfile):
-        LOGGER.info("--------")
+        if not os.path.isdir(sysroot):
+            raise ImageGenerator.Error("no such directory: {}".format(sysroot))
+
+        LOGGER.info("================")
         LOGGER.info("loading specfile {}".format(specfile))
-        LOGGER.info("--------")
+        LOGGER.info("================")
+
+        sysroot = os.path.realpath(sysroot)
 
         with open(specfile, "r", encoding="utf-8") as f:
             parts = SpecfileParser.load(f)
@@ -169,7 +261,17 @@ class ImageGenerator:
     #end function
 
     def cleanup(self, sysroot):
-        pass
+        if not os.path.isdir(sysroot):
+            raise ImageGenerator.Error("no such directory: {}".format(sysroot))
+
+        sysroot = os.path.realpath(sysroot)
+
+        self._write_config_files(sysroot)
+        try:
+            os.unlink(sysroot + "/etc/resolv.conf")
+        except OSError:
+            pass
+    #end function
 
     # HELPERS
 
@@ -242,21 +344,31 @@ class ImageGenerator:
         if not os.path.exists(target_dir):
             os.makedirs(target_dir, exist_ok=True)
 
+        LOGGER.info('copying QEMU binary "{}".'.format(qemu_exe))
         shutil.copy2(qemu_exe, target_dir)
     #end function
 
-    def _write_opkg_config(self, sysroot):
-        conffile_list = ["arch.conf", "options.conf", "feeds.conf"]
+    def _write_config_files(self, sysroot):
+        conffile_list = [
+            "/etc/opkg/arch.conf",
+            "/etc/opkg/options.conf",
+            "/etc/opkg/feeds.conf",
+            "/etc/passwd",
+            "/etc/group",
+            "/etc/hosts",
+        ]
 
         template_list = [
             self.OPKG_ARCH_TEMPLATE,
             self.OPKG_OPTIONS_TEMPLATE,
-            self.OPKG_FEEDS_TEMPLATE
+            self.OPKG_FEEDS_TEMPLATE,
+            self.ETC_PASSWD,
+            self.ETC_GROUP,
+            self.ETC_HOSTS,
         ]
 
         for conffile, template in zip(conffile_list, template_list):
-            conffile = os.path.join(sysroot, "etc", "opkg", conffile)
-            with open(conffile, "w+", encoding="utf-8") as f:
+            with open(sysroot + conffile, "w+", encoding="utf-8") as f:
                 f.write(template.format(**self.context))
     #end function
 

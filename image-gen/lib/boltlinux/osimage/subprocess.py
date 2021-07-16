@@ -39,7 +39,7 @@ class Subprocess:
         pass
 
     @staticmethod
-    def run(sysroot, executable, args, env=None, chroot=None, indent=0):
+    def run(sysroot, executable, args, env=None, chroot=False):
         out_r, out_w = os.pipe()
         err_r, err_w = os.pipe()
 
@@ -70,7 +70,7 @@ class Subprocess:
                 os.dup2(null_fd, sys.stdin.fileno())
 
                 try:
-                    os.execve(executable, args, env)
+                    os.execvpe(executable, args, env)
                 except Exception as e:
                     raise Subprocess.Error(
                         'could not execute {}: {}.'.format(
@@ -108,21 +108,14 @@ class Subprocess:
 
                 if child_stdout in r:
                     for line in child_stdout:
-                        if sys.stdout.isatty():
-                            sys.stdout.write(
-                                " " * indent + "\033[97m" + line + "\033[0m"
-                            )
-                        else:
-                            sys.stdout.write("  " + line)
+                        sys.stdout.write(line)
 
                 if child_stderr in r:
                     for line in child_stderr:
                         if sys.stderr.isatty():
-                            sys.stderr.write(
-                                " " * indent + "\033[31m" + line + "\033[0m"
-                            )
+                            sys.stderr.write("\033[31m" + line + "\033[0m")
                         else:
-                            sys.stderr.write("  " + line)
+                            sys.stderr.write(line)
 
                 if exit_next:
                     break

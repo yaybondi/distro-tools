@@ -93,7 +93,7 @@ if __name__ == "__main__":
 
         command = sys.argv[1]
 
-        if command in ["bootstrap", "customize", "package"]:
+        if command in ["bootstrap", "customize", "cleanup", "package"]:
             ImageGenCli().execute_command(*sys.argv[1:])
         elif command in ["--help", "-h"]:
             print_usage()
