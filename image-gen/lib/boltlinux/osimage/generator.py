@@ -57,7 +57,6 @@ class ImageGenerator:
     OPKG_FEEDS_TEMPLATE = textwrap.dedent(
         """\
         src/gz main {repo_base}/{release}/core/{arch}/{libc}/main
-        src/gz main-debug {repo_base}/{release}/core/{arch}/{libc}/main-debug
         """)  # noqa
 
     OPKG_ARCH_TEMPLATE = textwrap.dedent(
