@@ -67,17 +67,22 @@ class ImageGenerator:
     )  # noqa
 
     DIRS_TO_CREATE = [
-        "dev",
-        "etc",
-        "etc/opkg",
-        "etc/opkg/usign",
-        "proc",
-        "run",
-        "sys",
-        "tmp",
-        "usr",
-        "usr/bin",
-        "var",
+        (0o0755, "/dev"),
+        (0o0755, "/etc"),
+        (0o0755, "/etc/opkg"),
+        (0o0755, "/etc/opkg/usign"),
+        (0o0755, "/proc"),
+        (0o0755, "/run"),
+        (0o0755, "/sys"),
+        (0o1777, "/tmp"),
+        (0o0755, "/usr"),
+        (0o0755, "/usr/bin"),
+        (0o0755, "/var"),
+    ]
+
+    DIRS_TO_CLEAN = [
+        "/tmp",
+        "/var/tmp",
     ]
 
     ETC_PASSWD = textwrap.dedent(
@@ -203,10 +208,13 @@ class ImageGenerator:
 
         sysroot = os.path.realpath(sysroot)
 
-        for dirname in self.DIRS_TO_CREATE:
-            os.makedirs(os.path.join(sysroot, dirname), exist_ok=True)
+        for mode, dirname in self.DIRS_TO_CREATE:
+            full_path = sysroot + dirname
+            os.makedirs(full_path, exist_ok=True)
+            os.chmod(full_path, mode)
+        #end for
 
-        var_run_symlink = os.path.join(sysroot, "var", "run")
+        var_run_symlink = sysroot + "/var/run"
         if not os.path.exists(var_run_symlink):
             os.symlink("../run", var_run_symlink)
 
@@ -270,6 +278,17 @@ class ImageGenerator:
             os.unlink(sysroot + "/etc/resolv.conf")
         except OSError:
             pass
+
+        for directory in self.DIRS_TO_CLEAN:
+            full_path = sysroot + directory
+
+            stat = os.lstat(full_path)
+            shutil.rmtree(full_path)
+
+            os.makedirs(full_path)
+            os.chown(full_path, stat.st_uid, stat.st_gid)
+            os.chmod(full_path, stat.st_mode)
+        #end for
     #end function
 
     # HELPERS
