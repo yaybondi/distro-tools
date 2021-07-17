@@ -24,6 +24,7 @@
 #
 
 import fcntl
+import locale
 import logging
 import os
 import select
@@ -40,10 +41,9 @@ class Subprocess:
 
     @staticmethod
     def run(sysroot, executable, args, env=None, chroot=False):
-        out_r, out_w = os.pipe()
         err_r, err_w = os.pipe()
 
-        child_pid = os.fork()
+        child_pid, pty_m = os.forkpty()
 
         if not child_pid:
             try:
@@ -63,8 +63,6 @@ class Subprocess:
                 if env is None:
                     env = {}
 
-                os.dup2(out_w, sys.stdout.fileno())
-                os.close(out_r)
                 os.dup2(err_w, sys.stderr.fileno())
                 os.close(err_r)
                 os.dup2(null_fd, sys.stdin.fileno())
@@ -82,10 +80,9 @@ class Subprocess:
 
             os._exit(-1)
         else:
-            os.close(out_w)
             os.close(err_w)
 
-            fd_list = [out_r, err_r]
+            fd_list = [pty_m, err_r]
 
             for fd in fd_list:
                 fcntl.fcntl(
@@ -95,10 +92,10 @@ class Subprocess:
                 )
             #end for
 
-            default_encoding = sys.getdefaultencoding()
+            encoding = locale.getpreferredencoding(do_setlocale=False)
 
-            child_stdout = open(out_r, "r", encoding=default_encoding)
-            child_stderr = open(err_r, "r", encoding=default_encoding)
+            child_stdout = open(pty_m, "r", encoding=encoding, buffering=1)
+            child_stderr = open(err_r, "r", encoding=encoding, buffering=1)
 
             status = 0
             exit_next = False
@@ -107,15 +104,23 @@ class Subprocess:
                 r, w, x = select.select([child_stdout, child_stderr], [], [])
 
                 if child_stdout in r:
-                    for line in child_stdout:
-                        sys.stdout.write(line)
+                    try:
+                        for line in child_stdout:
+                            sys.stdout.write(line)
+                    except OSError:
+                        pass
+                #end if
 
                 if child_stderr in r:
-                    for line in child_stderr:
-                        if sys.stderr.isatty():
-                            sys.stderr.write("\033[31m" + line + "\033[0m")
-                        else:
-                            sys.stderr.write(line)
+                    try:
+                        for line in child_stderr:
+                            if sys.stderr.isatty():
+                                sys.stderr.write("\033[31m" + line + "\033[0m")
+                            else:
+                                sys.stderr.write(line)
+                    except OSError:
+                        pass
+                #end if
 
                 if exit_next:
                     break
