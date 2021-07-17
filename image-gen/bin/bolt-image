@@ -57,9 +57,10 @@ def print_usage():
 
         COMMANDS:
 
-          bootstrap        Bootstrap an image variant.
+          bootstrap        Bootstrap a system into a chroot.
           customize        Apply additional customizations.
-          package          Package an image for distribution.
+          cleanup          Clean up chroot before packaging.
+          package          Create an image for distribution.
 
         OPTIONS:
 
