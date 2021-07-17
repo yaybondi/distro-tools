@@ -292,7 +292,11 @@ class ImageGenerator:
                 continue
             env[key] = os.environ[key]
 
+        # These cannot be overridden by user.
         env["BOLT_SYSROOT"] = sysroot
+        env["BOLT_RELEASE"] = self._release
+        env["BOLT_ARCH"]    = self._arch
+        env["BOLT_LIBC"]    = self._libc
 
         return env
     #end function
