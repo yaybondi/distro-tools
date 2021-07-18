@@ -37,9 +37,9 @@ class Script:
         pass
 
     def __init__(self, interp, script, chroot=False):
-        self.chroot = chroot
         self.interp = interp
         self.script = script
+        self.chroot = chroot
     #end function
 
     def apply(self, sysroot, env=None, **options):
