@@ -28,11 +28,12 @@ import os
 import sys
 import textwrap
 
+from boltlinux.archive.config.distroinfo import DistroInfo
 from boltlinux.error import BoltError
 from boltlinux.miscellaneous.platform import Platform
+from boltlinux.osimage.chroot import Chroot
 from boltlinux.osimage.generator import ImageGenerator
 from boltlinux.osimage.util import ImageGeneratorUtils
-from boltlinux.archive.config.distroinfo import DistroInfo
 
 EXIT_OK = 0
 EXIT_ERROR = 1
@@ -127,6 +128,9 @@ class ImageGenCli:
 
         sysroot = args[0]
 
+        if not os.path.isdir(sysroot):
+            raise ImageGenCli.Error("no such directory: {}".format(sysroot))
+
         for specfile in args[1:]:
             if not os.path.isfile(specfile):
                 raise ImageGenCli.Error("no such file: {}".format(specfile))
@@ -134,8 +138,9 @@ class ImageGenCli:
         image_gen = ImageGenerator(**kwargs)
         image_gen.prepare(sysroot)
 
-        for specfile in args[1:]:
-            image_gen.customize(sysroot, specfile)
+        with Chroot(sysroot):
+            for specfile in args[1:]:
+                image_gen.customize(sysroot, specfile)
     #end function
 
     def customize(self, *args):
@@ -170,6 +175,13 @@ class ImageGenCli:
 
         sysroot = args[0]
 
+        if not os.path.isdir(sysroot):
+            raise ImageGenCli.Error("no such directory: {}".format(sysroot))
+
+        for specfile in args[1:]:
+            if not os.path.isfile(specfile):
+                raise ImageGenCli.Error("no such file: {}".format(specfile))
+
         kwargs = {
             "release":
                 ImageGeneratorUtils.determine_target_release(sysroot),
@@ -178,8 +190,10 @@ class ImageGenCli:
         }
 
         image_gen = ImageGenerator(**kwargs)
-        for specfile in args[1:]:
-            image_gen.customize(sysroot, specfile)
+
+        with Chroot(sysroot):
+            for specfile in args[1:]:
+                image_gen.customize(sysroot, specfile)
     #end function
 
     def cleanup(self, *args):
@@ -213,6 +227,9 @@ class ImageGenCli:
             sys.exit(EXIT_ERROR)
 
         sysroot = args[0]
+
+        if not os.path.isdir(sysroot):
+            raise ImageGenCli.Error("no such directory: {}".format(sysroot))
 
         kwargs = {
             "release":

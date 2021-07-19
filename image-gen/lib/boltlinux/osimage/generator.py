@@ -36,7 +36,6 @@ from boltlinux.miscellaneous.userinfo import UserInfo
 from boltlinux.miscellaneous.platform import Platform
 from boltlinux.osimage.specfile import SpecfileParser
 from boltlinux.osimage.subprocess import Subprocess
-from boltlinux.osimage.chroot import Chroot
 
 LOGGER = logging.getLogger(__name__)
 
@@ -256,22 +255,20 @@ class ImageGenerator:
 
         env = self._prepare_environment(sysroot)
 
-        with Chroot(sysroot):
-            for start_line, end_line, p in parts:
-                what = re.sub(
-                    r"([a-z])([A-Z])", r"\1 \2",
-                    p.__class__.__name__
-                ).lower()
+        for start_line, end_line, p in parts:
+            what = re.sub(
+                r"([a-z])([A-Z])", r"\1 \2",
+                p.__class__.__name__
+            ).lower()
 
-                LOGGER.info(
-                    "applying {} from line {} to {}.".format(
-                        what, start_line, end_line
-                    )
+            LOGGER.info(
+                "applying {} from line {} to {}.".format(
+                    what, start_line, end_line
                 )
+            )
 
-                p.apply(sysroot, env=env)
-            #end for
-        #end with
+            p.apply(sysroot, env=env)
+        #end for
     #end function
 
     def cleanup(self, sysroot):
