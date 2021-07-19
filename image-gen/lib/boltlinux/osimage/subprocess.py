@@ -51,7 +51,7 @@ class Subprocess:
                 try:
                     if not fd in [err_w]:
                         os.close(fd)
-                except Exception as e:
+                except OSError as e:
                     pass
             #end for
 
