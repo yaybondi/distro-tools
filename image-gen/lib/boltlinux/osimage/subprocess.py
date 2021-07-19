@@ -46,6 +46,15 @@ class Subprocess:
         child_pid, pty_m = os.forkpty()
 
         if not child_pid:
+            # Close all FDs inherited from parent except std. streams.
+            for fd in range(3, 1024):
+                try:
+                    if not fd in [err_w]:
+                        os.close(fd)
+                except Exception as e:
+                    pass
+            #end for
+
             try:
                 null_fd = os.open(os.devnull, os.O_RDONLY)
 
@@ -64,7 +73,6 @@ class Subprocess:
                     env = {}
 
                 os.dup2(err_w, sys.stderr.fileno())
-                os.close(err_r)
                 os.dup2(null_fd, sys.stdin.fileno())
 
                 try:
