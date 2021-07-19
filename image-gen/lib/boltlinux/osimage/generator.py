@@ -242,6 +242,8 @@ class ImageGenerator:
     def customize(self, sysroot, specfile):
         if not os.path.isdir(sysroot):
             raise ImageGenerator.Error("no such directory: {}".format(sysroot))
+        if not os.path.isfile(specfile):
+            raise ImageGenerator.Error("no such file: {}".format(specfile))
 
         LOGGER.info("================")
         LOGGER.info("loading specfile {}".format(specfile))

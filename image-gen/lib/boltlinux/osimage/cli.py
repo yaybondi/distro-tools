@@ -24,6 +24,7 @@
 #
 
 import getopt
+import os
 import sys
 import textwrap
 
@@ -126,8 +127,13 @@ class ImageGenCli:
 
         sysroot = args[0]
 
+        for specfile in args[1:]:
+            if not os.path.isfile(specfile):
+                raise ImageGenCli.Error("no such file: {}".format(specfile))
+
         image_gen = ImageGenerator(**kwargs)
         image_gen.prepare(sysroot)
+
         for specfile in args[1:]:
             image_gen.customize(sysroot, specfile)
     #end function

@@ -42,6 +42,7 @@ class Chroot:
     def __init__(self, sysroot):
         self.sysroot     = os.path.realpath(sysroot)
         self.mountpoints = ["/dev", "/proc", "/sys"]
+    #end function
 
     def __enter__(self):
         for src in self.mountpoints:
