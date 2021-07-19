@@ -10,7 +10,7 @@ from os import path
 
 here = path.abspath(path.dirname(__file__))
 
-VERSION = os.environ.get("BOLT_IMAGE_VERSION", "0.0.0")
+VERSION = os.environ.get("BOLT_DISTRO_TOOLS_VERSION", "0.0.0")
 
 setup(
     name='bolt-image',
