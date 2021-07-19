@@ -277,6 +277,14 @@ class ImageGenerator:
 
         sysroot = os.path.realpath(sysroot)
 
+        if os.path.exists(sysroot + "/usr/bin/opkg"):
+            opkg_cmd = shlex.split(
+                "opkg --offline-root '{}' clean".format(sysroot)
+            )
+
+            Subprocess.run(sysroot, opkg_cmd[0], opkg_cmd, check=False)
+        #end if
+
         self._write_config_files(sysroot)
         try:
             os.unlink(sysroot + "/etc/resolv.conf")

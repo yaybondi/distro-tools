@@ -40,7 +40,7 @@ class Subprocess:
         pass
 
     @staticmethod
-    def run(sysroot, executable, args, env=None, chroot=False):
+    def run(sysroot, executable, args, env=None, chroot=False, check=True):
         err_r, err_w = os.pipe()
 
         child_pid, pty_m = os.forkpty()
@@ -143,18 +143,20 @@ class Subprocess:
                 exit_next = True
             #end while
 
-            if os.WIFSIGNALED(status):
-                raise Subprocess.Error(
-                    "subprocess terminated by signal {}.".format(
-                        os.WTERMSIG(status)
+            if check:
+                if os.WIFSIGNALED(status):
+                    raise Subprocess.Error(
+                        "subprocess terminated by signal {}.".format(
+                            os.WTERMSIG(status)
+                        )
                     )
-                )
-            elif os.WEXITSTATUS(status) != 0:
-                raise Subprocess.Error(
-                    "subprocess terminated with exit status {}.".format(
-                        os.WEXITSTATUS(status)
+                elif os.WEXITSTATUS(status) != 0:
+                    raise Subprocess.Error(
+                        "subprocess terminated with exit status {}.".format(
+                            os.WEXITSTATUS(status)
+                        )
                     )
-                )
+                #end if
             #end if
         #end if
     #end function
