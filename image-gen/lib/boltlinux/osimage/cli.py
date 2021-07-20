@@ -47,25 +47,33 @@ class ImageGenCli:
         getattr(self, command)(*args)
 
     def bootstrap(self, *args):
-        usage = textwrap.dedent(
-            """
-            USAGE:
+        def print_usage(specfile_list=None):
+            print(textwrap.dedent(
+                """
+                USAGE:
 
-              bolt-image bootstrap [OPTIONS] <sysroot> <specfile> ...
+                  bolt-image bootstrap [OPTIONS] <sysroot> <specfile> ...
 
-            OPTIONS:
+                OPTIONS:
 
-              -h, --help       Print this help message.
-              -r, --release    The name of the release (e.g. ollie).
-              -a, --arch       The target architecture.
+                  -h, --help       Print this help message.
+                  -r, --release    The name of the release (e.g. ollie).
+                  -a, --arch       The target architecture.
 
-              --repo-base      Repository base URL not including the release
-                               name.
-              --copy-qemu      Copy the appropriate QEMU interpreter to the
-                               chroot (should not be necessary).
-              --no-verify      Do not verify package list signatures.
-            """
-        )
+                  --repo-base      Repository base URL not including the release
+                                   name.
+                  --copy-qemu      Copy the appropriate QEMU interpreter to the
+                                   chroot (should not be necessary).
+                  --no-verify      Do not verify package list signatures.
+                """
+            ))
+
+            if specfile_list:
+                print("INTERNAL SPECS:\n")
+                for spec in specfile_list:
+                    print("  * {}".format(spec))
+                print("")
+        #end inline function
 
         try:
             opts, args = getopt.getopt(
@@ -82,6 +90,8 @@ class ImageGenCli:
         kwargs = {
             "release":
                 distro_info.latest_release(),
+            "libc":
+                "musl",
             "arch":
                 Platform.uname("-m"),
             "repo_base":
@@ -94,7 +104,7 @@ class ImageGenCli:
 
         for o, v in opts:
             if o in ["-h", "--help"]:
-                print(usage)
+                print_usage()
                 sys.exit(EXIT_OK)
             elif o in ["-r", "--release"]:
                 kwargs["release"] = v
@@ -108,11 +118,7 @@ class ImageGenCli:
                 kwargs["verify"] = False
         #end for
 
-        if len(args) < 2:
-            print(usage)
-            sys.exit(EXIT_ERROR)
-
-        release, arch = kwargs["release"], kwargs["arch"]
+        release, libc, arch = kwargs["release"], kwargs["libc"], kwargs["arch"]
 
         if not distro_info.release_exists(release):
             raise ImageGenCli.Error(
@@ -126,35 +132,69 @@ class ImageGenCli:
                 .format(release, arch)
             )
 
+        if len(args) == 0:
+            print_usage()
+            sys.exit(EXIT_ERROR)
+
         sysroot = args[0]
 
         if not os.path.isdir(sysroot):
             raise ImageGenCli.Error("no such directory: {}".format(sysroot))
 
+        if len(args) < 2:
+            print_usage(
+                ImageGeneratorUtils.list_internal_specs(release, libc, arch)
+            )
+            sys.exit(EXIT_ERROR)
+
+        specfile_list = []
+
         for specfile in args[1:]:
-            if not os.path.isfile(specfile):
-                raise ImageGenCli.Error("no such file: {}".format(specfile))
+            if os.path.isfile(specfile):
+                specfile_list.append(specfile)
+            else:
+                internal_specs = ImageGeneratorUtils.get_internal_specs(
+                    specfile, release, libc, arch
+                )
+                if not internal_specs:
+                    raise ImageGenCli.Error(
+                        'no specfile and no internal spec by name "{}" found.'
+                        .format(specfile)
+                    )
+                #end if
+
+                specfile_list.extend(internal_specs)
+            #end if
+        #end for
 
         image_gen = ImageGenerator(**kwargs)
         image_gen.prepare(sysroot)
 
         with Chroot(sysroot):
-            for specfile in args[1:]:
+            for specfile in specfile_list:
                 image_gen.customize(sysroot, specfile)
     #end function
 
     def customize(self, *args):
-        usage = textwrap.dedent(
-            """
-            USAGE:
+        def print_usage(specfile_list=None):
+            print(textwrap.dedent(
+                """
+                USAGE:
 
-              bolt-image customize [OPTIONS] <sysroot> <specfile> ...
+                  bolt-image customize [OPTIONS] <sysroot> <specfile> ...
 
-            OPTIONS:
+                OPTIONS:
 
-              -h, --help       Print this help message.
-            """
-        )
+                  -h, --help       Print this help message.
+                """
+            ))
+
+            if specfile_list:
+                print("INTERNAL SPECS:\n")
+                for spec in specfile_list:
+                    print("  * {}".format(spec))
+                print("")
+        #end inline function
 
         try:
             opts, args = getopt.getopt(args, "h", ["help"])
@@ -165,12 +205,11 @@ class ImageGenCli:
 
         for o, v in opts:
             if o in ["-h", "--help"]:
-                print(usage)
+                print_usage()
                 sys.exit(EXIT_OK)
-        #end for
 
-        if len(args) < 2:
-            print(usage)
+        if len(args) == 0:
+            print_usage()
             sys.exit(EXIT_ERROR)
 
         sysroot = args[0]
@@ -178,21 +217,47 @@ class ImageGenCli:
         if not os.path.isdir(sysroot):
             raise ImageGenCli.Error("no such directory: {}".format(sysroot))
 
-        for specfile in args[1:]:
-            if not os.path.isfile(specfile):
-                raise ImageGenCli.Error("no such file: {}".format(specfile))
-
         kwargs = {
             "release":
                 ImageGeneratorUtils.determine_target_release(sysroot),
+            "libc":
+                ImageGeneratorUtils.determine_target_libc(sysroot),
             "arch":
                 ImageGeneratorUtils.determine_target_arch(sysroot),
         }
 
+        release, libc, arch = kwargs["release"], kwargs["libc"], kwargs["arch"]
+
+        if len(args) < 2:
+            print_usage(
+                ImageGeneratorUtils.list_internal_specs(release, libc, arch)
+            )
+            sys.exit(EXIT_ERROR)
+
+        specfile_list = []
+
+        for specfile in args[1:]:
+            if os.path.isfile(specfile):
+                specfile_list.append(specfile)
+            else:
+                internal_specs = ImageGeneratorUtils.get_internal_specs(
+                    specfile, release, libc, arch
+                )
+                if not internal_specs:
+                    raise ImageGenCli.Error(
+                        'no specfile and no internal spec by name "{}" found.'
+                        .format(specfile)
+                    )
+                #end if
+
+                specfile_list.extend(internal_specs)
+            #end if
+        #end for
+
         image_gen = ImageGenerator(**kwargs)
 
         with Chroot(sysroot):
-            for specfile in args[1:]:
+            for specfile in specfile_list:
                 image_gen.customize(sysroot, specfile)
     #end function
 
@@ -234,6 +299,8 @@ class ImageGenCli:
         kwargs = {
             "release":
                 ImageGeneratorUtils.determine_target_release(sysroot),
+            "libc":
+                ImageGeneratorUtils.determine_target_libc(sysroot),
             "arch":
                 ImageGeneratorUtils.determine_target_arch(sysroot),
         }

@@ -30,6 +30,13 @@ from boltlinux.error import BoltError
 
 class ImageGeneratorUtils:
 
+    SPECFILE_DIR_TEMPLATES = [
+        "/common",
+        "/{release}",
+        "/{release}/libc",
+        "/{release}/{libc}/{arch}"
+    ]
+
     class Error(BoltError):
         pass
 
@@ -67,6 +74,17 @@ class ImageGeneratorUtils:
     #end function
 
     @staticmethod
+    def determine_target_libc(sysroot):
+        ImageGeneratorUtils.raise_unless_sysroot_exists(sysroot)
+
+        musl_libc_list = sysroot + "/var/lib/opkg/info/musl-libc.list"
+        if os.path.exists(musl_libc_list):
+            return "musl"
+
+        return "glibc"
+    #end function
+
+    @staticmethod
     def determine_target_arch(sysroot):
         ImageGeneratorUtils.raise_unless_sysroot_exists(sysroot)
 
@@ -86,6 +104,52 @@ class ImageGeneratorUtils:
         raise ImageGeneratorUtils.Error(
             "unable to determine target architecture."
         )
+    #end function
+
+    @staticmethod
+    def get_internal_specs(specname, release, libc, arch):
+        basedir = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "customize"
+        )
+
+        specfiles = []
+
+        for subdir_template in ImageGeneratorUtils.SPECFILE_DIR_TEMPLATES:
+            subdir = subdir_template.format(
+                release=release, libc=libc, arch=arch
+            )
+
+            candidate_specfile = basedir + subdir + os.sep + specname
+            if os.path.isfile(candidate_specfile):
+                specfiles.append(candidate_specfile)
+        #end for
+
+        return specfiles
+    #end function
+
+    @staticmethod
+    def list_internal_specs(release, libc, arch):
+        basedir = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "customize"
+        )
+
+        specfiles = set()
+
+        for subdir_template in ImageGeneratorUtils.SPECFILE_DIR_TEMPLATES:
+            subdir = subdir_template.format(
+                release=release, libc=libc, arch=arch
+            )
+
+            specfile_dir = basedir + subdir
+            if not os.path.isdir(specfile_dir):
+                continue
+
+            for entry in os.listdir(specfile_dir):
+                if os.path.isfile(specfile_dir + os.sep + entry):
+                    specfiles.add(entry)
+        #end for
+
+        return list(sorted(specfiles))
     #end function
 
 #end class

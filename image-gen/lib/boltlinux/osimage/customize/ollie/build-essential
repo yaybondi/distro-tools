@@ -1,0 +1,72 @@
+===============================================================================
+= Bootstrap a minimal base system.
+===============================================================================
+
++base-files
++busybox-all-symlinks
++opkg-minimal
++bolt-repo-keys
++pam-config
++libc-dev
+
+===============================================================================
+= Installing mount, sysctl, file and binutils may remove some of the busybox
+= symlinks, that's why they are installed separately.
+===============================================================================
+
++mount
++sysctl
++file
++binutils
+
+===============================================================================
+= Configure the tools repository for x86_64 and update the package cache.
+===============================================================================
+
+#!(chroot)/bin/sh
+
+echo "Configuring tools repository for x86_64."
+
+cat << EOF > /etc/opkg/tools.conf
+arch tools 1
+src/gz tools http://archive.boltlinux.org/dists/$BOLT_RELEASE/core/$BOLT_ARCH/$BOLT_LIBC/tools/x86_64
+EOF
+
+opkg update
+
+===============================================================================
+= Install a minimal base system into the tools folder.
+===============================================================================
+
++tools-base-files
++tools-busybox-all-symlinks
++tools-opkg-minimal
+
+===============================================================================
+= Add compilers, build systems and other tools commonly needed during software
+= development.
+===============================================================================
+
++tools-target-gcc
++tools-target-g++
++tools-gcc
++tools-g++
++tools-gawk
++tools-perl
++tools-autoconf
++tools-automake
++tools-make
++tools-cmake
++tools-patch
++tools-diffutils
++tools-file
++tools-tar
++tools-bzip2
++tools-xz-utils
++tools-pkg-config
++tools-libtool
++tools-gettext
++tools-autopoint
++tools-bash
++tools-libc-dev
++tools-bolt-package
