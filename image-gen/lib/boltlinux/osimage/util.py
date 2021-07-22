@@ -30,7 +30,7 @@ from boltlinux.error import BoltError
 
 class ImageGeneratorUtils:
 
-    SPECFILE_DIR_TEMPLATES = [
+    DIR_TEMPLATES = [
         "/common",
         "/{release}",
         "/{release}/libc",
@@ -107,14 +107,24 @@ class ImageGeneratorUtils:
     #end function
 
     @staticmethod
-    def get_internal_specs(specname, release, libc, arch):
+    def raise_unless_valid_script_identifier(scriptname):
+        if not re.match(r"^[-a-zA-Z0-9_.]+$", scriptname):
+            raise ImageGeneratorUtils.Error(
+                "invalid identifier: {}".format(scriptname)
+            )
+    #end function
+
+    @staticmethod
+    def find_internal_specs(specname, release, libc, arch):
+        ImageGeneratorUtils.raise_unless_valid_script_identifier(specname)
+
         basedir = os.path.join(
             os.path.dirname(os.path.realpath(__file__)), "customize"
         )
 
         specfiles = []
 
-        for subdir_template in ImageGeneratorUtils.SPECFILE_DIR_TEMPLATES:
+        for subdir_template in ImageGeneratorUtils.DIR_TEMPLATES:
             subdir = subdir_template.format(
                 release=release, libc=libc, arch=arch
             )
@@ -135,7 +145,7 @@ class ImageGeneratorUtils:
 
         specfiles = set()
 
-        for subdir_template in ImageGeneratorUtils.SPECFILE_DIR_TEMPLATES:
+        for subdir_template in ImageGeneratorUtils.DIR_TEMPLATES:
             subdir = subdir_template.format(
                 release=release, libc=libc, arch=arch
             )
@@ -150,6 +160,52 @@ class ImageGeneratorUtils:
         #end for
 
         return list(sorted(specfiles))
+    #end function
+
+    @staticmethod
+    def find_package_script(format_, release, libc, arch):
+        ImageGeneratorUtils.raise_unless_valid_script_identifier(format_)
+
+        basedir = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "package"
+        )
+
+        for subdir_template in reversed(ImageGeneratorUtils.DIR_TEMPLATES):
+            subdir = subdir_template.format(
+                release=release, libc=libc, arch=arch
+            )
+
+            package_script = basedir + subdir + os.sep + format_
+            if os.path.isfile(package_script):
+                return package_script
+        #end for
+
+        return None
+    #end function
+
+    @staticmethod
+    def list_package_scripts(release, libc, arch):
+        basedir = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "package"
+        )
+
+        package_scripts = set()
+
+        for subdir_template in reversed(ImageGeneratorUtils.DIR_TEMPLATES):
+            subdir = subdir_template.format(
+                release=release, libc=libc, arch=arch
+            )
+
+            script_dir = basedir + subdir
+            if not os.path.isdir(script_dir):
+                continue
+
+            for entry in os.listdir(script_dir):
+                if os.path.isfile(script_dir + os.sep + entry):
+                    package_scripts.add(entry)
+        #end for
+
+        return list(sorted(package_scripts))
     #end function
 
 #end class

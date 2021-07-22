@@ -1,0 +1,82 @@
+#!/bin/sh -e
+
+TAR_EXTRA_ARGS=""
+
+###############################################################################
+# Functions
+###############################################################################
+
+die() {
+    echo "bolt-image package $(basename $0): error: $1" >&2
+    exit 1
+}
+
+usage() {
+    echo "                                                                          "
+    echo "USAGE:                                                                    "
+    echo "                                                                          "
+    echo "  bolt-image package <sysroot> $(basename $0) [OPTIONS] <tarname>.<format>"
+    echo "                                                                          "
+    echo "OPTIONS:                                                                  "
+    echo "                                                                          "
+    echo "  -h, --help          Print this help message.                            "
+    echo "  -v, --verbose       Enable verbose output.                              "
+    echo "                                                                          "
+    echo "NOTES:                                                                    "
+    echo "                                                                          "
+    echo "  The format must be one of gz, bz2 or xz. Example invocation:            "
+    echo "                                                                          "
+    echo "    bolt-image package sysroot/ tarball --verbose minimal.tar.gz          "
+    echo "                                                                          "
+}
+
+###############################################################################
+# Setup
+###############################################################################
+
+while true; do
+    case "$1" in
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        -v|--verbose)
+            TAR_EXTRA_ARGS="$TAR_EXTRA_ARGS -v"
+            shift
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
+
+if [ $# -ne 2 ]; then
+    usage
+    exit 1
+fi
+
+TARNAME="$1"
+SYSROOT="$2"
+
+COMPRESSION_FORMAT="$(echo $TARNAME | sed 's/^.*\.\(.*\)$/\1/g')"
+
+case "$COMPRESSION_FORMAT" in
+    gz|gzip)
+        TAR_EXTRA_ARGS="$TAR_EXTRA_ARGS -z"
+        ;;
+    bz2|bzip2)
+        TAR_EXTRA_ARGS="$TAR_EXTRA_ARGS -j"
+        ;;
+    xz)
+        TAR_EXTRA_ARGS="$TAR_EXTRA_ARGS -J"
+        ;;
+    *)
+        die "unknown compression format \"$COMPRESSION_FORMAT\"."
+        ;;
+esac
+
+###############################################################################
+# Setup
+###############################################################################
+
+tar $TAR_EXTRA_ARGS -C "$SYSROOT" -f "$TARNAME" -c .

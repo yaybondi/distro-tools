@@ -36,6 +36,7 @@ from boltlinux.miscellaneous.userinfo import UserInfo
 from boltlinux.miscellaneous.platform import Platform
 from boltlinux.osimage.specfile import SpecfileParser
 from boltlinux.osimage.subprocess import Subprocess
+from boltlinux.osimage.util import ImageGeneratorUtils
 
 LOGGER = logging.getLogger(__name__)
 
@@ -303,6 +304,32 @@ class ImageGenerator:
         #end for
     #end function
 
+    def package(self, format_, sysroot, *args):
+        script = ImageGeneratorUtils.find_package_script(
+            format_, self._release, self._libc, self._arch
+        )
+
+        if not script:
+            raise ImageGenerator.Error(
+                'could not find a package script for format "{}"'
+                .format(format_)
+            )
+        #end if
+
+        env = self._prepare_environment(sysroot)
+
+        args = list(args)
+        args.insert(0, script)
+        args.append(sysroot)
+
+        LOGGER.info('creating a "{}" package from sysroot.'.format(format_))
+        LOGGER.info("========")
+        LOGGER.info("invoking {}".format(script))
+        LOGGER.info("========")
+
+        os.execve(script, args, env)
+    #end function
+
     # HELPERS
 
     def _prepare_environment(self, sysroot):
@@ -316,6 +343,8 @@ class ImageGenerator:
             "USER",
             "TERM",
             "HOME",
+            "PYTHONPATH",
+            "PYTHONUNBUFFERED",
         }
 
         for key in list(os.environ.keys()):

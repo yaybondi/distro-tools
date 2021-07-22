@@ -133,7 +133,9 @@ class ImageGenCli:
             )
 
         if len(args) == 0:
-            print_usage()
+            print_usage(
+                ImageGeneratorUtils.list_internal_specs(release, libc, arch)
+            )
             sys.exit(EXIT_ERROR)
 
         sysroot = args[0]
@@ -153,7 +155,7 @@ class ImageGenCli:
             if os.path.isfile(specfile):
                 specfile_list.append(specfile)
             else:
-                internal_specs = ImageGeneratorUtils.get_internal_specs(
+                internal_specs = ImageGeneratorUtils.find_internal_specs(
                     specfile, release, libc, arch
                 )
                 if not internal_specs:
@@ -240,7 +242,7 @@ class ImageGenCli:
             if os.path.isfile(specfile):
                 specfile_list.append(specfile)
             else:
-                internal_specs = ImageGeneratorUtils.get_internal_specs(
+                internal_specs = ImageGeneratorUtils.find_internal_specs(
                     specfile, release, libc, arch
                 )
                 if not internal_specs:
@@ -310,6 +312,60 @@ class ImageGenCli:
     #end function
 
     def package(self, *args):
-        pass
+        def print_usage(format_list=None):
+            print(textwrap.dedent(
+                """
+                USAGE:
+
+                  bolt-image package [OPTIONS] <sysroot> <format> [ARGS]
+
+                OPTIONS:
+
+                  -h, --help       Print this help message.
+                """
+            ))
+
+            if format_list:
+                print("FORMATS:\n")
+                for format_ in format_list:
+                    print("  * {}".format(format_))
+                print("")
+        #end inline function
+
+        if len(args) == 0:
+            print_usage()
+            sys.exit(EXIT_ERROR)
+
+        if args[0] in ["-h", "--help"]:
+            print_usage()
+            sys.exit(EXIT_OK)
+
+        sysroot = args[0]
+
+        if not os.path.isdir(sysroot):
+            raise ImageGenCli.Error("no such directory: {}".format(sysroot))
+
+        kwargs = {
+            "release":
+                ImageGeneratorUtils.determine_target_release(sysroot),
+            "libc":
+                ImageGeneratorUtils.determine_target_libc(sysroot),
+            "arch":
+                ImageGeneratorUtils.determine_target_arch(sysroot),
+        }
+
+        release, libc, arch = kwargs["release"], kwargs["libc"], kwargs["arch"]
+
+        if len(args) < 2:
+            print_usage(
+                ImageGeneratorUtils.list_package_scripts(release, libc, arch)
+            )
+            sys.exit(EXIT_ERROR)
+
+        format_ = args[1]
+
+        image_gen = ImageGenerator(**kwargs)
+        image_gen.package(format_, sysroot, *args[2:])
+    #end function
 
 #end class
