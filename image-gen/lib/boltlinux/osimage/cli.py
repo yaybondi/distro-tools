@@ -65,7 +65,7 @@ class ImageGenCli:
                   --copy-qemu      Copy the appropriate QEMU interpreter to the
                                    chroot (should not be necessary).
                   --no-verify      Do not verify package list signatures.
-                """
+                """  # noqa
             ))
 
             if specfile_list:

@@ -49,9 +49,9 @@ class Subprocess:
             # Close all FDs inherited from parent except std. streams.
             for fd in range(3, 1024):
                 try:
-                    if not fd in [err_w]:
+                    if fd not in [err_w]:
                         os.close(fd)
-                except OSError as e:
+                except OSError:
                     pass
             #end for
 
