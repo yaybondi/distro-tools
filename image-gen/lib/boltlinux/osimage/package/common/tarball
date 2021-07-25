@@ -7,27 +7,38 @@ TAR_EXTRA_ARGS=""
 ###############################################################################
 
 die() {
-    echo "bolt-image package $(basename $0): error: $1" >&2
+    local _bld='\033[1m'
+    local _red='\033[31m'
+    local _rst='\033[0m'
+
+    if [ -t 1 ]; then
+        echo "${_bld}bolt-image package $(basename $0)${_rst}: ${_bld}${_red}error${_rst}: $1" >&2
+    else
+        echo "bolt-image package $(basename $0): error: $1" >&2
+    fi
+
     exit 1
 }
 
 usage() {
-    echo "                                                                          "
-    echo "USAGE:                                                                    "
-    echo "                                                                          "
-    echo "  bolt-image package <sysroot> $(basename $0) [OPTIONS] <tarname>.<format>"
-    echo "                                                                          "
-    echo "OPTIONS:                                                                  "
-    echo "                                                                          "
-    echo "  -h, --help          Print this help message.                            "
-    echo "  -v, --verbose       Enable verbose output.                              "
-    echo "                                                                          "
-    echo "NOTES:                                                                    "
-    echo "                                                                          "
-    echo "  The format must be one of gz, bz2 or xz. Example invocation:            "
-    echo "                                                                          "
-    echo "    bolt-image package sysroot/ tarball --verbose minimal.tar.gz          "
-    echo "                                                                          "
+    cat << EOF
+
+USAGE:
+
+  bolt-image package <sysroot> $(basename $0) [OPTIONS] <name>.tar.<format>
+
+OPTIONS:
+
+  -h, --help          Print this help message.
+  -v, --verbose       Enable verbose output.
+
+  Example invocation:
+
+    bolt-image package sysroot/ tarball --verbose minimal.tar.gz
+
+  The "format" may be one of gz, bz2 or xz.
+
+EOF
 }
 
 ###############################################################################
@@ -43,6 +54,9 @@ while true; do
         -v|--verbose)
             TAR_EXTRA_ARGS="$TAR_EXTRA_ARGS -v"
             shift
+            ;;
+        -*|--*)
+            die "unknown command line option \"$1\""
             ;;
         *)
             break

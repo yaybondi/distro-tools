@@ -322,11 +322,6 @@ class ImageGenerator:
         args.insert(0, script)
         args.append(sysroot)
 
-        LOGGER.info('creating a "{}" package from sysroot.'.format(format_))
-        LOGGER.info("========")
-        LOGGER.info("invoking {}".format(script))
-        LOGGER.info("========")
-
         os.execve(script, args, env)
     #end function
 

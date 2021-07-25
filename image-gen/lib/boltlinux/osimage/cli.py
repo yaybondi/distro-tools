@@ -322,6 +322,12 @@ class ImageGenCli:
                 OPTIONS:
 
                   -h, --help       Print this help message.
+
+                  Type
+
+                    bolt-image package <sysroot>
+
+                  to see a list of supported image formats.
                 """
             ))
 
@@ -329,7 +335,16 @@ class ImageGenCli:
                 print("FORMATS:\n")
                 for format_ in format_list:
                     print("  * {}".format(format_))
-                print("")
+                print(textwrap.indent(textwrap.dedent(
+                    """
+                    Type
+
+                      bolt-image package <sysroot> <format> --help
+
+                    for additional usage instructions specific to a given
+                    image format.
+                    """
+                ), "  "))
         #end inline function
 
         if len(args) == 0:
