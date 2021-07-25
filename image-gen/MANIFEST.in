@@ -1,0 +1,2 @@
+include lib/boltlinux/osimage/customize/**/*
+include lib/boltlinux/osimage/package/**/*

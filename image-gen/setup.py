@@ -26,6 +26,13 @@ setup(
     data_files=[
         ('bin', ['bin/bolt-image']),
     ],
+    package_data={
+        'boltlinux.osimage': [
+            "customize/ollie/build-essential",
+            "customize/ollie/minimal",
+            "package/common/tarball",
+        ],
+    },
     platforms=['Linux'],
 
     classifiers=[

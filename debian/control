@@ -86,7 +86,7 @@ Description: Bolt Linux package repo index generator (meta package)
  This pulls in the python3-bolt-repository package, which contains the
  bolt-repo-index tool.
 
-Package: python3-bolt-image-generator
+Package: python3-bolt-image-gen
 Architecture: all
 Depends:
  python3-bolt-misc,
@@ -97,7 +97,7 @@ Description: Bolt Linux image generator scripts (Python 3)
 
 Package: bolt-image
 Architecture: all
-Depends: python3-bolt-image-generator, ${misc:Depends}
+Depends: python3-bolt-image-gen, ${misc:Depends}
 Description: Bolt Linux image generator (meta package)
  This pulls in the python3-bolt-image-generator package, which contains the
  bolt-image tool.
