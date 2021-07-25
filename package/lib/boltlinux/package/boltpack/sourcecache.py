@@ -53,8 +53,6 @@ class SourceCache:
         if pkg or self.force_local:
             return pkg
 
-        errors = []
-
         try:
             pkg = self.fetch_from_repo(
                 repo_name,

@@ -33,18 +33,11 @@ from boltlinux.package.boltpack.serialize import SpecfileSerializer
 
 class Specfile:
 
-    RELAXNG_SCHEMA_SEARCH_PATH = [
-        os.path.normpath(
-            os.path.join(
-                os.path.dirname(os.path.realpath(__file__)),
-                "..", "..", "..", "..", "relaxng", "package.rng.xml"
-            )
-        ),
-        os.path.join(os.sep, "usr", "share", "bolt-pack", "relaxng",
-            "package.rng.xml"),
-        os.path.join(os.sep, "tools", "share", "bolt-pack", "relaxng",
-            "package.rng.xml"),
-    ]
+    RELAXNG_FILE = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)),
+        "relaxng",
+        "package.rng.xml"
+    )
 
     def __init__(self, filename):
         if not os.path.exists(filename):
@@ -67,16 +60,7 @@ class Specfile:
     #end function
 
     def validate_structure(self):
-        relaxng = None
-
-        for path in Specfile.RELAXNG_SCHEMA_SEARCH_PATH:
-            if os.path.exists(path):
-                relaxng = etree.RelaxNG(file=path)
-                break
-        #end for
-
-        if relaxng is None:
-            raise RuntimeError("RELAX NG ruleset not found.")
+        relaxng = etree.RelaxNG(file=self.RELAXNG_FILE)
 
         if not relaxng.validate(self.xml_doc):
             errors = []

@@ -46,16 +46,9 @@ LOGGER = logging.getLogger(__name__)
 
 class SourcePackage(BasePackage):
 
-    BOLT_HELPERS_SEARCH_PATH = [
-        os.path.normpath(
-            os.path.join(
-                os.path.dirname(os.path.realpath(__file__)),
-                "..", "..", "..", "..", "helpers"
-            )
-        ),
-        os.path.join(os.sep, "usr",   "share", "bolt-pack", "helpers"),
-        os.path.join(os.sep, "tools", "share", "bolt-pack", "helpers")
-    ]
+    BOLT_HELPERS_DIR = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)), "helpers"
+    )
 
     def __init__(self, xml_config, copy_archives=True, **kwargs):
         actual_build_for = kwargs.get("build_for", "target")
@@ -349,7 +342,7 @@ class SourcePackage(BasePackage):
             except OSError as e:
                 raise PackagingError(
                     "error while copying {} from cache: {}"
-                    .format(cached_file, str(e))
+                    .format(source_file, str(e))
                 )
 
             source_file = local_file
@@ -361,15 +354,14 @@ class SourcePackage(BasePackage):
     def _load_helpers(self):
         result = []
 
-        for script in ["arch.sh", "python.sh"]:
-            for path in SourcePackage.BOLT_HELPERS_SEARCH_PATH:
-                abs_path = os.path.join(path, script)
-                if not os.path.isfile(abs_path):
-                    continue
-                with open(abs_path, "r", encoding="utf-8") as fp:
-                    result.append(fp.read())
-                    break
-            #end for
+        for script in os.listdir(self.BOLT_HELPERS_DIR):
+            if not script.endswith(".sh"):
+                continue
+
+            abs_path = os.path.join(self.BOLT_HELPERS_DIR, script)
+            with open(abs_path, "r", encoding="utf-8") as fp:
+                result.append(fp.read())
+                break
         #end for
 
         return "\n".join(result)

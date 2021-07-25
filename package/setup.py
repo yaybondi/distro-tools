@@ -19,25 +19,28 @@ setup(
     author='Tobias Koch',
     author_email='tobias.koch@gmail.com',
     license='MIT',
+
     packages=[
         'boltlinux.package',
         'boltlinux.package.boltpack',
         'boltlinux.package.deb2bolt',
     ],
-    package_dir={'': 'lib'},
     data_files=[
         ('bin', [
             'bin/bolt-pack',
             'bin/deb2bolt',
         ]),
-        ('share/bolt-pack/relaxng', ['relaxng/package.rng.xml']),
-        ('share/bolt-pack/helpers', [
-            'helpers/arch.sh',
-            'helpers/python.sh'
-        ])
     ],
-    platforms=['Linux'],
+    package_data={
+        'boltlinux.package.boltpack': [
+            "helpers/python.sh",
+            "helpers/arch.sh",
+            "relaxng/package.rng.xml",
+        ],
+    },
+    package_dir={'': 'lib'},
 
+    platforms=['Linux'],
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
