@@ -31,7 +31,7 @@ import textwrap
 from boltlinux.archive.config.distroinfo import DistroInfo
 from boltlinux.error import BoltError
 from boltlinux.miscellaneous.platform import Platform
-from boltlinux.osimage.chroot import Chroot
+from boltlinux.osimage.sysroot import Sysroot
 from boltlinux.osimage.generator import ImageGenerator
 from boltlinux.osimage.util import ImageGeneratorUtils
 
@@ -172,7 +172,7 @@ class ImageGenCli:
         image_gen = ImageGenerator(**kwargs)
         image_gen.prepare(sysroot)
 
-        with Chroot(sysroot):
+        with Sysroot(sysroot):
             for specfile in specfile_list:
                 image_gen.customize(sysroot, specfile)
     #end function
@@ -258,7 +258,7 @@ class ImageGenCli:
 
         image_gen = ImageGenerator(**kwargs)
 
-        with Chroot(sysroot):
+        with Sysroot(sysroot):
             for specfile in specfile_list:
                 image_gen.customize(sysroot, specfile)
     #end function

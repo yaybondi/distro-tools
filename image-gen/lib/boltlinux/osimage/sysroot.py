@@ -34,7 +34,7 @@ from boltlinux.error import BoltError
 
 LOGGER = logging.getLogger(__name__)
 
-class Chroot:
+class Sysroot:
 
     class Error(BoltError):
         pass
