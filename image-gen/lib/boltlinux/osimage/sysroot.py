@@ -93,8 +93,6 @@ class Sysroot:
                 except (PermissionError, FileNotFoundError):
                     continue
 
-                print("proc root", proc_root)
-
                 if self.sysroot != proc_root:
                     continue
 
