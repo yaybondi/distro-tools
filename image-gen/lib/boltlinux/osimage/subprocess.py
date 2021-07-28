@@ -126,8 +126,6 @@ class Subprocess:
 
     @classmethod
     def _run_parent(cls, context, check=False):
-        c = context
-
         fd_list = [context.pty_m, context.err_r]
 
         for fd in fd_list:

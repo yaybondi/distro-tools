@@ -29,6 +29,7 @@ import os
 import re
 import shlex
 import shutil
+import tempfile
 import textwrap
 
 from boltlinux.error import BoltError
@@ -233,11 +234,13 @@ class ImageGenerator:
         for file_ in files_to_copy:
             shutil.copy2(file_, sysroot + file_)
 
-        opkg_cmd = shlex.split(
-            "opkg --offline-root '{}' update".format(sysroot)
-        )
-
-        Subprocess.run(sysroot, opkg_cmd[0], opkg_cmd)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            opkg_cmd = shlex.split(
+                "opkg --tmp-dir '{}' --offline-root '{}' update"
+                .format(tmpdir, sysroot)
+            )
+            Subprocess.run(sysroot, opkg_cmd[0], opkg_cmd)
+        #end with
     #end function
 
     def customize(self, sysroot, specfile):

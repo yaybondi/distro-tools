@@ -120,13 +120,16 @@ class PackageBatch:
 
         mode = "install" if mode == "+" else "remove"
 
-        opkg_cmd = shlex.split(
-            "opkg --offline-root '{}' {} {}".format(
-                sysroot, mode, ' '.join(packages)
-            )
-        )
+        tmp_prefix = os.path.join(sysroot, "tmp", "igen-")
 
-        Subprocess.run(sysroot, opkg_cmd[0], opkg_cmd, env=env)
+        with tempfile.TemporaryDirectory(prefix=tmp_prefix) as tmpdir:
+            opkg_cmd = shlex.split(
+                "opkg --tmp-dir '{}' --offline-root '{}' {} {}".format(
+                    tmpdir, sysroot, mode, ' '.join(packages)
+                )
+            )
+            Subprocess.run(sysroot, opkg_cmd[0], opkg_cmd, env=env)
+        #end with
     #end function
 
 #end class
