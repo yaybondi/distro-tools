@@ -39,14 +39,16 @@ class Sysroot:
     class Error(BoltError):
         pass
 
+    MOUNTPOINTS = ["dev", "proc", "sys"]
+
     def __init__(self, sysroot):
-        self.sysroot     = os.path.realpath(sysroot)
-        self.mountpoints = ["/dev", "/proc", "/sys"]
-    #end function
+        self.sysroot = os.path.realpath(sysroot)
 
     def __enter__(self):
-        for src in self.mountpoints:
+        for mountpoint in self.MOUNTPOINTS:
+            src = os.sep + mountpoint
             dst = self.sysroot + src
+
             if self._is_mounted(dst):
                 LOGGER.warning('"{dst}" is already mounted.'.format(dst=dst))
             else:
@@ -59,8 +61,10 @@ class Sysroot:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.terminate_processes()
 
-        for src in self.mountpoints:
+        for mountpoint in self.MOUNTPOINTS:
+            src = os.sep + mountpoint
             dst = self.sysroot + src
+
             if not self._is_mounted(dst):
                 LOGGER.warning('"{dst}" is not mounted.'.format(dst=dst))
             else:

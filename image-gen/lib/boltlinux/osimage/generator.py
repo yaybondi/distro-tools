@@ -53,19 +53,20 @@ class ImageGenerator:
 
         {opt_check_sig}
         """
-    )  # noqa
+    )
 
     OPKG_FEEDS_TEMPLATE = textwrap.dedent(
         """\
         src/gz main {repo_base}/{release}/core/{arch}/{libc}/main
-        """)  # noqa
+        """
+    )
 
     OPKG_ARCH_TEMPLATE = textwrap.dedent(
         """\
         arch {arch} 1
         arch all 1
         """
-    )  # noqa
+    )
 
     DIRS_TO_CREATE = [
         (0o0755, "/dev"),
@@ -165,7 +166,7 @@ class ImageGenerator:
         pass
 
     def __init__(self, release, arch, libc="musl", verify=True,
-            copy_qemu=False, repo_base=None, cache_dir=None):
+            copy_qemu=False, repo_base=None, cache_dir=None, **kwargs):
         self._release   = release
         self._arch      = arch
         self._libc      = libc
