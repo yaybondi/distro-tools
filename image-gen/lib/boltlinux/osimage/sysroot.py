@@ -83,28 +83,36 @@ class Sysroot:
             for entry in os.listdir("/proc"):
                 try:
                     pid = int(entry)
+                except ValueError:
+                    continue
 
+                try:
                     proc_root = os.path.normpath(
                         os.path.realpath("/proc/{}/root".format(entry))
                     )
+                except (PermissionError, FileNotFoundError):
+                    continue
 
+                print("proc root", proc_root)
+
+                if self.sysroot != proc_root:
+                    continue
+
+                found = True
+
+                try:
                     proc_entry = "/proc/{}".format(entry)
 
-                    if self.sysroot == proc_root:
-                        found = True
+                    os.kill(-pid, signal.SIGTERM)
+                    for i in range(10):
+                        os.lstat(proc_entry)
+                        time.sleep(0.05 * 1.1**i)
 
-                        os.kill(-pid, signal.SIGTERM)
-                        for i in range(10):
-                            os.lstat(proc_entry)
-                            time.sleep(0.05 * 1.1**i)
-
-                        os.kill(-pid, signal.SIGKILL)
-                        for i in range(10):
-                            os.lstat(proc_entry)
-                            time.sleep(0.05 * 1.1**i)
-                    #end if
-                except (ValueError, ProcessLookupError, PermissionError,
-                            FileNotFoundError):
+                    os.kill(-pid, signal.SIGKILL)
+                    for i in range(10):
+                        os.lstat(proc_entry)
+                        time.sleep(0.05 * 1.1**i)
+                except (ProcessLookupError, FileNotFoundError):
                     pass
             #end for
         #end while
