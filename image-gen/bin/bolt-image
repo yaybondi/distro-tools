@@ -36,7 +36,6 @@ sys.path.insert(1, INSTALL_DIR + os.sep + 'lib')
 
 from boltlinux.error import BoltError
 from boltlinux.miscellaneous.logformatter import LogFormatter
-from boltlinux.miscellaneous.switch import switch
 from boltlinux.osimage.cli import ImageGenCli
 
 BOLT_ERR_INVOCATION =  1
