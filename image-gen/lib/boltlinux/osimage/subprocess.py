@@ -28,6 +28,7 @@ import locale
 import logging
 import os
 import select
+import signal
 import sys
 
 from boltlinux.error import BoltError
@@ -39,124 +40,160 @@ class Subprocess:
     class Error(BoltError):
         pass
 
-    @staticmethod
-    def run(sysroot, executable, args, env=None, chroot=False, check=True):
-        err_r, err_w = os.pipe()
+    class FileDescriptors:
 
-        child_pid, pty_m = os.forkpty()
+        def __init__(self, child_pid, pty_m, err_r, err_w):
+            self.child_pid = child_pid
 
-        if not child_pid:
-            # Close all FDs inherited from parent except std. streams.
-            for fd in range(3, 1024):
-                try:
-                    if fd not in [err_w]:
-                        os.close(fd)
-                except OSError:
-                    pass
-            #end for
+            self.pty_m = pty_m
+            self.err_r = err_r
+            self.err_w = err_w
+        #end function
 
+    #end class
+
+    @classmethod
+    def run(cls, sysroot, exe, args, env=None, chroot=False, check=True):
+        (err_r, err_w), (child_pid, pty_m) = os.pipe(), os.forkpty()
+
+        context = cls.FileDescriptors(
+            child_pid, pty_m, err_r, err_w
+        )
+
+        if child_pid:
+            os.close(err_w)
             try:
-                null_fd = os.open(os.devnull, os.O_RDONLY)
+                cls._run_parent(context, check=check)
+            except (KeyboardInterrupt, SystemExit):
+                LOGGER.warning(
+                    'killing subprocess "{}" with pid {}.'
+                    .format(os.path.basename(exe), child_pid)
+                )
+                os.kill(-child_pid, signal.SIGKILL)
+                os.waitpid(child_pid, 0)
+                raise
+            #end try
+        else:
+            cls._run_child(
+                context, sysroot, exe, args, env=env, chroot=chroot
+            )
+        #end if
+    #end function
 
-                if chroot:
-                    try:
-                        os.chroot(sysroot)
-                    except Exception as e:
-                        raise Subprocess.Error(
-                            'failed to chroot to "{}": {}'.format(
-                                sysroot, str(e)
-                            )
-                        )
-                #end if
+    @classmethod
+    def _run_child(cls, context, sysroot, exe, args, env=None,
+            chroot=False):
+        # Close all FDs inherited from parent except std. streams.
+        for fd in range(3, 1024):
+            try:
+                if fd not in [context.err_w]:
+                    os.close(fd)
+            except OSError:
+                pass
+        #end for
 
-                if env is None:
-                    env = {}
+        try:
+            null_fd = os.open(os.devnull, os.O_RDONLY)
 
-                os.dup2(err_w, sys.stderr.fileno())
-                os.dup2(null_fd, sys.stdin.fileno())
-
+            if chroot:
                 try:
-                    os.execvpe(executable, args, env)
+                    os.chroot(sysroot)
                 except Exception as e:
                     raise Subprocess.Error(
-                        'could not execute {}: {}.'.format(
-                            os.path.basename(executable), str(e)
-                        )
+                        'failed to chroot to "{}": {}'.format(sysroot, str(e))
                     )
+            #end if
+
+            if env is None:
+                env = {}
+
+            os.dup2(context.err_w, sys.stderr.fileno())
+            os.dup2(null_fd, sys.stdin.fileno())
+
+            try:
+                os.execvpe(exe, args, env)
             except Exception as e:
-                LOGGER.error(str(e))
-
-            os._exit(-1)
-        else:
-            os.close(err_w)
-
-            fd_list = [pty_m, err_r]
-
-            for fd in fd_list:
-                fcntl.fcntl(
-                    fd,
-                    fcntl.F_SETFL,
-                    fcntl.fcntl(fd, fcntl.F_GETFL) | os.O_NONBLOCK
+                raise Subprocess.Error(
+                    'could not execute {}: {}.'.format(
+                        os.path.basename(exe), str(e)
+                    )
                 )
-            #end for
+        except Exception as e:
+            LOGGER.error(str(e))
 
-            encoding = locale.getpreferredencoding(do_setlocale=False)
+        os._exit(-1)
+    #end function
 
-            child_stdout = open(pty_m, "r", encoding=encoding, buffering=1)
-            child_stderr = open(err_r, "r", encoding=encoding, buffering=1)
+    @classmethod
+    def _run_parent(cls, context, check=False):
+        c = context
 
-            status = 0
-            exit_next = False
+        fd_list = [context.pty_m, context.err_r]
 
-            while True:
-                r, w, x = select.select([child_stdout, child_stderr], [], [])
+        for fd in fd_list:
+            fcntl.fcntl(
+                fd,
+                fcntl.F_SETFL,
+                fcntl.fcntl(fd, fcntl.F_GETFL) | os.O_NONBLOCK
+            )
+        #end for
 
-                if child_stdout in r:
-                    try:
-                        for line in child_stdout:
-                            sys.stdout.write(line)
-                    except OSError:
-                        pass
-                #end if
+        encoding = locale.getpreferredencoding(do_setlocale=False)
 
-                if child_stderr in r:
-                    try:
-                        for line in child_stderr:
-                            if sys.stderr.isatty():
-                                sys.stderr.write("\033[31m" + line + "\033[0m")
-                            else:
-                                sys.stderr.write(line)
-                    except OSError:
-                        pass
-                #end if
+        child_stdout = open(context.pty_m, "r", encoding=encoding, buffering=1)
+        child_stderr = open(context.err_r, "r", encoding=encoding, buffering=1)
 
-                if exit_next:
-                    break
+        status = 0
+        exit_next = False
 
-                wpid, status = os.waitpid(child_pid, os.WNOHANG)
+        while True:
+            r, w, x = select.select([child_stdout, child_stderr], [], [])
 
-                if (wpid, status) == (0, 0):
-                    continue
-                if not (os.WIFEXITED(status) or os.WIFSIGNALED(status)):
-                    continue
+            if child_stdout in r:
+                try:
+                    for line in child_stdout:
+                        sys.stdout.write(line)
+                except OSError:
+                    pass
+            #end if
 
-                exit_next = True
-            #end while
+            if child_stderr in r:
+                try:
+                    for line in child_stderr:
+                        if sys.stderr.isatty():
+                            sys.stderr.write("\033[31m" + line + "\033[0m")
+                        else:
+                            sys.stderr.write(line)
+                except OSError:
+                    pass
+            #end if
 
-            if check:
-                if os.WIFSIGNALED(status):
-                    raise Subprocess.Error(
-                        "subprocess terminated by signal {}.".format(
-                            os.WTERMSIG(status)
-                        )
+            if exit_next:
+                break
+
+            wpid, status = os.waitpid(context.child_pid, os.WNOHANG)
+
+            if (wpid, status) == (0, 0):
+                continue
+            if not (os.WIFEXITED(status) or os.WIFSIGNALED(status)):
+                continue
+
+            exit_next = True
+        #end while
+
+        if check:
+            if os.WIFSIGNALED(status):
+                raise Subprocess.Error(
+                    "subprocess terminated by signal {}.".format(
+                        os.WTERMSIG(status)
                     )
-                elif os.WEXITSTATUS(status) != 0:
-                    raise Subprocess.Error(
-                        "subprocess terminated with exit status {}.".format(
-                            os.WEXITSTATUS(status)
-                        )
+                )
+            elif os.WEXITSTATUS(status) != 0:
+                raise Subprocess.Error(
+                    "subprocess terminated with exit status {}.".format(
+                        os.WEXITSTATUS(status)
                     )
-                #end if
+                )
             #end if
         #end if
     #end function
