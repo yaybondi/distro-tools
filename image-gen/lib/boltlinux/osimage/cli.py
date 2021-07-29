@@ -169,6 +169,11 @@ class ImageGenCli:
             #end if
         #end for
 
+        if os.geteuid() != 0:
+            raise ImageGenCli.Error(
+                "image generation needs to be done as root."
+            )
+
         image_gen = ImageGenerator(**kwargs)
         image_gen.prepare(sysroot)
 
@@ -256,6 +261,11 @@ class ImageGenCli:
             #end if
         #end for
 
+        if os.geteuid() != 0:
+            raise ImageGenCli.Error(
+                "image generation needs to be done as root."
+            )
+
         image_gen = ImageGenerator(**kwargs)
 
         with Sysroot(sysroot):
@@ -306,6 +316,11 @@ class ImageGenCli:
             "arch":
                 ImageGeneratorUtils.determine_target_arch(sysroot),
         }
+
+        if os.geteuid() != 0:
+            raise ImageGenCli.Error(
+                "image generation needs to be done as root."
+            )
 
         image_gen = ImageGenerator(**kwargs)
         image_gen.cleanup(sysroot=args[0])
@@ -378,6 +393,11 @@ class ImageGenCli:
             sys.exit(EXIT_ERROR)
 
         format_ = args[1]
+
+        if os.geteuid() != 0:
+            raise ImageGenCli.Error(
+                "image generation needs to be done as root."
+            )
 
         image_gen = ImageGenerator(**kwargs)
         image_gen.package(format_, sysroot, *args[2:])

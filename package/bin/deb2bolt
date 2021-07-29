@@ -81,7 +81,7 @@ def print_usage():
           --no-update-cache       Do not update the package cache.
           --no-load-contents      Do not load and analyze binary package contents.
           --no-gpg-checks         Do not verify GPG signature on Release files.
-          """
+        """
     ))
 #end function
 

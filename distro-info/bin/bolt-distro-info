@@ -67,7 +67,7 @@ def print_usage():
           --api-version VER    API version (default: 1)
 
         Type `bolt-distro-info <command> --help` for information about
-        individual commands.
+        individual commands.\
         """
     ))
 #end function
