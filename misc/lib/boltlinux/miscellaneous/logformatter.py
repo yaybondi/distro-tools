@@ -38,6 +38,9 @@ class LogFormatter(logging.Formatter):
     def __init__(self, app_name):
         self._app_name = app_name
 
+    def set_app_name(self, app_name):
+        self._app_name = app_name
+
     def format(self, record):
         if sys.stdout.isatty():
             template = "{ebold_}{appname}{eendc_}: "\
