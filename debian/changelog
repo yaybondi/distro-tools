@@ -1,3 +1,12 @@
+bolt-distro-tools (1.4.1-1) unstable; urgency=medium
+
+  * minor code cleanups and refactoring
+  * image-gen: small usability improvements in user-interaction.
+  * image-gen: keep opkg from littering /tmp
+  * image-gen: subprocess is killed when parent is interrupted
+
+ -- Tobias Koch <tobias.koch@gmail.com>  Fri, 30 Jul 2021 00:39:41 +0300
+
 bolt-distro-tools (1.4.0-1) unstable; urgency=medium
 
   * bolt-pack: make helpers and relaxng package_data
