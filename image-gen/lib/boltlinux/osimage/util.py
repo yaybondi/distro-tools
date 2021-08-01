@@ -33,7 +33,7 @@ class ImageGeneratorUtils:
     DIR_TEMPLATES = [
         "/common",
         "/{release}",
-        "/{release}/libc",
+        "/{release}/{libc}",
         "/{release}/{libc}/{arch}"
     ]
 
