@@ -335,6 +335,7 @@ class ImageGenerator:
         env = {}
 
         entries_to_keep = {
+            "BUILD_BOX_WRAPPER_A883DAFC",
             "DISPLAY",
             "SSH_CONNECTION",
             "SSH_CLIENT",

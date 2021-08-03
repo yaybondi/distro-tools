@@ -92,16 +92,30 @@ class Subprocess:
                 pass
         #end for
 
+        if os.environ.get("BUILD_BOX_WRAPPER_A883DAFC"):
+            running_in_build_box = True
+        else:
+            running_in_build_box = False
+
         try:
             null_fd = os.open(os.devnull, os.O_RDONLY)
 
             if chroot:
-                try:
-                    os.chroot(sysroot)
-                except Exception as e:
-                    raise Subprocess.Error(
-                        'failed to chroot to "{}": {}'.format(sysroot, str(e))
-                    )
+                if running_in_build_box:
+                    exe = "build-box"
+                    args = [
+                        "build-box", "run", "-t", sysroot, ".", "--"
+                    ] + args
+                else:
+                    try:
+                        os.chroot(sysroot)
+                    except Exception as e:
+                        raise Subprocess.Error(
+                            'failed to chroot to "{}": {}'
+                            .format(sysroot, str(e))
+                        )
+                    #end try
+                #end if
             #end if
 
             if env is None:
