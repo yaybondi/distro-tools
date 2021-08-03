@@ -1,3 +1,12 @@
+bolt-distro-tools (1.4.2-1) unstable; urgency=medium
+
+  * image-gen: use build-box run instead of chroot'ing when running under
+    build-box
+  * distro-tools packages have a hard dependency on each other
+  * image-gen/utils: fix placeholder in DIR_TEMPLATES
+
+ -- Tobias Koch <tobias.koch@gmail.com>  Tue, 03 Aug 2021 23:08:40 +0300
+
 bolt-distro-tools (1.4.1-1) unstable; urgency=medium
 
   * minor code cleanups and refactoring
@@ -26,7 +35,8 @@ bolt-distro-tools (1.3.0-1) unstable; urgency=medium
   * bolt-pack: search patches relative to XML spec before looking in work dir
   * bolt-pack: fall back to fetching 'upstream-src' if specified
   * bolt-pack: create local copies of source archives per default
-  * ffi-libarchive: fix error while overwriting symlinks from archive in unpack_to_disk
+  * ffi-libarchive: fix error while overwriting symlinks from archive in
+    unpack_to_disk
   * boltpack/shlibcache: handle /usr merge on Debian systems
   * bolt-pack: make --force-local mean 'local' (including cache)
 
