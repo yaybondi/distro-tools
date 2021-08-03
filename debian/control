@@ -22,14 +22,16 @@ Description: ffi bindings to libarchive-dev (Python 3)
 
 Package: python3-bolt-misc
 Architecture: all
-Depends: ${python3:Depends}, ${misc:Depends}
+Depends:
+ ${python3:Depends},
+ ${misc:Depends}
 Description: Utilities shared among other Bolt Linux Python packages (Python 3)
  Collection of scripts shared among other Bolt Linux Python packages.
 
 Package: python3-bolt-distro-info
 Architecture: all
 Depends:
- python3-bolt-misc,
+ python3-bolt-misc (= ${binary:Version}),
  ${python3:Depends},
  ${misc:Depends}
 Description: Bolt distro info tool (Python 3)
@@ -37,7 +39,9 @@ Description: Bolt distro info tool (Python 3)
 
 Package: bolt-distro-info
 Architecture: all
-Depends: python3-bolt-distro-info, ${misc:Depends}
+Depends:
+ python3-bolt-distro-info (= ${binary:Version}),
+ ${misc:Depends}
 Description: Bolt distro info tool (meta package)
  This pulls in python3-bolt-distro-info package which contains the
  bolt-distro-info tool.
@@ -49,9 +53,9 @@ Depends:
  binutils,
  chrpath,
  patch,
- python3-bolt-ffi-libarchive,
- python3-bolt-misc,
- python3-bolt-distro-info,
+ python3-bolt-ffi-libarchive (= ${binary:Version}),
+ python3-bolt-misc (= ${binary:Version}),
+ python3-bolt-distro-info (= ${binary:Version}),
  python3-dateutil,
  python3-html2text,
  python3-lxml,
@@ -64,7 +68,9 @@ Description: Bolt Linux packaging tools (Python 3)
 
 Package: bolt-package
 Architecture: all
-Depends: python3-bolt-package, ${misc:Depends}
+Depends:
+ python3-bolt-package (= ${binary:Version}),
+ ${misc:Depends}
 Description: Bolt Linux packaging tools (meta package)
  This pulls in the python3-bolt-package package, which contains the bolt-pack
  and deb2bolt tools.
@@ -73,7 +79,7 @@ Package: python3-bolt-repository
 Architecture: all
 Depends:
  usign,
- python3-bolt-package,
+ python3-bolt-package (= ${binary:Version}),
  ${python3:Depends},
  ${misc:Depends}
 Description: Bolt Linux repo management tools (Python 3)
@@ -81,7 +87,9 @@ Description: Bolt Linux repo management tools (Python 3)
 
 Package: bolt-repo-index
 Architecture: all
-Depends: python3-bolt-repository, ${misc:Depends}
+Depends:
+ python3-bolt-repository (= ${binary:Version}),
+ ${misc:Depends}
 Description: Bolt Linux package repo index generator (meta package)
  This pulls in the python3-bolt-repository package, which contains the
  bolt-repo-index tool.
@@ -89,7 +97,7 @@ Description: Bolt Linux package repo index generator (meta package)
 Package: python3-bolt-image-gen
 Architecture: all
 Depends:
- python3-bolt-misc,
+ python3-bolt-misc (= ${binary:Version}),
  ${python3:Depends},
  ${misc:Depends}
 Description: Bolt Linux image generator scripts (Python 3)
@@ -97,7 +105,9 @@ Description: Bolt Linux image generator scripts (Python 3)
 
 Package: bolt-image
 Architecture: all
-Depends: python3-bolt-image-gen, ${misc:Depends}
+Depends:
+ python3-bolt-image-gen (= ${binary:Version}),
+ ${misc:Depends}
 Description: Bolt Linux image generator (meta package)
  This pulls in the python3-bolt-image-generator package, which contains the
  bolt-image tool.
