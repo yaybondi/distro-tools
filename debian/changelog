@@ -1,3 +1,10 @@
+bolt-distro-tools (1.4.3-1) unstable; urgency=medium
+
+  * image-gen: fix duplicate newlines in script batches
+  * image-gen: set env variable BOLT_HOST_ARCH
+
+ -- Tobias Koch <tobias.koch@gmail.com>  Sun, 08 Aug 2021 13:01:15 +0300
+
 bolt-distro-tools (1.4.2-1) unstable; urgency=medium
 
   * image-gen: use build-box run instead of chroot'ing when running under
