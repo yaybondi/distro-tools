@@ -25,6 +25,14 @@
 
 #!(chroot)/bin/sh
 
+#
+# Inside a build box target, the tools repository is configured per default, so
+# we can skip it here.
+#
+if [ -f /etc/target ]; then
+    exit 0
+fi
+
 echo "Configuring tools repository for x86_64."
 
 cat << EOF > /etc/opkg/tools.conf
