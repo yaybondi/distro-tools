@@ -217,7 +217,7 @@ class SpecfileParser:
 
                 return (
                     start_line, end_line, Script(
-                        interp, "\n".join(lines), chroot=(where == "chroot")
+                        interp, "".join(lines), chroot=(where == "chroot")
                     )
                 )
             #end if
