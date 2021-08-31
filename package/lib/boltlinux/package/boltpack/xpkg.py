@@ -212,7 +212,7 @@ class Dpkg(BaseXpkg):
 
         try:
             procinfo = subprocess.run(cmd, stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT, check=True)
+                    stderr=subprocess.DEVNULL, check=True)
         except subprocess.CalledProcessError:
             return None
 
@@ -227,7 +227,7 @@ class Dpkg(BaseXpkg):
 
         try:
             procinfo = subprocess.run(cmd, stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT, check=True)
+                    stderr=subprocess.DEVNULL, check=True)
         except subprocess.CalledProcessError:
             return None
 
@@ -250,7 +250,7 @@ class Opkg(BaseXpkg):
 
         try:
             procinfo = subprocess.run(cmd, stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT, check=True)
+                    stderr=subprocess.DEVNULL, check=True)
         except subprocess.CalledProcessError:
             return None
 
@@ -265,7 +265,7 @@ class Opkg(BaseXpkg):
 
         try:
             procinfo = subprocess.run(cmd, stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT, check=True)
+                    stderr=subprocess.DEVNULL, check=True)
         except subprocess.CalledProcessError:
             return None
 
