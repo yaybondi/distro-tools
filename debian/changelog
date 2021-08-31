@@ -1,3 +1,11 @@
+bolt-distro-tools (1.4.4-1) unstable; urgency=medium
+
+  * package: send stderr to devnull when interacting with package manager
+  * image-gen: ollie/build-essential - don't configure tools repo in build-box
+    target
+
+ -- Tobias Koch <tobias.koch@gmail.com>  Tue, 31 Aug 2021 21:05:59 +0300
+
 bolt-distro-tools (1.4.3-1) unstable; urgency=medium
 
   * image-gen: fix duplicate newlines in script batches
