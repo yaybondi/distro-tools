@@ -1,3 +1,9 @@
+bolt-distro-tools (1.4.5-1) unstable; urgency=medium
+
+  * deb2bolt: make package cache work with Bullseye infrastructure
+
+ -- Tobias Koch <tobias.koch@gmail.com>  Sat, 04 Sep 2021 14:58:59 +0300
+
 bolt-distro-tools (1.4.4-1) unstable; urgency=medium
 
   * package: send stderr to devnull when interacting with package manager
