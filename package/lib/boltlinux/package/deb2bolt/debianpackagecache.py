@@ -24,6 +24,7 @@
 #
 
 import hashlib
+import itertools
 import logging
 import os
 import re
@@ -87,7 +88,7 @@ class DebianPackageCache:
             self.sources_list.append(
                 (
                     "security",
-                    "http://security.debian.org/debian-security/dists/{}/updates"  # noqa:
+                    "http://security.debian.org/debian-security/dists/{}-security"  # noqa:
                         .format(release)
                 )
             )
@@ -123,72 +124,78 @@ class DebianPackageCache:
         for component, base_url in self.sources_list:
             inrelease = self._load_inrelease_file(component, base_url)
 
-            for pocket in self.pockets:
-                for type_ in pkg_types:
-                    cache_dir = os.path.join(self._cache_dir, "dists",
-                        self.release, component, pocket, type_)
+            for pocket, type_ in itertools.product(self.pockets, pkg_types):
+                cache_dir = os.path.join(self._cache_dir, "dists",
+                    self.release, component, pocket, type_)
 
-                    if not os.path.isdir(cache_dir):
-                        os.makedirs(cache_dir)
+                if not os.path.isdir(cache_dir):
+                    os.makedirs(cache_dir)
 
+                source_url = None
+
+                for ext in [".gz", ".xz"]:
                     if type_ == "source":
-                        filename = "{}/source/Sources.gz".format(pocket)
-                        target = os.path.join(cache_dir, "Sources.gz")
+                        filename = "Sources" + ext
+                        source_path = f"{pocket}/source/{filename}"
+                        target_path = os.path.join(cache_dir, filename)
                     else:
-                        filename = "{}/{}/Packages.gz".format(pocket, type_)
-                        target = os.path.join(cache_dir, "Packages.gz")
+                        filename = "Packages" + ext
+                        source_path = f"{pocket}/{type_}/{filename}"
+                        target_path = os.path.join(cache_dir, filename)
                     #end if
 
                     try:
-                        sha256sum = inrelease.hash_for_filename(filename)
-                        source = "{}/{}".format(
-                            base_url, inrelease.by_hash_path(filename)
+                        sha256sum = inrelease.hash_for_filename(source_path)
+                        source_url = "{}/{}".format(
+                            base_url, inrelease.by_hash_path(source_path)
                         )
                     except KeyError:
-                        raise BoltError(
-                            "no such entry '{}' in Release file, mistyped "
-                            "command line parameter?".format(filename)
-                        )
-                    #end try
-
-                    new_tag = sha256sum[:16]
-
-                    # Check if resource has changed.
-                    if not os.path.islink(target):
-                        old_tag = ""
-                    else:
-                        old_tag = os.path.basename(os.readlink(target))
-
-                    if old_tag == new_tag:
                         continue
-
-                    digest = hashlib.sha256()
-
-                    # Download file into symlinked blob.
-                    try:
-                        self._download_tagged_http_resource(
-                            source, target, tag=new_tag, digest=digest
-                        )
-                    except BoltError as e:
-                        raise BoltError(
-                            "failed to retrieve {}: {}".format(source, str(e))
-                        )
-                    #end try
-
-                    # Remove old blob.
-                    if old_tag:
-                        os.unlink(
-                            os.path.join(os.path.dirname(target), old_tag)
-                        )
-                    #end if
-
-                    # Verify signature trail through sha256sum.
-                    if digest.hexdigest() != sha256sum:
-                        raise BoltError(
-                            "wrong hash for '{}'.".format(source)
-                        )
-                    #end if
                 #end for
+
+                if not source_url:
+                    raise BoltError(
+                        'unable to locate index file for "{}" in "{}" '
+                        'component'.format(type_, component)
+                    )
+
+                new_tag = sha256sum[:16]
+
+                # Check if resource has changed.
+                if not os.path.islink(target_path):
+                    old_tag = ""
+                else:
+                    old_tag = os.path.basename(os.readlink(target_path))
+
+                if old_tag == new_tag:
+                    continue
+
+                digest = hashlib.sha256()
+
+                # Download file into symlinked blob.
+                try:
+                    self._download_tagged_http_resource(
+                        source_url, target_path, tag=new_tag, digest=digest
+                    )
+                except BoltError as e:
+                    raise BoltError(
+                        "failed to retrieve {}: {}".format(source_url, str(e))
+                    )
+                #end try
+
+                # Remove old blob.
+                if old_tag:
+                    os.unlink(
+                        os.path.join(os.path.dirname(target_path), old_tag)
+                    )
+                #end if
+
+                # Verify signature trail through sha256sum.
+                if digest.hexdigest() != sha256sum:
+                    raise BoltError(
+                        "wrong hash for '{}'.".format(source_url)
+                    )
+                #end if
             #end for
         #end for
 
@@ -209,58 +216,59 @@ class DebianPackageCache:
 
         LOGGER.info("(re)loading package cache, please hold on.")
 
-        for component, base_url in self.sources_list:
-            for pocket in self.pockets:
-                for type_ in pkg_types:
-                    if type_ == "source":
-                        meta_gz = "Sources.gz"
-                        cache = self.source
-                    else:
-                        meta_gz = "Packages.gz"
-                        cache = self.binary
-                    #end if
+        for (component, base_url), pocket, type_ in \
+                itertools.product(self.sources_list, self.pockets, pkg_types):
+            found = False
 
-                    meta_file = os.path.join(self._cache_dir, "dists",
-                        self.release, component, pocket, type_, meta_gz)
+            for ext in [".gz", ".xz"]:
+                if type_ == "source":
+                    meta_gz = "Sources" + ext
+                    cache = self.source
+                else:
+                    meta_gz = "Packages" + ext
+                    cache = self.binary
+                #end if
 
-                    if not os.path.exists(meta_file):
+                meta_file = os.path.join(self._cache_dir, "dists",
+                    self.release, component, pocket, type_, meta_gz)
+
+                if os.path.exists(meta_file):
+                    found = True
+                    break
+            #end for
+
+            if not found:
+                continue
+
+            with ArchiveFileReader(meta_file, raw=True) as archive:
+                try:
+                    next(iter(archive))
+                except StopIteration:
+                    # The archive is empty.
+                    continue
+
+                buf = archive.read_data().decode("utf-8")
+
+                pool_base = re.match(
+                    r"^(?P<pool_base>https?://.*?)/dists/.*$", base_url
+                ).group("pool_base")
+
+                for chunk in re.split(r"\n\n+", buf, flags=re.MULTILINE):
+                    chunk = chunk.strip()
+                    if not chunk:
                         continue
 
-                    with ArchiveFileReader(meta_file, raw=True) as archive:
-                        try:
-                            next(iter(archive))
-                        except StopIteration:
-                            # The archive is empty.
-                            continue
+                    meta_data = DebianPackageMetaData(
+                        chunk, base_url=pool_base)
 
-                        buf = archive\
-                            .read_data()\
-                            .decode("utf-8")
+                    pkg_name    = meta_data["Package"]
+                    pkg_version = meta_data["Version"]
 
-                        pool_base = re.match(
-                            r"^(?P<pool_base>https?://.*?)/dists/.*$",
-                            base_url
-                        ).group("pool_base")
-
-                        for chunk in re.split(r"\n\n+", buf,
-                                flags=re.MULTILINE):
-                            chunk = chunk.strip()
-                            if not chunk:
-                                continue
-
-                            meta_data = DebianPackageMetaData(
-                                chunk, base_url=pool_base)
-
-                            pkg_name    = meta_data["Package"]
-                            pkg_version = meta_data["Version"]
-
-                            cache\
-                                .setdefault(pkg_name, DebianPackageDict())\
-                                .setdefault(pkg_version, meta_data)
-                        #end for
-                    #end with
+                    cache\
+                        .setdefault(pkg_name, DebianPackageDict())\
+                        .setdefault(pkg_version, meta_data)
                 #end for
-            #end for
+            #end with
         #end for
 
         return (self.source, self.binary)
