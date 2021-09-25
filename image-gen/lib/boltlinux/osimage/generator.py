@@ -370,6 +370,8 @@ class ImageGenerator:
                 "qemu-aarch64-static"),
             ("arm",
                 "qemu-arm-static"),
+            ("i",
+                "qemu-i386-static"),
             ("mips64el",
                 "qemu-mips64el-static"),
             ("mipsel",
@@ -386,6 +388,8 @@ class ImageGenerator:
                 "qemu-riscv64-static"),
             ("s390x",
                 "qemu-s390x-static"),
+            ("x86_64",
+                "qemu-x86_64-static"),
         ])
 
         for prefix, qemu_binary in prefix_map.items():
@@ -398,9 +402,10 @@ class ImageGenerator:
 
         qemu_exe = Platform.find_executable(qemu_user_static)
         if not qemu_exe:
-            raise ImageGenerator.Error(
+            LOGGER.warning(
                 'could not find QEMU executable "{}".'.format(qemu_user_static)
             )
+            return
 
         target_dir = os.path.dirname(
             os.path.join(sysroot, qemu_exe.lstrip("/"))
