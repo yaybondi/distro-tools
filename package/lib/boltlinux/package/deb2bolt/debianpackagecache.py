@@ -39,19 +39,37 @@ from boltlinux.package.deb2bolt.inrelease import InReleaseFile
 
 LOGGER = logging.getLogger(__name__)
 
-class DebianPackageDict(dict):
+class DebianPackageDict:
+
+    def __init__(self):
+        self._dict = {}
 
     def keys(self):
-        for version in super().keys():
+        for version in self._dict.keys():
             yield DebianPackageVersion(version)
 
     def items(self):
-        for version, pkg_obj in super().items():
+        for version, pkg_obj in self._dict.items():
             yield DebianPackageVersion(version), pkg_obj
 
     def __iter__(self):
-        for version in super().keys():
+        for version in self._dict.keys():
             yield DebianPackageVersion(version)
+
+    def __getitem__(self, key):
+        return self._dict[str(key)]
+
+    def __setitem__(self, key, value):
+        self._dict[str(key)] = value
+
+    def __contains__(self, key):
+        return str(key) in self._dict
+
+    def get(self, key, default=None):
+        return self._dict.get(key, default)
+
+    def setdefault(self, key, default=None):
+        return self._dict.setdefault(key, default)
 
 #end class
 
@@ -60,14 +78,14 @@ class DebianPackageCache:
     SOURCE = 1
     BINARY = 2
 
-    def __init__(self, release, arch="amd64", pockets=None, cache_dir=None,
+    def __init__(self, release, arch="amd64", components=None, cache_dir=None,
             security_enabled=True, updates_enabled=False, keyring=None):
         self.release = release
         self.arch = arch
 
-        if not pockets:
-            pockets = ["main", "contrib", "non-free"]
-        self.pockets = pockets
+        if not components:
+            components = ["main", "contrib", "non-free"]
+        self.components = components
 
         if not cache_dir:
             cache_dir = os.path.realpath(os.path.join(
@@ -78,7 +96,7 @@ class DebianPackageCache:
 
         self.sources_list = [
             (
-                "release",
+                "debian",
                 "http://ftp.debian.org/debian/dists/{}"
                     .format(release)
             )
@@ -87,7 +105,7 @@ class DebianPackageCache:
         if security_enabled:
             self.sources_list.append(
                 (
-                    "security",
+                    "debian-security",
                     "http://security.debian.org/debian-security/dists/{}-security"  # noqa:
                         .format(release)
                 )
@@ -97,7 +115,7 @@ class DebianPackageCache:
         if updates_enabled:
             self.sources_list.append(
                 (
-                    "updates",
+                    "debian-updates",
                     "http://ftp.debian.org/debian/dists/{}-updates"
                         .format(release)
                 )
@@ -119,14 +137,17 @@ class DebianPackageCache:
         if what & self.BINARY:
             pkg_types.extend(["binary-{}".format(self.arch), "binary-all"])
 
-        LOGGER.info("updating package cache (this may take a while).")
+        LOGGER.info(
+            'updating package cache for release "{}" (this may take a while).'
+            .format(self.release)
+        )
 
-        for component, base_url in self.sources_list:
-            inrelease = self._load_inrelease_file(component, base_url)
+        for suite, base_url in self.sources_list:
+            inrelease = self._load_inrelease_file(suite, base_url)
 
-            for pocket, type_ in itertools.product(self.pockets, pkg_types):
+            for component, type_ in itertools.product(self.components, pkg_types):
                 cache_dir = os.path.join(self._cache_dir, "dists",
-                    self.release, component, pocket, type_)
+                    self.release, suite, component, type_)
 
                 if not os.path.isdir(cache_dir):
                     os.makedirs(cache_dir)
@@ -136,11 +157,11 @@ class DebianPackageCache:
                 for ext in [".gz", ".xz"]:
                     if type_ == "source":
                         filename = "Sources" + ext
-                        source_path = f"{pocket}/source/{filename}"
+                        source_path = f"{component}/source/{filename}"
                         target_path = os.path.join(cache_dir, filename)
                     else:
                         filename = "Packages" + ext
-                        source_path = f"{pocket}/{type_}/{filename}"
+                        source_path = f"{component}/{type_}/{filename}"
                         target_path = os.path.join(cache_dir, filename)
                     #end if
 
@@ -156,7 +177,7 @@ class DebianPackageCache:
                 if not source_url:
                     raise BoltError(
                         'unable to locate index file for "{}" in "{}" '
-                        'component'.format(type_, component)
+                        'suite'.format(type_, suite)
                     )
 
                 new_tag = sha256sum[:16]
@@ -214,10 +235,13 @@ class DebianPackageCache:
             pkg_types.extend(["binary-{}".format(self.arch), "binary-all"])
             self.binary.clear()
 
-        LOGGER.info("(re)loading package cache, please hold on.")
+        LOGGER.info(
+            '(re)loading package cache for release "{}", please hold on.'
+            .format(self.release)
+        )
 
-        for (component, base_url), pocket, type_ in \
-                itertools.product(self.sources_list, self.pockets, pkg_types):
+        for (suite, base_url), component, type_ in \
+                itertools.product(self.sources_list, self.components, pkg_types):
             found = False
 
             for ext in [".gz", ".xz"]:
@@ -230,7 +254,7 @@ class DebianPackageCache:
                 #end if
 
                 meta_file = os.path.join(self._cache_dir, "dists",
-                    self.release, component, pocket, type_, meta_gz)
+                    self.release, suite, component, type_, meta_gz)
 
                 if os.path.exists(meta_file):
                     found = True
@@ -260,6 +284,9 @@ class DebianPackageCache:
 
                     meta_data = DebianPackageMetaData(
                         chunk, base_url=pool_base)
+
+                    meta_data["Suite"]     = suite
+                    meta_data["Component"] = component
 
                     pkg_name    = meta_data["Package"]
                     pkg_version = meta_data["Version"]
@@ -299,10 +326,8 @@ class DebianPackageCache:
         os.rename(target_file + "$", target_file)
     #end function
 
-    def _load_inrelease_file(self, component, base_url):
-        cache_dir = os.path.join(
-            self._cache_dir, "dists", self.release, component
-        )
+    def _load_inrelease_file(self, suite, base_url):
+        cache_dir = os.path.join(self._cache_dir, "dists", self.release, suite)
         if not os.path.isdir(cache_dir):
             os.makedirs(cache_dir)
 
