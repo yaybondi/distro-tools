@@ -15,11 +15,25 @@ else
         ln -sf ../../../build-box-utils/lib/boltlinux/buildbox .pythonpath/boltlinux/
     fi
 
+    if [ -d ../build-system/lib/boltlinux ]; then
+        ln -sf ../../../build-system/lib/boltlinux/packagedb   .pythonpath/boltlinux/
+        ln -sf ../../../build-system/lib/boltlinux/build       .pythonpath/boltlinux/
+    fi
+
     touch .pythonpath/boltlinux/__init__.py
 
     if [ "x$BOLT_DISTRO_TOOLS_SOURCED" = "x" ]; then
-        export PYTHONPATH="`pwd`/.pythonpath:$PYTHONPATH"
-        export PATH="`pwd`/distro-info/bin:`pwd`/package/bin:`pwd`/repository/bin:`pwd`/image-gen/bin:$PATH"
+        export PYTHONPATH="$(pwd)/.pythonpath:$PYTHONPATH"
+
+        PATH="$(pwd)/image-gen/bin:$PATH"
+        PATH="$(pwd)/distro-info/bin:$PATH"
+        PATH="$(pwd)/package/bin:$PATH"
+        PATH="$(pwd)/repository/bin:$PATH"
+
+        PATH="$(pwd)/../build-system/bin:$PATH"
+        PATH="$(pwd)/../build-box-utils:$PATH"
+
+        export PATH
         export PS1="(distro-tools)$PS1"
         export BOLT_DISTRO_TOOLS_SOURCED="yes"
     fi
