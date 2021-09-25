@@ -127,6 +127,18 @@ class DebianPackageMetaData(PackageUtilsMixin):
         return result
     #end function
 
+    def keys(self):
+        self._parse_meta_data_full()
+        return self._fields.keys()
+
+    def items(self):
+        self._parse_meta_data_full()
+        return self._fields.items()
+
+    def values(self):
+        self._parse_meta_data_full()
+        return self._fields.values()
+
     @property
     def name(self):
         self._parse_meta_data_full()
