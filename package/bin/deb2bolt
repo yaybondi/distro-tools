@@ -42,6 +42,7 @@ from boltlinux.miscellaneous.logformatter import LogFormatter
 from boltlinux.miscellaneous.switch import switch
 from boltlinux.miscellaneous.userinfo import UserInfo
 from boltlinux.package.deb2bolt.debianpackagecache import DebianPackageCache
+from boltlinux.package.deb2bolt.constants import DEBIAN_ARCHIVE_KEYRING_FILE
 from boltlinux.package.deb2bolt.converter import Deb2BoltPackageConverter
 
 BOLT_ERR_INVOCATION = 1
@@ -224,7 +225,7 @@ if __name__ == "__main__":
         keyring = None
 
         if options["do_gpg_checks"]:
-            keyring = "/usr/share/keyrings/debian-archive-keyring.gpg"
+            keyring = DEBIAN_ARCHIVE_KEYRING_FILE
 
             if not os.path.exists(keyring):
                 raise BoltError(
