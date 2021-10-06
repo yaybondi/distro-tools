@@ -179,14 +179,15 @@ class DistroInfo:
             releases = data
         else:
             for release_name, release_data in data.items():
-                status  = release_data.get("status", "supported")
-                releases.setdefault(
-                    release_name, release_data
-                )["status"] = status
+                status = release_data.get("status", "supported")
+                releases\
+                    .setdefault(release_name, release_data)["status"] = status
 
+        flags = os.O_RDWR | os.O_CREAT
         try:
-            with open(filename, "w+", encoding="utf-8") as f, \
-                    self._lock_file(f) as f:
+            with os.fdopen(os.open(filename, flags), 'r+', encoding="utf-8") \
+                    as f, self._lock_file(f) as f:
+                os.ftruncate(f.fileno(), 0)
                 json.dump(releases, f, ensure_ascii=False, indent=4)
         except Exception as e:
             raise DistroInfoError(
@@ -232,9 +233,11 @@ class DistroInfo:
             #end for
         #end if
 
+        flags = os.O_RDWR | os.O_CREAT
         try:
-            with open(filename, "w+", encoding="utf-8") as f, \
-                    self._lock_file(f) as f:
+            with os.fdopen(os.open(filename, flags), 'r+', encoding="utf-8") \
+                    as f, self._lock_file(f) as f:
+                os.ftruncate(f.fileno(), 0)
                 json.dump(mirrors, f, ensure_ascii=False, indent=4)
         except Exception as e:
             raise DistroInfoError(
