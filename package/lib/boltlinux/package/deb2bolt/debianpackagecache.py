@@ -145,7 +145,8 @@ class DebianPackageCache:
         for suite, base_url in self.sources_list:
             inrelease = self._load_inrelease_file(suite, base_url)
 
-            for component, type_ in itertools.product(self.components, pkg_types):
+            for component, type_ in itertools.product(
+                    self.components, pkg_types):
                 cache_dir = os.path.join(self._cache_dir, "dists",
                     self.release, suite, component, type_)
 
@@ -240,8 +241,8 @@ class DebianPackageCache:
             .format(self.release)
         )
 
-        for (suite, base_url), component, type_ in \
-                itertools.product(self.sources_list, self.components, pkg_types):
+        for (suite, base_url), component, type_ in itertools.product(
+                self.sources_list, self.components, pkg_types):
             found = False
 
             for ext in [".gz", ".xz"]:
