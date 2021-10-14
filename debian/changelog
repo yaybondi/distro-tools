@@ -1,3 +1,16 @@
+bolt-distro-tools (1.4.6-1) unstable; urgency=medium
+
+  * image-gen: build-essential spec uses cross-tools component
+  * miscellaneous: add workerthread.py
+  * distroinfo: don't truncate JSON files before they are locked
+  * boltpack/debianpackagemetadata: meta data class has keys, items, values methods
+  * deb2bolt: use DEBIAN_ARCHIVE_KEYRING_FILE instead of literal string
+  * osimage/generator: copy qemu-user-static also for PC (e.g. on AArch64 host)
+  * bolt-distro-info: use EXIT_OK instead of 0
+  * environment.sh: prevent wrong sourcing and link external projects
+
+ -- Tobias Koch <tobias.koch@gmail.com>  Thu, 14 Oct 2021 23:36:31 +0300
+
 bolt-distro-tools (1.4.5-1) unstable; urgency=medium
 
   * deb2bolt: make package cache work with Bullseye infrastructure
