@@ -38,6 +38,7 @@ echo "Configuring tools repository for x86_64."
 cat << EOF > /etc/opkg/tools.conf
 arch tools 1
 src/gz tools http://archive.boltlinux.org/dists/$BOLT_RELEASE/core/$BOLT_ARCH/$BOLT_LIBC/tools/$BOLT_HOST_ARCH
+src/gz tools http://archive.boltlinux.org/dists/$BOLT_RELEASE/core/$BOLT_ARCH/$BOLT_LIBC/cross-tools/$BOLT_HOST_ARCH
 EOF
 
 opkg update
