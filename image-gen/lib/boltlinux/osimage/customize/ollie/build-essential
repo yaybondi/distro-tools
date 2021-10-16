@@ -8,6 +8,7 @@
 +bolt-repo-keys
 +pam-config
 +libc-dev
++ca-certificates
 
 ===============================================================================
 = Installing mount, sysctl, file and binutils may remove some of the busybox
@@ -79,3 +80,4 @@ opkg update
 +tools-bash
 +tools-libc-dev
 +tools-bolt-package
++tools-openssl
