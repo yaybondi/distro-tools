@@ -32,6 +32,7 @@ import re
 from boltlinux.error import BoltError
 from boltlinux.ffi.libarchive import ArchiveFileReader
 from boltlinux.miscellaneous.downloader import Downloader
+from boltlinux.miscellaneous.userinfo import UserInfo
 
 from boltlinux.package.boltpack.debianpackagemetadata import \
         DebianPackageMetaData, DebianPackageVersion
@@ -88,8 +89,9 @@ class DebianPackageCache:
         self.components = components
 
         if not cache_dir:
-            cache_dir = os.path.realpath(os.path.join(
-                os.getcwd(), "pkg-cache"))
+            cache_dir = os.path.realpath(
+                os.path.join(UserInfo.cache_dir(), "debian")
+            )
 
         self._cache_dir = cache_dir
         self._keyring = keyring
