@@ -236,7 +236,6 @@ if __name__ == "__main__":
         pkg_cache = DebianPackageCache(
             options["release"],
             arch=options["arch"],
-            cache_dir=cache_dir,
             updates_enabled=options["updates_enabled"],
             security_enabled=options["security_enabled"],
             keyring=keyring
