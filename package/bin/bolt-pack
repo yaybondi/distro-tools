@@ -263,7 +263,7 @@ if __name__ == "__main__":
             else:
                 options["machine"] = Platform.target_machine()
 
-        PackageControl(args[0], cache_dir=UserInfo.cache_dir(), **options)\
+        PackageControl(args[0], **options)\
             (options["action"])
     except InvocationError as e:
         LOGGER.error(e)

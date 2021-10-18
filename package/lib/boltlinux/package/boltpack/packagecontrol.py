@@ -27,6 +27,7 @@ import os
 import shutil
 
 from boltlinux.error import UnmetDependency, InvocationError, SkipBuild
+from boltlinux.miscellaneous.userinfo import UserInfo
 
 from boltlinux.package.boltpack.basepackage import BasePackage
 from boltlinux.package.boltpack.sourcepackage import SourcePackage
@@ -66,8 +67,7 @@ class PackageControl:
         self.info = {}
 
         if not cache_dir:
-            cache_dir = os.path.realpath(os.path.join(
-                os.getcwd(), "source-cache"))
+            cache_dir = UserInfo.cache_dir()
 
         self._cache_dir = cache_dir
 

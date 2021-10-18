@@ -95,8 +95,8 @@ class SourceCache:
 
         rel_path = os.sep.join([first_letter, pkg_name, version, filename])
         abs_path = os.path.join(
-            self.cache_dir, "bolt", "dists", self.release, "sources",
-                repo_name, rel_path
+            self.cache_dir, "bolt", "dists", self.release, repo_name,
+                "sources", rel_path
         )
 
         if not os.path.exists(abs_path):
@@ -145,8 +145,8 @@ class SourceCache:
             "bolt",
             "dists",
             self.release,
-            "sources",
             repo_name,
+            "sources",
             rel_path
         ])
 
@@ -186,8 +186,8 @@ class SourceCache:
             "bolt",
             "dists",
             self.release,
-            "sources",
             repo_name,
+            "sources",
             rel_path
         ])
 
