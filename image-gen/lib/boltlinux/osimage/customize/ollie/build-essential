@@ -8,7 +8,6 @@
 +bolt-repo-keys
 +pam-config
 +libc-dev
-+ca-certificates
 
 ===============================================================================
 = Installing mount, sysctl, file and binutils may remove some of the busybox
@@ -21,7 +20,7 @@
 +binutils
 
 ===============================================================================
-= Configure the tools repository for x86_64 and update the package cache.
+= Configure tools repository for BOLT_HOST_ARCH and update the package cache.
 ===============================================================================
 
 #!(chroot)/bin/sh
@@ -81,3 +80,5 @@ opkg update
 +tools-libc-dev
 +tools-bolt-package
 +tools-openssl
+
++ca-certificates
