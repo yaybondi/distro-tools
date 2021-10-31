@@ -167,19 +167,13 @@ class ImageGenerator:
         pass
 
     def __init__(self, release, arch, libc="musl", verify=True,
-            copy_qemu=False, repo_base=None, cache_dir=None, **kwargs):
+            copy_qemu=False, repo_base=None, **kwargs):
         self._release   = release
         self._arch      = arch
         self._libc      = libc
         self._verify    = verify
         self._copy_qemu = copy_qemu
         self._repo_base = repo_base or "http://archive.boltlinux.org/dists"
-        self._cache_dir = cache_dir or UserInfo.cache_dir()
-
-        if not self._cache_dir:
-            raise ImageGenerator.Error(
-                "unable to determine cache directory location."
-            )
 
         opt_check_sig = "option check_signature" if self._verify else ""
 
