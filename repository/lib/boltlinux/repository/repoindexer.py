@@ -28,6 +28,7 @@ import re
 import stat
 import shlex
 import subprocess
+import textwrap
 import hashlib
 import functools
 import locale
@@ -135,14 +136,36 @@ class RepoIndexer:
         if not meta_data_list:
             return
 
-        output = "\n".join([str(entry) for entry in meta_data_list])
-        output = output.encode("utf-8")
+        text_output = "\n".join([str(entry) for entry in meta_data_list])
+        byte_output = text_output.encode("utf-8")
+
+        signature = None
+        signed_output = None
+
+        if self._sign_with:
+            signature = self._create_usign_signature(byte_output)
+
+            signed_output = (
+"""\
+-----BEGIN SIGNIFY SIGNED MESSAGE-----
+{output}\
+-----BEGIN SIGNIFY SIGNATURE-----
+{signature}\
+-----END SIGNIFY SIGNATURE-----
+"""
+            ) \
+            .format(
+                output=text_output,
+                signature=signature
+            ) \
+            .encode("utf-8")
+        #end if
 
         changed = True
 
         if current_digest is not None:
             h = hashlib.sha256()
-            h.update(output)
+            h.update(byte_output)
             if h.hexdigest() == current_digest:
                 changed = False
 
@@ -150,14 +173,16 @@ class RepoIndexer:
         tempfile_gz  = None
         packages_sig = os.path.join(self._repo_dir, "Packages.sig")
         tempfile_sig = None
+        packages_in  = os.path.join(self._repo_dir, "InPackages.gz")
+        tempfile_in  = None
+
+        options = [("gzip", "timestamp", None)]
 
         try:
             if changed:
                 with NamedTemporaryFile(dir=self._repo_dir, delete=False) \
                         as tempfile_gz:
                     pass
-
-                options = [("gzip", "timestamp", None)]
 
                 with ArchiveFileWriter(
                         tempfile_gz.name,
@@ -168,7 +193,7 @@ class RepoIndexer:
                     with ArchiveEntry() as archive_entry:
                         archive_entry.filetype = stat.S_IFREG
                         archive.write_entry(archive_entry)
-                        archive.write_data(output)
+                        archive.write_data(byte_output)
                     #end with
                 #end with
 
@@ -181,31 +206,62 @@ class RepoIndexer:
                 )
             #end if
 
-            if self._sign_with and \
-                    (changed or not os.path.exists(packages_sig)):
-                signature = self._create_usign_signature(output)
-                with NamedTemporaryFile(dir=self._repo_dir, delete=False) \
-                        as tempfile_sig:
-                    tempfile_sig.write(signature)
+            if signature and signed_output:
+                if changed or not os.path.exists(packages_in):
+                    with NamedTemporaryFile(dir=self._repo_dir, delete=False) \
+                            as tempfile_in:
+                        pass
 
-                os.chmod(
-                    tempfile_sig.name,
-                    stat.S_IRUSR |
-                    stat.S_IWUSR |
-                    stat.S_IRGRP |
-                    stat.S_IROTH
-                )
+                    with ArchiveFileWriter(
+                            tempfile_in.name,
+                            libarchive.FORMAT_RAW,
+                            libarchive.COMPRESSION_GZIP,
+                            options=options) as archive:
+
+                        with ArchiveEntry() as archive_entry:
+                            archive_entry.filetype = stat.S_IFREG
+                            archive.write_entry(archive_entry)
+                            archive.write_data(signed_output)
+                        #end with
+                    #end with
+
+                    os.chmod(
+                        tempfile_in.name,
+                        stat.S_IRUSR |
+                        stat.S_IWUSR |
+                        stat.S_IRGRP |
+                        stat.S_IROTH
+                    )
+                #end if
+
+                if changed or not os.path.exists(packages_sig):
+                    with NamedTemporaryFile(dir=self._repo_dir, mode="w+",
+                            delete=False, encoding="utf-8") as tempfile_sig:
+                        tempfile_sig.write(signature)
+
+                    os.chmod(
+                        tempfile_sig.name,
+                        stat.S_IRUSR |
+                        stat.S_IWUSR |
+                        stat.S_IRGRP |
+                        stat.S_IROTH
+                    )
+                #end if
             #end if
 
             if tempfile_gz:
                 os.rename(tempfile_gz.name, packages_gz)
             if tempfile_sig:
                 os.rename(tempfile_sig.name, packages_sig)
+            if tempfile_in:
+                os.rename(tempfile_in.name, packages_in)
         finally:
             if tempfile_gz and os.path.exists(tempfile_gz.name):
                 os.unlink(tempfile_gz.name)
             if tempfile_sig and os.path.exists(tempfile_sig.name):
                 os.unlink(tempfile_sig.name)
+            if tempfile_in and os.path.exists(tempfile_in.name):
+                os.unlink(tempfile_in.name)
         #end try
     #end function
 
@@ -329,7 +385,7 @@ class RepoIndexer:
                     stderr=subprocess.PIPE,
                     check=True
                 )
-                signature = proc.stdout
+                signature = proc.stdout.decode("utf-8")
             except subprocess.CalledProcessError as e:
                 raise BoltError(
                     "failed to sign Packages file: {}"
