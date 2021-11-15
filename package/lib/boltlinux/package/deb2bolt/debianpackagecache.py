@@ -313,7 +313,12 @@ class DebianPackageCache:
         blob_file = os.path.join(os.path.dirname(target_file), tag)
         try:
             with open(blob_file + "$", "wb+") as f:
-                for chunk in downloader.get(source_url, digest=digest):
+                it = downloader.get(
+                    source_url,
+                    digest=digest,
+                    connection_timeout=connection_timeout
+                )
+                for chunk in it:
                     f.write(chunk)
         except Exception:
             if os.path.exists(blob_file + "$"):
