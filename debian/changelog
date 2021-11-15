@@ -1,3 +1,12 @@
+bolt-distro-tools (1.4.9-1) unstable; urgency=medium
+
+  * debianpackagecache: pass connection timeout to downloader
+  * repository/repoindexer: create InPackages.gz with inline signature
+  * misc/workerthread: add is_stopped method
+  * image-gen: remove unused cache_dir attribute
+
+ -- Tobias Koch <tobias.koch@gmail.com>  Mon, 15 Nov 2021 23:21:50 +0300
+
 bolt-distro-tools (1.4.8-1) unstable; urgency=medium
 
   * Introduce new cache directory layout
