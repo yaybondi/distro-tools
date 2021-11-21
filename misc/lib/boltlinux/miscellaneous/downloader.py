@@ -24,8 +24,10 @@
 #
 
 import hashlib
+import os
 import random
 import string
+import tempfile
 import urllib.request
 
 from boltlinux.error import BoltError
@@ -63,8 +65,53 @@ class Downloader:
             #end with
         except urllib.error.URLError as e:
             raise DownloadError(
-                "error retrieving '{}': {}".format(url, str(e))
+                'error retrieving "{}": {}'.format(url, str(e))
             )
+    #end function
+
+    def source_changed(self, url, old_tag, connection_timeout=30):
+        new_tag = self.tag(
+            url, connection_timeout=connection_timeout
+        )
+        return old_tag != new_tag
+    #end function
+
+    def download_named_tag(self, url, symlink, tag, digest=None,
+            connection_timeout=30, permissions=None):
+        directory = os.path.dirname(os.path.realpath(symlink))
+        blob_file = os.path.join(directory, tag)
+
+        with tempfile.NamedTemporaryFile(prefix=".download-", dir=directory,
+                delete=False) as f:
+            try:
+                it = self.get(
+                    url,
+                    digest=digest,
+                    connection_timeout=connection_timeout
+                )
+
+                for chunk in it:
+                    f.write(chunk)
+
+                # Fix permissions
+                if permissions is not None:
+                    os.fchmod(f.fileno(), permissions)
+                # Atomically rename blob.
+                os.rename(f.name, blob_file)
+                # Create temporary symlink to new blob reusing tempfile name.
+                os.symlink(os.path.basename(blob_file), f.name)
+                # Atomically rename symlink (hopefully).
+                os.rename(f.name, symlink)
+            except Exception as e:
+                if os.path.exists(f.name) or os.path.islink(f.name):
+                    os.unlink(f.name)
+                if os.path.exists(blob_file):
+                    os.unlink(blob_file)
+                raise DownloadError(
+                    'error retrieving "{}": {}'.format(url, str(e))
+                )
+            #end try
+        #end with
     #end function
 
     def tag(self, url, connection_timeout=30):
