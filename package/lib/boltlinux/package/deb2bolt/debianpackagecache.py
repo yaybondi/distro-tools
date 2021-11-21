@@ -144,6 +144,8 @@ class DebianPackageCache:
             .format(self.release)
         )
 
+        downloader = Downloader()
+
         for suite, base_url in self.sources_list:
             inrelease = self._load_inrelease_file(suite, base_url)
 
@@ -198,7 +200,7 @@ class DebianPackageCache:
 
                 # Download file into symlinked blob.
                 try:
-                    Downloader().download_named_tag(
+                    downloader.download_named_tag(
                         source_url,
                         target_path,
                         new_tag,
