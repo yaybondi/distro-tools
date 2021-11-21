@@ -198,8 +198,12 @@ class DebianPackageCache:
 
                 # Download file into symlinked blob.
                 try:
-                    self._download_tagged_http_resource(
-                        source_url, target_path, tag=new_tag, digest=digest
+                    Downloader().download_named_tag(
+                        source_url,
+                        target_path,
+                        new_tag,
+                        digest=digest,
+                        permissions=0o0644
                     )
                 except BoltError as e:
                     raise BoltError(
@@ -304,36 +308,6 @@ class DebianPackageCache:
         return (self.source, self.binary)
     #end function
 
-    def _download_tagged_http_resource(self, source_url, target_file, tag="",
-            digest=None, connection_timeout=30):
-        downloader = Downloader()
-        if not tag:
-            tag = downloader.tag(source_url)
-
-        blob_file = os.path.join(os.path.dirname(target_file), tag)
-        try:
-            with open(blob_file + "$", "wb+") as f:
-                it = downloader.get(
-                    source_url,
-                    digest=digest,
-                    connection_timeout=connection_timeout
-                )
-                for chunk in it:
-                    f.write(chunk)
-        except Exception:
-            if os.path.exists(blob_file + "$"):
-                os.unlink(blob_file + "$")
-            raise
-        #end try
-
-        # Atomically rename blob.
-        os.rename(blob_file + "$", blob_file)
-        # Create temporary symlink to new blob.
-        os.symlink(os.path.basename(blob_file), target_file + "$")
-        # Atomically rename symlink (hopefully).
-        os.rename(target_file + "$", target_file)
-    #end function
-
     def _load_inrelease_file(self, suite, base_url):
         cache_dir = os.path.join(self._cache_dir, "dists", self.release, suite)
         if not os.path.isdir(cache_dir):
@@ -351,7 +325,9 @@ class DebianPackageCache:
 
         new_tag = downloader.tag(source)
         if old_tag != new_tag:
-            self._download_tagged_http_resource(source, target, tag=new_tag)
+            downloader.download_named_tag(
+                source, target, new_tag, permissions=0o0644
+            )
             if old_tag:
                 os.unlink(os.path.join(cache_dir, old_tag))
         #end if
