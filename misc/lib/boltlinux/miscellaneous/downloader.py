@@ -106,7 +106,9 @@ class Downloader:
                 if os.path.exists(f.name) or os.path.islink(f.name):
                     os.unlink(f.name)
                 if os.path.exists(blob_file):
-                    os.unlink(blob_file)
+                    if os.path.islink(symlink) and \
+                            os.path.basename(os.readlink(symlink)) != tag:
+                        os.unlink(blob_file)
                 raise DownloadError(
                     'error retrieving "{}": {}'.format(url, str(e))
                 )
