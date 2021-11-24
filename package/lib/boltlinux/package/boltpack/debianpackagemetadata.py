@@ -156,6 +156,9 @@ class DebianPackageMetaData(PackageUtilsMixin):
         self._parse_meta_data_full()
         return self._fields.get(key, default)
 
+    def setdefault(self, key, default):
+        return self._fields.setdefault(key, default)
+
     def to_bolt(self):
         self._parse_meta_data_full()
         fields = {}
