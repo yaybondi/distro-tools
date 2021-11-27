@@ -131,7 +131,7 @@ class DebianPackageCache:
         self.binary = {}
     #end function
 
-    def open(self, what=SOURCE|BINARY):  # noqa:
+    def reload(self, what=SOURCE|BINARY):  # noqa:
         pkg_types = []
 
         if what & self.SOURCE:
