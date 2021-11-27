@@ -79,6 +79,9 @@ class DebianPackageCache:
     SOURCE = 1
     BINARY = 2
 
+    class Error(BoltError):
+        pass
+
     def __init__(self, release, arch="amd64", components=None, cache_dir=None,
             security_enabled=True, updates_enabled=False, keyring=None):
         self.release = release
@@ -128,113 +131,7 @@ class DebianPackageCache:
         self.binary = {}
     #end function
 
-    def open(self):
-        self._parse_package_list()
-
-    def update(self, what=SOURCE|BINARY):  # noqa:
-        pkg_types = []
-
-        if what & self.SOURCE:
-            pkg_types.append("source")
-        if what & self.BINARY:
-            pkg_types.extend(["binary-{}".format(self.arch), "binary-all"])
-
-        LOGGER.info(
-            'updating package cache for release "{}" (this may take a while).'
-            .format(self.release)
-        )
-
-        downloader = Downloader()
-
-        for suite, base_url in self.sources_list:
-            inrelease = self._load_inrelease_file(suite, base_url)
-
-            for component, type_ in itertools.product(
-                    self.components, pkg_types):
-                cache_dir = os.path.join(self._cache_dir, "dists",
-                    self.release, suite, component, type_)
-
-                if not os.path.isdir(cache_dir):
-                    os.makedirs(cache_dir)
-
-                source_url = None
-
-                for ext in [".gz", ".xz"]:
-                    if type_ == "source":
-                        filename = "Sources" + ext
-                        source_path = f"{component}/source/{filename}"
-                        target_path = os.path.join(cache_dir, filename)
-                    else:
-                        filename = "Packages" + ext
-                        source_path = f"{component}/{type_}/{filename}"
-                        target_path = os.path.join(cache_dir, filename)
-                    #end if
-
-                    try:
-                        sha256sum = inrelease.hash_for_filename(source_path)
-                        source_url = "{}/{}".format(
-                            base_url, inrelease.by_hash_path(source_path)
-                        )
-                    except KeyError:
-                        continue
-                #end for
-
-                if not source_url:
-                    raise BoltError(
-                        'unable to locate index file for "{}" in "{}" '
-                        'suite'.format(type_, suite)
-                    )
-
-                new_tag = sha256sum[:16]
-
-                # Check if resource has changed.
-                if not os.path.islink(target_path):
-                    old_tag = ""
-                else:
-                    old_tag = os.path.basename(os.readlink(target_path))
-
-                if old_tag == new_tag:
-                    continue
-
-                digest = hashlib.sha256()
-
-                # Download file into symlinked blob.
-                try:
-                    downloader.download_named_tag(
-                        source_url,
-                        target_path,
-                        new_tag,
-                        digest=digest,
-                        permissions=0o0644
-                    )
-                except BoltError as e:
-                    raise BoltError(
-                        "failed to retrieve {}: {}".format(source_url, str(e))
-                    )
-                #end try
-
-                # Remove old blob.
-                if old_tag:
-                    os.unlink(
-                        os.path.join(os.path.dirname(target_path), old_tag)
-                    )
-                #end if
-
-                # Verify signature trail through sha256sum.
-                if digest.hexdigest() != sha256sum:
-                    raise BoltError(
-                        "wrong hash for '{}'.".format(source_url)
-                    )
-                #end if
-            #end for
-        #end for
-
-        self._parse_package_list(what=what)
-    #end function
-
-    # PRIVATE
-
-    def _parse_package_list(self, what=SOURCE|BINARY):  # noqa:
+    def open(self, what=SOURCE|BINARY):  # noqa:
         pkg_types = []
 
         if what & self.SOURCE:
@@ -245,42 +142,239 @@ class DebianPackageCache:
             self.binary.clear()
 
         LOGGER.info(
-            '(re)loading package cache for release "{}", please hold on.'
+            '(re)loading package cache for release "{}".'.format(self.release)
+        )
+
+        for suite, base_url in self.sources_list:
+            inrelease = self._load_inrelease_file(
+                suite, base_url, update=False
+            )
+
+            for component, type_ in itertools.product(
+                    self.components, pkg_types):
+                self._load_package_list(
+                    suite,
+                    base_url,
+                    component,
+                    type_,
+                    update=False,
+                    inrelease=inrelease
+                )
+            #end for
+        #end for
+    #end function
+
+    def update(self, what=SOURCE|BINARY):  # noqa:
+        pkg_types = []
+
+        if what & self.SOURCE:
+            pkg_types.append("source")
+            self.source.clear()
+        if what & self.BINARY:
+            pkg_types.extend(["binary-{}".format(self.arch), "binary-all"])
+            self.binary.clear()
+
+        LOGGER.info(
+            'updating package cache for release "{}" (this may take a while).'
             .format(self.release)
         )
 
-        for (suite, base_url), component, type_ in itertools.product(
-                self.sources_list, self.components, pkg_types):
-            found = False
+        for suite, base_url in self.sources_list:
+            inrelease = self._load_inrelease_file(suite, base_url, update=True)
 
-            for ext in [".gz", ".xz"]:
-                if type_ == "source":
-                    meta_gz = "Sources" + ext
-                    cache = self.source
-                else:
-                    meta_gz = "Packages" + ext
-                    cache = self.binary
+            for component, type_ in itertools.product(
+                    self.components, pkg_types):
+
+                self._load_package_list(
+                    suite,
+                    base_url,
+                    component,
+                    type_,
+                    update=True,
+                    inrelease=inrelease
+                )
+            #end for
+        #end for
+    #end function
+
+    # PRIVATE
+
+    def _load_inrelease_file(self, suite, base_url, update=False):
+        cache_dir = os.path.join(self._cache_dir, "dists", self.release, suite)
+
+        source = "{}/{}".format(base_url, "InRelease")
+        target = os.path.join(cache_dir, "InRelease")
+
+        if not os.path.islink(target):
+            old_tag = ""
+        else:
+            old_tag = os.path.basename(os.readlink(target))
+
+        new_tag = None
+
+        if update:
+            try:
+                downloader = Downloader()
+
+                if not os.path.isdir(cache_dir):
+                    os.makedirs(cache_dir)
+
+                new_tag = downloader.tag(source)
+                if old_tag != new_tag:
+                    downloader.download_named_tag(
+                        source, target, new_tag, permissions=0o0644
+                    )
+                    if old_tag:
+                        try:
+                            os.unlink(os.path.join(cache_dir, old_tag))
+                        except OSError:
+                            pass
+                    #end if
+                #end if
+            except Exception as e:
+                raise DebianPackageCache.Error(
+                    'failed to download "{}": {}'.format(source, str(e))
+                )
+            #end try
+        #end if
+
+        try:
+            inrelease = InReleaseFile.load(
+                os.path.join(cache_dir, new_tag or old_tag)
+            )
+
+            if self._keyring:
+                if not os.path.exists(self._keyring):
+                    raise BoltError(
+                        'keyring file "{}" not found, cannot check signature '
+                        'of "{}".'.format(self._keyring, target)
+                    )
                 #end if
 
-                meta_file = os.path.join(self._cache_dir, "dists",
-                    self.release, suite, component, type_, meta_gz)
+                if not inrelease.valid_signature(keyring=self._keyring):
+                    raise BoltError(
+                        'unable to verify the authenticity of "{}"'
+                        .format(target)
+                    )
+                #end if
+            #end if
+        except Exception as e:
+            files_to_delete = [
+                target,
+                os.path.join(os.path.dirname(target), new_tag or old_tag)
+            ]
 
-                if os.path.exists(meta_file):
-                    found = True
-                    break
+            for filename in files_to_delete:
+                try:
+                    os.unlink(filename)
+                except OSError:
+                    pass
             #end for
 
-            if not found:
-                continue
+            raise DebianPackageCache.Error(
+                'failed to load "{}": {}'.format(target, str(e))
+            )
+        #end try
 
-            with ArchiveFileReader(meta_file, raw=True) as archive:
+        return inrelease
+    #end function
+
+    def _load_package_list(self, suite, base_url, component, type_,
+            update=False, inrelease=None):
+        if not inrelease:
+            inrelease = self._load_inrelease_file(
+                suite, base_url, update=update
+            )
+
+        cache_dir = os.path.join(self._cache_dir, "dists",
+            self.release, suite, component, type_)
+
+        if not os.path.isdir(cache_dir):
+            os.makedirs(cache_dir)
+
+        source_url = None
+
+        for ext in [".gz", ".xz"]:
+            if type_ == "source":
+                filename = "Sources" + ext
+                source = f"{component}/source/{filename}"
+                target = os.path.join(cache_dir, filename)
+                cache = self.source
+            else:
+                filename = "Packages" + ext
+                source = f"{component}/{type_}/{filename}"
+                target = os.path.join(cache_dir, filename)
+                cache = self.binary
+            #end if
+
+            try:
+                sha256sum = inrelease.hash_for_filename(source)
+                source_url = "{}/{}".format(
+                    base_url, inrelease.by_hash_path(source)
+                )
+            except KeyError:
+                continue
+            else:
+                break
+        #end for
+
+        if not source_url:
+            raise DebianPackageCache.Error(
+                'unable to locate index file for "{}" in "{}" '
+                'suite'.format(type_, suite)
+            )
+        #end if
+
+        if not os.path.islink(target):
+            old_tag = ""
+        else:
+            old_tag = os.path.basename(os.readlink(target))
+
+        new_tag = None
+
+        if update:
+            try:
+                downloader = Downloader()
+
+                if not os.path.isdir(cache_dir):
+                    os.makedirs(cache_dir)
+
+                new_tag = downloader.tag(source_url)
+                if old_tag != new_tag:
+                    downloader.download_named_tag(
+                        source_url, target, new_tag, permissions=0o0644
+                    )
+                    if old_tag:
+                        try:
+                            os.unlink(os.path.join(cache_dir, old_tag))
+                        except OSError:
+                            pass
+                    #end if
+                #end if
+            except Exception as e:
+                raise DebianPackageCache.Error(
+                    'failed to download "{}": {}'.format(source_url, str(e))
+                )
+            #end try
+        #end if
+
+        try:
+            digest = hashlib.sha256()
+
+            with open(target, "rb") as f:
+                for chunk in iter(lambda: f.read(4096), b""):
+                    digest.update(chunk)
+
+            if digest.hexdigest() != sha256sum:
+                raise BoltError('wrong hash for "{}".'.format(target))
+
+            with ArchiveFileReader(target, raw=True) as archive:
                 try:
                     next(iter(archive))
                 except StopIteration:
-                    # The archive is empty.
-                    continue
-
-                buf = archive.read_data().decode("utf-8")
+                    buf = ""
+                else:
+                    buf = archive.read_data().decode("utf-8")
 
                 pool_base = re.match(
                     r"^(?P<pool_base>https?://.*?)/dists/.*$", base_url
@@ -305,54 +399,23 @@ class DebianPackageCache:
                         .setdefault(pkg_version, meta_data)
                 #end for
             #end with
-        #end for
+        except Exception as e:
+            files_to_delete = [
+                target,
+                os.path.join(os.path.dirname(target), new_tag or old_tag)
+            ]
 
-        return (self.source, self.binary)
-    #end function
+            for filename in files_to_delete:
+                try:
+                    os.unlink(filename)
+                except OSError:
+                    pass
+            #end for
 
-    def _load_inrelease_file(self, suite, base_url):
-        cache_dir = os.path.join(self._cache_dir, "dists", self.release, suite)
-        if not os.path.isdir(cache_dir):
-            os.makedirs(cache_dir)
-
-        downloader = Downloader()
-
-        source = "{}/{}".format(base_url, "InRelease")
-        target = os.path.join(cache_dir, "InRelease")
-
-        if not os.path.islink(target):
-            old_tag = ""
-        else:
-            old_tag = os.path.basename(os.readlink(target))
-
-        new_tag = downloader.tag(source)
-        if old_tag != new_tag:
-            downloader.download_named_tag(
-                source, target, new_tag, permissions=0o0644
+            raise DebianPackageCache.Error(
+                'failed to load "{}": {}'.format(target, str(e))
             )
-            if old_tag:
-                os.unlink(os.path.join(cache_dir, old_tag))
-        #end if
-
-        inrelease = InReleaseFile.load(os.path.join(cache_dir, new_tag))
-
-        if self._keyring:
-            if not os.path.exists(self._keyring):
-                raise BoltError(
-                    "keyring file '{}' not found, cannot check '{}' signature."
-                    .format(self._keyring, target)
-                )
-            #end if
-
-            if not inrelease.valid_signature(keyring=self._keyring):
-                raise BoltError(
-                    "unable to verify the authenticity of '{}'"
-                    .format(target)
-                )
-            #end if
-        #end if
-
-        return inrelease
+        #end try
     #end function
 
 #end class
