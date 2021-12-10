@@ -91,15 +91,16 @@ class DebianPackageMetaData(PackageUtilsMixin):
     def __init__(self, string="", base_url=""):
         self._string = string
         self._fields = {}
-        self._parse_meta_data_minimal()
         self._fully_parsed = False
+        self._minimally_parsed = False
         self.base_url = base_url
+
+        self._parse_meta_data_minimal()
     #end function
 
     def __getitem__(self, key):
-        key in self._fields or self._parse_meta_data_full()
+        self._parse_meta_data_full()
         return self._fields[key]
-    #end function
 
     def __setitem__(self, key, value):
         self._parse_meta_data_full()
@@ -112,6 +113,9 @@ class DebianPackageMetaData(PackageUtilsMixin):
     def __bool__(self):
         self._parse_meta_data_full()
         return len(self._fields) != 0
+
+    def __contains__(self, key):
+        return key in self._fields
 
     def __str__(self):
         self._parse_meta_data_full()
@@ -141,7 +145,7 @@ class DebianPackageMetaData(PackageUtilsMixin):
 
     @property
     def name(self):
-        self._parse_meta_data_full()
+        self._parse_meta_data_minimal()
         for field_name in ["Package", "Source"]:
             if field_name in self._fields:
                 return self._fields[field_name]
@@ -256,20 +260,30 @@ class DebianPackageMetaData(PackageUtilsMixin):
     # PRIVATE
 
     def _parse_meta_data_minimal(self):
+        if self._minimally_parsed or self._fully_parsed:
+            return
+
         for line in self._string.splitlines():
             try:
                 key, val = line.split(":", 1)
             except ValueError:
                 continue
 
-            if key in ["Package", "Version"]:
+            if key in ["Package", "Version", "Source"]:
                 if key not in self._fields:
                     self._fields[key] = val.strip()
-            elif key == "Source":
-                m = re.match(r".*?\((?P<version>.*?)\)\s*$", val)
-                if m:
-                    self._fields["Version"] = m.group("version")
         #end for
+
+        # The binary version may differ slightly from the source version, e.g.
+        # the build system may have appended a build counter. For all practical
+        # purposes, we always want to work with the source version.
+        if "Source" in self._fields:
+            m = re.match(
+                r".*?\((?P<version>.*?)\)\s*$", self._fields.get("Source")
+            )
+            if m:
+                self._fields["Version"] = m.group("version")
+        #end if
     #end function
 
     def _parse_meta_data_full(self):
