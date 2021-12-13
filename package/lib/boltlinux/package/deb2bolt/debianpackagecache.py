@@ -131,6 +131,11 @@ class DebianPackageCache:
         self.binary = {}
     #end function
 
+    def clear(self):
+        self.source.clear()
+        self.binary.clear()
+    #end function
+
     def reload(self, what=SOURCE|BINARY):  # noqa:
         pkg_types = []
 
