@@ -33,7 +33,7 @@ if [ -f /etc/target ]; then
     exit 0
 fi
 
-echo "Configuring tools repository for x86_64."
+echo "Configuring tools repository for $BOLT_HOST_ARCH."
 
 cat << EOF > /etc/opkg/tools.conf
 arch tools 1
