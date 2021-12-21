@@ -49,6 +49,9 @@ class DebianPackageDict:
         for version in self._dict.keys():
             yield DebianPackageVersion(version)
 
+    def values(self):
+        return iter(self._dict.values())
+
     def items(self):
         for version, pkg_obj in self._dict.items():
             yield DebianPackageVersion(version), pkg_obj
