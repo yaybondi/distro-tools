@@ -168,11 +168,35 @@ class Specfile:
 
     @property
     def summary(self):
-        try:
-            return self.xml_doc.xpath(
-                "string(/control/source/description/summary)")
-        except IndexError:
-            return ""
+        return self.xml_doc.xpath(
+            "string(/control/source/description/summary)"
+        )
+    #end function
+
+    @property
+    def build_for(self):
+        build_for_str = self.xml_doc.xpath("string(/control/source/@build-for)")
+        if not build_for_str:
+            repo = self.xml_doc.xpath("string(/control/source/@repo)")
+
+            if repo == "core":
+                build_for_str = "target,tools"
+            else:
+                build_for_str = "target"
+        #end if
+
+        build_for_items = [v.strip() for v in build_for_str.split(",")]
+
+        for v in build_for_items:
+            if v not in ["tools", "target", "cross-tools"]:
+                raise MalformedSpecfile(
+                    "attribute @build-for has invalid contents: {}"
+                    .format(build_for_str)
+                )
+            #end if
+        #end for
+
+        return ",".join(build_for_items)
     #end function
 
 #end class
