@@ -1,3 +1,11 @@
+bolt-distro-tools (1.5.3-1) unstable; urgency=medium
+
+  * specfile: add build_for method returning comma-separated build-targets
+  * build-essential: remove hard-coded x86_64 in log message
+  * debianpackagecache: DebianPackageDict has 'values' method
+
+ -- Tobias Koch <tobias.koch@gmail.com>  Tue, 28 Dec 2021 23:48:39 +0300
+
 bolt-distro-tools (1.5.2-1) unstable; urgency=medium
 
   * Small improvements to DebianPackageMetaData class
