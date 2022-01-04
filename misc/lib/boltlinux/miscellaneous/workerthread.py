@@ -71,6 +71,11 @@ class WorkerThread(threading.Thread):
                 LOGGER.error(msg)
             #end try
 
+            LOGGER.info(
+                "re-running thread {} in {}s"
+                .format(self.name, max(0.0, next_start - time.time()))
+            )
+
             self._stop_event.wait(timeout=max(0.0, next_start - time.time()))
         #end while
 
