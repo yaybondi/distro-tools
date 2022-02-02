@@ -119,6 +119,32 @@ class Specfile:
         return self.xml_doc.xpath("/control/source/@name")[0]
 
     @property
+    def maintainer(self):
+        maintainer = ""
+
+        try:
+            maintainer = self.xml_doc\
+                .xpath("/control/changelog/release[1]/@maintainer")[0]
+        except IndexError:
+            pass
+
+        return maintainer
+    #end function
+
+    @property
+    def date(self):
+        date = ""
+
+        try:
+            date = self.xml_doc\
+                .xpath("/control/changelog/release[1]/@date")[0]
+        except IndexError:
+            pass
+
+        return date
+    #end function
+
+    @property
     def latest_version(self):
         epoch   = ""
         version = ""

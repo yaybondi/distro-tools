@@ -42,8 +42,14 @@ class SpecfileSerializer:
         element["source"] = self.apply_templates(root_node.xpath("source")[0])
 
         element["source"].update({
-            "name":    specfile.source_name,
-            "version": specfile.latest_version
+            "name":
+                specfile.source_name,
+            "version":
+                specfile.latest_version,
+            "maintainer":
+                specfile.maintainer,
+            "date":
+                specfile.date
         })
 
         if specfile.upstream_version:
