@@ -87,7 +87,7 @@ class SourceCache:
 
     def fetch_from_cache(self, repo_name, pkg_name, version, filename,
             sha256sum=None):
-        if pkg_name.startswith("lib"):
+        if len(pkg_name) > 3 and pkg_name.startswith("lib"):
             first_letter = pkg_name[3]
         else:
             first_letter = pkg_name[0]
@@ -121,7 +121,7 @@ class SourceCache:
             sha256sum=None):
         downloader = Downloader(progress_bar_class=ProgressBar)
 
-        if pkg_name.startswith("lib"):
+        if len(pkg_name) > 3 and pkg_name.startswith("lib"):
             first_letter = pkg_name[3]
         else:
             first_letter = pkg_name[0]
@@ -174,7 +174,7 @@ class SourceCache:
             version, filename, sha256sum=None):
         downloader = Downloader(progress_bar_class=ProgressBar)
 
-        if pkg_name.startswith("lib"):
+        if len(pkg_name) > 3 and pkg_name.startswith("lib"):
             first_letter = pkg_name[3]
         else:
             first_letter = pkg_name[0]
