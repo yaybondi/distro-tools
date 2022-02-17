@@ -46,6 +46,8 @@ class SpecfileSerializer:
                 specfile.source_name,
             "version":
                 specfile.latest_version,
+            "source_version":
+                specfile.source_version,
             "maintainer":
                 specfile.maintainer,
             "date":
@@ -112,6 +114,7 @@ class SpecfileSerializer:
 
         html_to_text = HTML2Text()
         html_to_text.escape_snob = True
+        html_to_text.body_width = 0
 
         html = etree.tostring(desc, encoding="unicode")
         md   = html_to_text.handle(html).strip()
