@@ -145,6 +145,10 @@ class Specfile:
     #end function
 
     @property
+    def source_version(self):
+        return self.xml_doc.xpath("/control/changelog/release[1]/@version")[0]
+
+    @property
     def latest_version(self):
         epoch   = ""
         version = ""
