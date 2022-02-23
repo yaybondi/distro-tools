@@ -35,6 +35,10 @@ class PackageDescription:
     <xsl:text>|</xsl:text><xsl:apply-templates/><xsl:text>|</xsl:text>
   </xsl:template>
 
+  <xsl:template match="tt">
+    <xsl:text>`</xsl:text><xsl:apply-templates/><xsl:text>`</xsl:text>
+  </xsl:template>
+
   <xsl:template match="*|text()|comment()">
     <xsl:copy>
       <xsl:copy-of select="@*"/>

@@ -447,9 +447,18 @@
         <interleave>
             <text/>
             <optional>
-                <element name="em">
-                    <text/>
-                </element>
+                <zeroOrMore>
+                    <element name="em">
+                        <ref name="text-inline"/>
+                    </element>
+                </zeroOrMore>
+            </optional>
+            <optional>
+                <zeroOrMore>
+                    <element name="tt">
+                        <ref name="text-inline"/>
+                    </element>
+                </zeroOrMore>
             </optional>
         </interleave>
     </define>
