@@ -93,7 +93,7 @@ class AppConfig:
         default_config["maintainer-info"] = UserInfo.maintainer_info()
 
         for app in default_config.get("apps", {}).values():
-            secret_key = base64.encodestring(os.urandom(32)).decode("utf-8")
+            secret_key = base64.encodebytes(os.urandom(32)).decode("utf-8")
             app\
                 .setdefault("appconfig", {})\
                 .setdefault("SECRET_KEY", secret_key)
