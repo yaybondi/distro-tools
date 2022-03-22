@@ -132,6 +132,7 @@ class QuiltPatchSeries:
             patch_src_path = os.path.join(patch_dir, p)
             patch_dst_path = os.path.join(outdir, "patches", p)
 
+            os.makedirs(os.path.dirname(patch_dst_path), exist_ok=True)
             shutil.copy2(patch_src_path, patch_dst_path)
         #end for
     #end function
