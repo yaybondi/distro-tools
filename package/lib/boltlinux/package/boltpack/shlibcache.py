@@ -24,6 +24,7 @@
 #
 
 import locale
+import logging
 import os
 import re
 import subprocess
@@ -31,6 +32,8 @@ import subprocess
 from boltlinux.package.boltpack.platform import Platform
 from boltlinux.package.boltpack.filestats import FileStats
 from boltlinux.package.boltpack.packagemanager import PackageManager
+
+LOGGER = logging.getLogger(__name__)
 
 class ShlibCache:
 
@@ -84,20 +87,18 @@ class ShlibCache:
         self.have_ldconfig = False
 
         ldconfig = Platform.find_executable("ldconfig")
-        if ldconfig:
-            self.have_ldconfig = True
+        if not ldconfig:
+            return
 
-            try:
-                procinfo = subprocess.run(
-                    [ldconfig, "-p"],
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT,
-                    check=True
-                )
-            except subprocess.CalledProcessError as e:
-                raise RuntimeError(
-                    "failed to initialize shlib cache: " + str(e)
-                )
+        try:
+            procinfo = subprocess.run(
+                [ldconfig, "-p"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                check=True
+            )
+
+            self.have_ldconfig = True
 
             output_lines = procinfo\
                     .stdout\
@@ -117,7 +118,11 @@ class ShlibCache:
                 self.map.setdefault(lib_name, [])\
                         .append(ShlibCache.SharedObject(lib_path))
             #end for
-        #end if
+        except subprocess.CalledProcessError:
+            LOGGER.warning(
+                'Running "ldconfig -p" failed, falling back to path based lookups.'  # noqa
+            )
+        #end try
     #end function
 
     def get(self, lib_name, default=None, fallback=None):

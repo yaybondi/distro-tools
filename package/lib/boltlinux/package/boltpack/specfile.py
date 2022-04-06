@@ -205,7 +205,10 @@ class Specfile:
 
     @property
     def build_for(self):
-        build_for_str = self.xml_doc.xpath("string(/control/source/@build-for)")
+        build_for_str = self.xml_doc.xpath(
+            "string(/control/source/@build-for)"
+        )
+
         if not build_for_str:
             repo = self.xml_doc.xpath("string(/control/source/@repo)")
 
