@@ -154,7 +154,7 @@ class ShlibCache:
         for src, attr in binary_package.contents.items():
             lib_name = os.path.basename(src)
 
-            if not re.match(r'^lib.*?\.so.*$', lib_name):
+            if not re.match(r'^(?:lib|ld-).*?\.so.*$', lib_name):
                 continue
 
             if attr.stats.is_symbolic_link:
