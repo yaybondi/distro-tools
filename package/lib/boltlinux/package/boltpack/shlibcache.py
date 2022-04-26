@@ -2,7 +2,7 @@
 #
 # The MIT License (MIT)
 #
-# Copyright (c) 2016-2018 Tobias Koch <tobias.koch@gmail.com>
+# Copyright (c) 2016-2022 Tobias Koch <tobias.koch@gmail.com>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -85,6 +85,9 @@ class ShlibCache:
         self.prefixes = [prefix]
         self.map = {}
         self.have_ldconfig = False
+
+        if Platform.is_bolt():
+            return
 
         ldconfig = Platform.find_executable("ldconfig")
         if not ldconfig:

@@ -126,7 +126,10 @@ class Platform:
 
     @staticmethod
     def target_machine():
-        result = Platform._target_attribute("TARGET_MACHINE")
+        result = Platform._key_value_file_lookup(
+            "TARGET_MACHINE", "/etc/target"
+        )
+
         if not result:
             result = PackageManager.instance().main_architecture()
         if not result:
@@ -136,7 +139,7 @@ class Platform:
 
     @staticmethod
     def target_type():
-        result = Platform._target_attribute("TARGET_TYPE")
+        result = Platform._key_value_file_lookup("TARGET_TYPE", "/etc/target")
         if not result:
             result = Platform.config_guess()
         return result
@@ -144,7 +147,7 @@ class Platform:
 
     @staticmethod
     def tools_machine():
-        result = Platform._target_attribute("TOOLS_TYPE")
+        result = Platform._key_value_file_lookup("TOOLS_TYPE", "/etc/target")
         if result:
             result = result.split("-", 1)[0]
         if not result:
@@ -154,7 +157,7 @@ class Platform:
 
     @staticmethod
     def tools_type():
-        result = Platform._target_attribute("TOOLS_TYPE")
+        result = Platform._key_value_file_lookup("TOOLS_TYPE", "/etc/target")
         if not result:
             result = "{}-tools-linux-{}".format(
                 Platform.machine_name(), Platform.libc_vendor()
@@ -173,6 +176,11 @@ class Platform:
     @staticmethod
     def libc_vendor():
         Platform._uname("-o").lower().split("/")[0]
+
+    @staticmethod
+    def is_bolt():
+        result = Platform._key_value_file_lookup("ID", "/etc/os-release")
+        return result.lower() == "bolt"
 
     # HIDDEN
 
@@ -221,9 +229,9 @@ class Platform:
     #end function
 
     @staticmethod
-    def _target_attribute(attr_name):
-        if os.path.exists("/etc/target"):
-            with open("/etc/target", "r", encoding="utf-8") as fp:
+    def _key_value_file_lookup(attr_name, filename="/etc/target"):
+        if os.path.exists(filename):
+            with open(filename, "r", encoding="utf-8") as fp:
                 for line in fp:
                     try:
                         k, v = [x.strip() for x in line.split("=", 1)]
