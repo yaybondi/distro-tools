@@ -88,7 +88,7 @@ class Specfile:
             ["//changelog/release/@epoch", r"^\d+$"],
             ["//changelog/release/@version", r"^([-.+~a-zA-Z0-9]+?)(?:-([.~+a-zA-Z0-9]+)){0,1}$"],  # noqa:
             ["//changelog/release/@revision", r"^[.~+a-zA-Z0-9]+$"],
-            ["//changelog/release/@email", r"^[-_%.a-zA-Z0-9]+@[-.a-z0-9]+\.[a-z]{2,4}$"],  # noqa:
+            ["//changelog/release/@email", r"^[-_%.a-zA-Z0-9]+@[-.a-z0-9]+\.[a-z]{2,63}$"],  # noqa:
             ["//changelog/release/@date", r"^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}\s*(?:((?:-|\+)\d{2}:?\d{2})|(?:(?:GMT|UTC)(?:(?:-|\+)\d{1,2}))|[a-zA-Z]+)$"]  # noqa:
         ]
 
