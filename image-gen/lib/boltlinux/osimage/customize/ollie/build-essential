@@ -61,6 +61,7 @@ opkg update
 +tools-gcc
 +tools-g++
 +tools-gawk
++tools-grep
 +tools-perl
 +tools-autoconf
 +tools-automake
