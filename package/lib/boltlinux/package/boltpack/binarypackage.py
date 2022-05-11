@@ -451,12 +451,12 @@ class BinaryPackage(BasePackage):
         return self.contents
     #end function
 
-    def strip_debug_symbols_and_delete_rpath(self):
+    def strip_debug_symbols_and_unarm_rpath(self):
         objcopy = Platform.find_executable(
             self.host_type + "-objcopy", "objcopy"
         )
 
-        chrpath   = Platform.find_executable("chrpath")
+        chrpath = Platform.find_executable("chrpath")
         hardlinks = {}
         install_prefix = self.install_prefix.lstrip("/")
 
@@ -505,7 +505,7 @@ class BinaryPackage(BasePackage):
                 cmd_list = [
                     ([objcopy, "--only-keep-debug", src_path, dbg_path], True),
                     ([objcopy, "--strip-unneeded",  src_path          ], True),
-                    ([chrpath, "-d", src_path                         ], False)
+                    ([chrpath, "-c", src_path                         ], False)
                 ]
             else:
                 dbg_file = os.path.basename(dbg_path)
@@ -517,7 +517,7 @@ class BinaryPackage(BasePackage):
                         True
                     ),
                     (["mv", dbg_file, dbg_path], True),
-                    ([chrpath, "-d", src_path ], False)
+                    ([chrpath, "-c", src_path ], False)
                 ]
 
             for cmd, check_retval in cmd_list:

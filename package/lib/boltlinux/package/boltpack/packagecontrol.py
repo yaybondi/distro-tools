@@ -291,7 +291,7 @@ class PackageControl:
         for pkg in self.bin_pkgs:
             pkg.prepare()
         for pkg in self.bin_pkgs:
-            pkg.strip_debug_symbols_and_delete_rpath()
+            pkg.strip_debug_symbols_and_unarm_rpath()
         for pkg in self.bin_pkgs:
             shlib_cache.overlay_package(pkg)
         for pkg in self.bin_pkgs:
