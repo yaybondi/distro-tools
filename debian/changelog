@@ -1,3 +1,11 @@
+bolt-distro-tools (1.5.8-1) unstable; urgency=medium
+
+  * boltpack: convert rpath to runpath instead of deleting either
+  * build-essential: install GNU grep
+  * specfile: TLDs can have up to 63 characters
+
+ -- Tobias Koch <tobias.koch@gmail.com>  Wed, 11 May 2022 23:14:30 +0300
+
 bolt-distro-tools (1.5.7-1) unstable; urgency=medium
 
   * shlibcache: never use ldconfig on Bolt OS (even with glibc)
