@@ -361,7 +361,6 @@ class SourcePackage(BasePackage):
             abs_path = os.path.join(self.BOLT_HELPERS_DIR, script)
             with open(abs_path, "r", encoding="utf-8") as fp:
                 result.append(fp.read())
-                break
         #end for
 
         return "\n".join(result)
