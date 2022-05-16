@@ -56,6 +56,13 @@ class DistroInfo:
     def is_supported_release(self, name):
         return name in self.list(supported=True)
 
+    def is_supported_libc(self, release, libc):
+        arch_list = self.find(release=release) \
+            .get("supported-architectures", {}) \
+            .get(libc)
+        return arch_list is not None
+    #end function
+
     def is_supported_arch(self, release, arch, libc="musl"):
         return arch in self\
             .find(release=release) \

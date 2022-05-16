@@ -40,6 +40,9 @@ class ImageGeneratorUtils:
     class Error(BoltError):
         pass
 
+    class InvalidScriptIdentifier(Error):
+        pass
+
     @staticmethod
     def raise_unless_sysroot_exists(sysroot):
         if not os.path.isdir(sysroot):
@@ -109,9 +112,46 @@ class ImageGeneratorUtils:
     @staticmethod
     def raise_unless_valid_script_identifier(scriptname):
         if not re.match(r"^[-a-zA-Z0-9_.]+$", scriptname):
-            raise ImageGeneratorUtils.Error(
+            raise ImageGeneratorUtils.InvalidScriptIdentifier(
                 "invalid identifier: {}".format(scriptname)
             )
+    #end function
+
+    @staticmethod
+    def collect_specfiles(release, libc, arch, *specs):
+        specfile_list = []
+
+        for specfile in specs:
+            if os.path.isfile(specfile):
+                specfile_list.append(specfile)
+                continue
+
+            if os.sep in specfile:
+                raise ImageGeneratorUtils.Error(
+                    'not found or not a file: {}'.format(specfile)
+                )
+
+            try:
+                internal_specs = ImageGeneratorUtils.find_internal_specs(
+                    specfile, release, libc, arch
+                )
+            except ImageGeneratorUtils.InvalidScriptIdentifier:
+                raise ImageGeneratorUtils.Error(
+                    'invalid specfile name: {}'.format(specfile)
+                )
+            #end try
+
+            if not internal_specs:
+                raise ImageGeneratorUtils.Error(
+                    'no specfile and no internal spec by name "{}" found.'
+                    .format(specfile)
+                )
+            #end if
+
+            specfile_list.extend(internal_specs)
+        #end for
+
+        return specfile_list
     #end function
 
     @staticmethod

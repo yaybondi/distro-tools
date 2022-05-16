@@ -59,6 +59,7 @@ class ImageGenCli:
                   -h, --help       Print this help message.
                   -r, --release    The name of the release (e.g. ollie).
                   -a, --arch       The target architecture.
+                  -l, --libc       The C runtime to use ("musl" or "glibc").
 
                   --repo-base      Repository base URL not including the release
                                    name.
@@ -77,8 +78,15 @@ class ImageGenCli:
 
         try:
             opts, args = getopt.getopt(
-                args, "hr:a:", ["help", "release=", "arch=", "repo-base=",
-                    "copy-qemu", "no-verify"]
+                args, "a:hr:", [
+                    "arch=",
+                    "copy-qemu",
+                    "help",
+                    "libc=",
+                    "no-verify",
+                    "release=",
+                    "repo-base="
+                ]
             )
         except getopt.GetoptError as e:
             raise ImageGenCli.Error(
@@ -107,11 +115,13 @@ class ImageGenCli:
                 print_usage()
                 sys.exit(EXIT_OK)
             elif o in ["-r", "--release"]:
-                kwargs["release"] = v
+                kwargs["release"] = v.strip()
             elif o in ["-a", "--arch"]:
-                kwargs["arch"] = v
+                kwargs["arch"] = v.strip().replace("-", "_")
+            elif o in ["-l", "--libc"]:
+                kwargs["libc"] = v.strip()
             elif o == "--repo-base":
-                kwargs["repo_base"] = v
+                kwargs["repo_base"] = v.strip()
             elif o == "--copy-qemu":
                 kwargs["copy_qemu"] = True
             elif o == "--no-verify":
@@ -126,7 +136,13 @@ class ImageGenCli:
                 .format(release)
             )
 
-        if not distro_info.is_supported_arch(release, arch):
+        if not distro_info.is_supported_libc(release, libc):
+            raise ImageGenCli.Error(
+                'release "{}" does not support C runtime library "{}".'
+                .format(release, libc)
+            )
+
+        if not distro_info.is_supported_arch(release, arch, libc=libc):
             raise ImageGenCli.Error(
                 'release "{}" does not support architecture "{}".'
                 .format(release, arch)
@@ -149,25 +165,9 @@ class ImageGenCli:
             )
             sys.exit(EXIT_ERROR)
 
-        specfile_list = []
-
-        for specfile in args[1:]:
-            if os.path.isfile(specfile):
-                specfile_list.append(specfile)
-            else:
-                internal_specs = ImageGeneratorUtils.find_internal_specs(
-                    specfile, release, libc, arch
-                )
-                if not internal_specs:
-                    raise ImageGenCli.Error(
-                        'no specfile and no internal spec by name "{}" found.'
-                        .format(specfile)
-                    )
-                #end if
-
-                specfile_list.extend(internal_specs)
-            #end if
-        #end for
+        specfile_list = ImageGeneratorUtils.collect_specfiles(
+            release, libc, arch, *args[1:]
+        )
 
         if os.geteuid() != 0:
             raise ImageGenCli.Error(
@@ -241,25 +241,9 @@ class ImageGenCli:
             )
             sys.exit(EXIT_ERROR)
 
-        specfile_list = []
-
-        for specfile in args[1:]:
-            if os.path.isfile(specfile):
-                specfile_list.append(specfile)
-            else:
-                internal_specs = ImageGeneratorUtils.find_internal_specs(
-                    specfile, release, libc, arch
-                )
-                if not internal_specs:
-                    raise ImageGenCli.Error(
-                        'no specfile and no internal spec by name "{}" found.'
-                        .format(specfile)
-                    )
-                #end if
-
-                specfile_list.extend(internal_specs)
-            #end if
-        #end for
+        specfile_list = ImageGeneratorUtils.collect_specfiles(
+            release, libc, arch, *args[1:]
+        )
 
         if os.geteuid() != 0:
             raise ImageGenCli.Error(
