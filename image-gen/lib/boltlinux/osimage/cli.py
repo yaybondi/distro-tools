@@ -78,7 +78,7 @@ class ImageGenCli:
 
         try:
             opts, args = getopt.getopt(
-                args, "a:hr:", [
+                args, "a:hl:r:", [
                     "arch=",
                     "copy-qemu",
                     "help",
