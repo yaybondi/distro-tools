@@ -1,3 +1,9 @@
+bolt-distro-tools (1.6.0-1) unstable; urgency=medium
+
+  * Allow choosing between musl and glibc
+
+ -- Tobias Koch <tobias.koch@gmail.com>  Mon, 16 May 2022 11:58:20 +0300
+
 bolt-distro-tools (1.5.9-1) unstable; urgency=medium
 
   * sourcepackage: don't break early when loading bolt_helpers
