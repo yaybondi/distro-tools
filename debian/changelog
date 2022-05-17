@@ -1,3 +1,9 @@
+bolt-distro-tools (1.6.2-1) unstable; urgency=medium
+
+  * image-gen/generator: ensure tools triplet is *-tools-*-*
+
+ -- Tobias Koch <tobias.koch@gmail.com>  Wed, 18 May 2022 01:09:54 +0300
+
 bolt-distro-tools (1.6.1-1) unstable; urgency=medium
 
   * image-gen/generator: don't assume libc vendor is musl
