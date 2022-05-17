@@ -1,3 +1,9 @@
+bolt-distro-tools (1.6.1-1) unstable; urgency=medium
+
+  * image-gen/generator: don't assume libc vendor is musl
+
+ -- Tobias Koch <tobias.koch@gmail.com>  Wed, 18 May 2022 00:33:28 +0300
+
 bolt-distro-tools (1.6.0-1) unstable; urgency=medium
 
   * Allow choosing between musl and glibc
