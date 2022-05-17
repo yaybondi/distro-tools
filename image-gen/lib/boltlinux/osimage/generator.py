@@ -33,7 +33,6 @@ import tempfile
 import textwrap
 
 from boltlinux.error import BoltError
-from boltlinux.miscellaneous.userinfo import UserInfo
 from boltlinux.miscellaneous.platform import Platform
 from boltlinux.osimage.specfile import SpecfileParser
 from boltlinux.osimage.subprocess import Subprocess
@@ -176,6 +175,7 @@ class ImageGenerator:
         self._repo_base = repo_base or "http://archive.boltlinux.org/dists"
 
         opt_check_sig = "option check_signature" if self._verify else ""
+        uname_m = Platform.uname("-m")
 
         self.context = {
             "release":
@@ -185,11 +185,13 @@ class ImageGenerator:
             "arch":
                 self._arch,
             "host_arch":
-                Platform.uname("-m"),
+                uname_m,
             "machine":
                 self._arch,
             "target_type":
-                Platform.target_for_machine(self._arch),
+                Platform.target_for_machine(self._arch, self._libc),
+            "tools_type":
+                Platform.target_for_machine(uname_m, self._libc),
             "opt_check_sig":
                 opt_check_sig,
             "repo_base":

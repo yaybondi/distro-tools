@@ -63,31 +63,35 @@ class Platform:
     #end function
 
     @staticmethod
-    def target_for_machine(machine):
+    def target_for_machine(machine, libc):
+        vendor = "musl" if libc == "musl" else "gnu"
+
         if machine.startswith("aarch64"):
-            return "aarch64-linux-musl"
+            template = "aarch64-linux-{}"
         if machine.startswith("armv4t"):
-            return "armv4-linux-musleabi"
+            template = "armv4-linux-{}eabi"
         if machine.startswith("armv6"):
-            return "armv6-linux-musleabihf"
+            template = "armv6-linux-{}eabihf"
         if machine.startswith("armv7a"):
-            return "armv7a-linux-musleabihf"
+            template = "armv7a-linux-{}eabihf"
         if re.match(r"^i\d86.*$", machine):
-            return "i686-bolt-linux-musl"
+            template = "i686-bolt-linux-{}"
         if machine.startswith("mips64el"):
-            return "mips64el-linux-musl"
+            template = "mips64el-linux-{}"
         if re.match(r"^mips\d*el.*$", machine):
-            return "mipsel-linux-musl"
+            template = "mipsel-linux-{}"
         if re.match(r"^powerpc64(?:le|el).*$", machine):
-            return "powerpc64le-linux-musl"
+            template = "powerpc64le-linux-{}"
         if machine.startswith("powerpc"):
-            return "powerpc-linux-musl"
+            template = "powerpc-linux-{}"
         if machine.startswith("s390x"):
-            return "s390x-linux-musl"
+            template = "s390x-linux-{}"
         if machine.startswith("riscv64"):
-            return "riscv64-linux-musl"
+            template = "riscv64-linux-{}"
         if re.match(r"^x86[-_]64$", machine):
-            return "x86_64-bolt-linux-musl"
+            template = "x86_64-bolt-linux-{}"
+
+        return template.format(vendor)
     #end function
 
 #end class
