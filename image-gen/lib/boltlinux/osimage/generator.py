@@ -191,9 +191,7 @@ class ImageGenerator:
             "target_type":
                 Platform.target_for_machine(self._arch, self._libc),
             "tools_type":
-                Platform \
-                    .target_for_machine(uname_m, self._libc) \
-                    .replace("-bolt-", "-tools-"),
+                Platform.target_for_machine(uname_m, self._libc)
             "opt_check_sig":
                 opt_check_sig,
             "repo_base":
