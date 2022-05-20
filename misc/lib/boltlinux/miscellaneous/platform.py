@@ -75,7 +75,7 @@ class Platform:
         if machine.startswith("armv7a"):
             template = "armv7a-linux-{}eabihf"
         if re.match(r"^i\d86.*$", machine):
-            template = "i686-bolt-linux-{}"
+            template = "i686-linux-{}"
         if machine.startswith("mips64el"):
             template = "mips64el-linux-{}"
         if re.match(r"^mips\d*el.*$", machine):
@@ -89,7 +89,7 @@ class Platform:
         if machine.startswith("riscv64"):
             template = "riscv64-linux-{}"
         if re.match(r"^x86[-_]64$", machine):
-            template = "x86_64-bolt-linux-{}"
+            template = "x86_64-linux-{}"
 
         return template.format(vendor)
     #end function
