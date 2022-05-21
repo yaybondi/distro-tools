@@ -505,7 +505,6 @@ class BinaryPackage(BasePackage):
                 cmd_list = [
                     ([objcopy, "--only-keep-debug", src_path, dbg_path], True),
                     ([objcopy, "--strip-unneeded",  src_path          ], True),
-                    ([chrpath, "-c", src_path                         ], False)
                 ]
             else:
                 dbg_file = os.path.basename(dbg_path)
@@ -517,12 +516,18 @@ class BinaryPackage(BasePackage):
                         True
                     ),
                     (["mv", dbg_file, dbg_path], True),
-                    ([chrpath, "-c", src_path ], False)
                 ]
 
             for cmd, check_retval in cmd_list:
                 subprocess.run(cmd, stderr=subprocess.STDOUT,
                         check=check_retval)
+
+            subprocess.run(
+                [chrpath, "-c", src_path ],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                check=False
+            )
 
             # file size has changed
             attr.stats.restat(src_path)
