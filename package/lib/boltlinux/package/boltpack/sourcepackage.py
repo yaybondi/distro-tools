@@ -369,9 +369,6 @@ class SourcePackage(BasePackage):
     def _update_env(self, env):
         env.update(Platform.build_flags())
 
-        num_parallel_jobs = str(int(Platform.num_cpus() * 1.5))
-        env["BOLT_PARALLEL_JOBS"] = num_parallel_jobs
-
         for k, v in os.environ.items():
             if k in ["BOLT_WORK_DIR", "BOLT_SOURCE_DIR", "BOLT_BUILD_DIR",
                     "BOLT_INSTALL_DIR"]:
@@ -379,6 +376,9 @@ class SourcePackage(BasePackage):
             if k.startswith("BOLT_") or k in ["PATH", "USER", "USERNAME"]:
                 env[k] = v
         #end for
+
+        if "BOLT_PARALLEL_JOBS" not in env:
+            env["BOLT_PARALLEL_JOBS"] = str(int(os.cpu_count() * 1.5))
 
         if env.get("PATH") is None:
             env["PATH"] = "/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin"

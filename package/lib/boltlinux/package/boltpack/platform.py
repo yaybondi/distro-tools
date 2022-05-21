@@ -58,25 +58,6 @@ class Platform:
     #end function
 
     @staticmethod
-    def num_cpus():
-        cpu_info_file = "/proc/cpuinfo"
-        num_cpus = 1
-
-        if os.path.exists(cpu_info_file):
-            num_cpus = 0
-
-            with open(cpu_info_file, "r", encoding="utf-8") as fp:
-                for line in fp:
-                    if re.match(r"processor\s*:\s*\d+", line):
-                        num_cpus += 1
-                #end for
-            #end with
-        #end if
-
-        return num_cpus
-    #end function
-
-    @staticmethod
     def find_executable(executable_name, fallback=None):
         search_path = os.environ.get("PATH", "").split(os.pathsep) + [
             "/tools/bin",
