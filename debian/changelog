@@ -1,3 +1,9 @@
+bolt-distro-tools (1.6.4-1) unstable; urgency=medium
+
+  * osimage/generator: fix syntax error
+
+ -- Tobias Koch <tobias.koch@gmail.com>  Wed, 25 May 2022 12:17:57 +0300
+
 bolt-distro-tools (1.6.3-1) unstable; urgency=medium
 
   * shlibcache: overlay_package recognizes ld64* as possible SO dependency
