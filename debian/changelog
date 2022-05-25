@@ -1,3 +1,13 @@
+bolt-distro-tools (1.6.3-1) unstable; urgency=medium
+
+  * shlibcache: overlay_package recognizes ld64* as possible SO dependency
+  * Run chrpath -c silently
+  * Replace Platform.num_cpus with os.cpu_count
+  * misc/platform: no -bolt- in target triplets
+  * osimage/generator: simplify Platform.target_for_machine call
+
+ -- Tobias Koch <tobias.koch@gmail.com>  Wed, 25 May 2022 12:10:06 +0300
+
 bolt-distro-tools (1.6.2-1) unstable; urgency=medium
 
   * image-gen/generator: ensure tools triplet is *-tools-*-*
