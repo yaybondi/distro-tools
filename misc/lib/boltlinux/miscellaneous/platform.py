@@ -68,27 +68,27 @@ class Platform:
 
         if machine.startswith("aarch64"):
             template = "aarch64-linux-{}"
-        if machine.startswith("armv4t"):
+        elif machine.startswith("armv4t"):
             template = "armv4-linux-{}eabi"
-        if machine.startswith("armv6"):
+        elif machine.startswith("armv6"):
             template = "armv6-linux-{}eabihf"
-        if machine.startswith("armv7a"):
+        elif machine.startswith("armv7a"):
             template = "armv7a-linux-{}eabihf"
-        if re.match(r"^i\d86.*$", machine):
+        elif re.match(r"^i\d86.*$", machine):
             template = "i686-linux-{}"
-        if machine.startswith("mips64el"):
+        elif machine.startswith("mips64el"):
             template = "mips64el-linux-{}"
-        if re.match(r"^mips\d*el.*$", machine):
+        elif re.match(r"^mips\d*el.*$", machine):
             template = "mipsel-linux-{}"
-        if re.match(r"^powerpc64(?:le|el).*$", machine):
+        elif re.match(r"^powerpc64(?:le|el).*$", machine):
             template = "powerpc64le-linux-{}"
-        if machine.startswith("powerpc"):
+        elif machine.startswith("powerpc"):
             template = "powerpc-linux-{}"
-        if machine.startswith("s390x"):
+        elif machine.startswith("s390x"):
             template = "s390x-linux-{}"
-        if machine.startswith("riscv64"):
+        elif machine.startswith("riscv64"):
             template = "riscv64-linux-{}"
-        if re.match(r"^x86[-_]64$", machine):
+        elif re.match(r"^x86[-_]64$", machine):
             template = "x86_64-linux-{}"
 
         return template.format(vendor)
