@@ -1,3 +1,9 @@
+bolt-distro-tools (1.6.5-1) unstable; urgency=medium
+
+  * misc/platform: fix broken elif logic (used if...return previously)
+
+ -- Tobias Koch <tobias.koch@gmail.com>  Thu, 26 May 2022 11:21:46 +0300
+
 bolt-distro-tools (1.6.4-1) unstable; urgency=medium
 
   * osimage/generator: fix syntax error
