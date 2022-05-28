@@ -177,6 +177,10 @@ class ImageGenerator:
         opt_check_sig = "option check_signature" if self._verify else ""
         uname_m = Platform.uname("-m")
 
+        tools_type = Platform.target_for_machine(uname_m, self._libc)
+        if "tools" not in tools_type.split("-"):
+            tools_type = tools_type.replace("-", "-tools-", 1)
+
         self.context = {
             "release":
                 self._release,
@@ -191,7 +195,7 @@ class ImageGenerator:
             "target_type":
                 Platform.target_for_machine(self._arch, self._libc),
             "tools_type":
-                Platform.target_for_machine(uname_m, self._libc),
+                tools_type,
             "opt_check_sig":
                 opt_check_sig,
             "repo_base":

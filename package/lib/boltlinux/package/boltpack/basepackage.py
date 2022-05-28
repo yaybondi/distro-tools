@@ -24,7 +24,8 @@
 #
 
 from lxml import etree
-from boltlinux.package.boltpack.packagemanager import PackageManager
+
+from boltlinux.miscellaneous.packagemanager import PackageManager
 
 class BasePackage:
 

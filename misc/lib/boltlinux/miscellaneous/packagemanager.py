@@ -24,7 +24,7 @@
 #
 
 import os
-from boltlinux.package.boltpack.xpkg import Dpkg, Opkg  # noqa:
+from boltlinux.miscellaneous.xpkg import Dpkg, Opkg  # noqa:
 
 class PackageManager:
 

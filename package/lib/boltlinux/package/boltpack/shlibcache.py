@@ -29,9 +29,10 @@ import os
 import re
 import subprocess
 
-from boltlinux.package.boltpack.platform import Platform
 from boltlinux.package.boltpack.filestats import FileStats
-from boltlinux.package.boltpack.packagemanager import PackageManager
+
+from boltlinux.miscellaneous.packagemanager import PackageManager
+from boltlinux.miscellaneous.platform import Platform
 
 LOGGER = logging.getLogger(__name__)
 

@@ -36,13 +36,13 @@ from pathlib import Path
 
 from boltlinux.error import UnmetDependency, PackagingError
 
-from boltlinux.package.boltpack.platform import Platform
-from boltlinux.package.boltpack.packagemanager import PackageManager
 from boltlinux.package.boltpack.basepackage import BasePackage
 from boltlinux.package.boltpack.packagedesc import PackageDescription
 from boltlinux.package.boltpack.filestats import FileStats
 
 from boltlinux.miscellaneous.braceexpand import braceexpand
+from boltlinux.miscellaneous.packagemanager import PackageManager
+from boltlinux.miscellaneous.platform import Platform
 from boltlinux.miscellaneous.switch import switch
 
 class BinaryPackage(BasePackage):

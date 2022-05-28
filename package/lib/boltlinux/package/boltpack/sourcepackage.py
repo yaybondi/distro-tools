@@ -37,10 +37,10 @@ from lxml import etree
 from boltlinux.error import PackagingError
 from boltlinux.ffi.libarchive import ArchiveFileReader
 
+from boltlinux.miscellaneous.platform import Platform
+
 from boltlinux.package.boltpack.packagedesc import PackageDescription
 from boltlinux.package.boltpack.basepackage import BasePackage
-from boltlinux.package.boltpack.platform import Platform
-
 
 LOGGER = logging.getLogger(__name__)
 

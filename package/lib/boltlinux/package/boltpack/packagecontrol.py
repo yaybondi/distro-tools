@@ -27,6 +27,8 @@ import os
 import shutil
 
 from boltlinux.error import UnmetDependency, InvocationError, SkipBuild
+
+from boltlinux.miscellaneous.platform import Platform
 from boltlinux.miscellaneous.userinfo import UserInfo
 
 from boltlinux.package.boltpack.basepackage import BasePackage
@@ -36,7 +38,6 @@ from boltlinux.package.boltpack.shlibcache import ShlibCache
 from boltlinux.package.boltpack.specfile import Specfile
 from boltlinux.package.boltpack.changelog import Changelog
 from boltlinux.package.boltpack.sourcecache import SourceCache
-from boltlinux.package.boltpack.platform import Platform
 
 class PackageControl:
 

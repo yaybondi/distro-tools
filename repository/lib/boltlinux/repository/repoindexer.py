@@ -42,7 +42,7 @@ from boltlinux.ffi.libarchive import (
 )
 
 from boltlinux.error import NotFound, BoltSyntaxError, BoltError
-from boltlinux.package.boltpack.xpkg import BaseXpkg
+from boltlinux.miscellaneous.xpkg import BaseXpkg
 from boltlinux.package.boltpack.debianpackagemetadata \
         import DebianPackageMetaData
 

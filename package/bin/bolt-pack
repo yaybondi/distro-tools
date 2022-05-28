@@ -38,10 +38,10 @@ sys.path.insert(1, INSTALL_DIR + os.sep + 'lib')
 from boltlinux.archive.config.distroinfo import DistroInfo
 from boltlinux.error import BoltError, InvocationError, SkipBuild
 from boltlinux.miscellaneous.logformatter import LogFormatter
+from boltlinux.miscellaneous.platform import Platform
 from boltlinux.miscellaneous.switch import switch
 from boltlinux.miscellaneous.userinfo import UserInfo
 from boltlinux.package.boltpack.packagecontrol import PackageControl
-from boltlinux.package.boltpack.platform import Platform
 
 BOLT_ERR_INVOCATION =  1
 BOLT_ERR_RUNTIME    =  2

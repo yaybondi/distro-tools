@@ -28,7 +28,7 @@ import re
 from xml.sax.saxutils import escape as xml_escape
 
 from boltlinux.error import BoltError
-from boltlinux.package.boltpack.xpkg import BaseXpkg
+from boltlinux.miscellaneous.xpkg import BaseXpkg
 from boltlinux.package.deb2bolt.packageutils import PackageUtilsMixin
 
 class DebianPackageVersion:
