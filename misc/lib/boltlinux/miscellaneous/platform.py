@@ -175,11 +175,18 @@ class Platform:
 
     @staticmethod
     def libc_vendor():
+        result = ""
+
         if os.path.exists(Platform.LIBC_NAME_FILE):
             with open(Platform.LIBC_NAME_FILE, "r", encoding="utf-8") as f:
-                return f.read().strip()
+                result = f.read().strip()
         else:
-            return Platform.uname("-o").lower().split("/")[0]
+            result = Platform.uname("-o").lower().split("/")[0]
+
+        if result == "glibc":
+            result = "gnu"
+
+        return result
     #end function
 
     @staticmethod
