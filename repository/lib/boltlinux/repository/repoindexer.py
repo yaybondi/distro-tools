@@ -28,7 +28,6 @@ import re
 import stat
 import shlex
 import subprocess
-import textwrap
 import hashlib
 import functools
 import locale
