@@ -174,8 +174,8 @@ class Platform:
             .split("-")[0]
 
     @staticmethod
-    def libc_vendor():
-        result = ""
+    def libc_name():
+        result = "glibc"
 
         if os.path.exists(Platform.LIBC_NAME_FILE):
             with open(Platform.LIBC_NAME_FILE, "r", encoding="utf-8") as f:
@@ -183,9 +183,14 @@ class Platform:
         else:
             result = Platform.uname("-o").lower().split("/")[0]
 
+        return result
+    #end function
+
+    @staticmethod
+    def libc_vendor():
+        result = Platform.libc_name()
         if result == "glibc":
             result = "gnu"
-
         return result
     #end function
 
@@ -203,7 +208,7 @@ class Platform:
         if not result:
             result = PackageManager.instance().main_architecture()
         if not result:
-            result = Platform.config_guess().split("-")[0]
+            result = Platform.machine_name()
         return result
     #end function
 
