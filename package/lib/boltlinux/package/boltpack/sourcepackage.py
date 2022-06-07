@@ -51,14 +51,7 @@ class SourcePackage(BasePackage):
     )
 
     def __init__(self, xml_config, copy_archives=True, **kwargs):
-        actual_build_for = kwargs.get("build_for", "target")
-
-        if "machine" in kwargs:
-            machine = kwargs["machine"]
-        elif actual_build_for in ["tools", "cross-tools"]:
-            machine = Platform.tools_machine()
-        else:
-            machine = Platform.target_machine()
+        build_for = kwargs.get("build_for", "target")
 
         if isinstance(xml_config, etree._Element):
             source_node = xml_config
@@ -75,20 +68,16 @@ class SourcePackage(BasePackage):
 
         self.name = source_node.get("name")
         self.repo = source_node.get("repo")
+        self.skip = source_node.get("skip")
+
+        try:
+            del source_node.attrib["skip"]
+        except KeyError:
+            pass
+
         self.description = PackageDescription(
-                source_node.xpath("description")[0])
-
-        # This is the XML attribute.
-        self.build_for = source_node.get("build-for")
-        if self.build_for:
-            self.build_for = [v.strip() for v in self.build_for.split(",")]
-
-        # This is the XML attribute.
-        self.supported_on = source_node.get("supported-on")
-        if self.supported_on:
-            self.supported_on = [
-                v.strip() for v in self.supported_on.split(",")
-            ]
+            source_node.xpath("description")[0]
+        )
 
         dep_node = source_node.find("requires")
 
@@ -96,29 +85,18 @@ class SourcePackage(BasePackage):
             dep_node = "<requires></requires>"
         else:
             for pkg_node in list(dep_node.findall(".//package")):
-                pkg_prefix = pkg_node.get(actual_build_for + "-prefix", None)
+                pkg_prefix = pkg_node.get(build_for + "-prefix", None)
 
                 if pkg_prefix is not None:
                     pkg_node.attrib["name"] = \
                         pkg_prefix + pkg_node.attrib["name"]
-                elif actual_build_for == "tools":
+                elif build_for == "tools":
                     pkg_node.attrib["name"] = \
                         "tools-" + pkg_node.attrib["name"]
-                elif actual_build_for == "cross-tools":
+                elif build_for == "cross-tools":
                     dep_node.append(copy.deepcopy(pkg_node))
                     pkg_node.attrib["name"] = \
                         "tools-" + pkg_node.attrib["name"]
-
-                # This is the XML attribute.
-                supported_on = pkg_node.get("supported-on")
-                if supported_on:
-                    supported_on = [
-                        v.strip() for v in supported_on.split(",")
-                    ]
-
-                # Mark nodes which are not supported on machine.
-                if not BasePackage._is_supported_on(supported_on, machine):
-                    pkg_node.attrib["ignore"] = "true"
             #end for
         #end if
 

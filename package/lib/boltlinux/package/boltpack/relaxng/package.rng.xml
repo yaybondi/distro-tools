@@ -49,6 +49,10 @@
                 <element name="def">
                     <attribute name="name"/>
                     <attribute name="value"/>
+
+                    <optional>
+                        <attribute name="if"/>
+                    </optional>
                 </element>
             </zeroOrMore>
         </element>
@@ -61,11 +65,9 @@
             <attribute name="repo"/>
 
             <optional>
-                <attribute name="build-for"/>
+                <attribute name="if"/>
             </optional>
-            <optional>
-                <attribute name="supported-on"/>
-            </optional>
+
             <optional>
                 <attribute name="architecture-independent">
                     <choice>
@@ -108,6 +110,11 @@
                         <zeroOrMore>
                             <element name="file">
                                 <attribute name="src"/>
+
+                                <optional>
+                                    <attribute name="if"/>
+                                </optional>
+
                                 <optional>
                                     <attribute name="subdir"/>
                                 </optional>
@@ -128,6 +135,10 @@
                         <zeroOrMore>
                             <element name="patchset">
                                 <optional>
+                                    <attribute name="if"/>
+                                </optional>
+
+                                <optional>
                                     <attribute name="subdir"/>
                                 </optional>
                                 <optional>
@@ -137,6 +148,10 @@
                                 <zeroOrMore>
                                     <element name="file">
                                         <attribute name="src"/>
+
+                                        <optional>
+                                            <attribute name="if"/>
+                                        </optional>
                                         <optional>
                                             <attribute name="subdir"/>
                                         </optional>
@@ -218,6 +233,11 @@
     <define name="dependency">
         <element name="package">
             <attribute name="name"/>
+
+            <optional>
+                <attribute name="if"/>
+            </optional>
+
             <optional>
                 <attribute name="version"/>
             </optional>
@@ -229,9 +249,6 @@
             </optional>
             <optional>
                 <attribute name="cross-tools-prefix"/>
-            </optional>
-            <optional>
-                <attribute name="supported-on"/>
             </optional>
         </element>
     </define>
@@ -263,14 +280,13 @@
     <define name="package">
         <element name="package">
             <attribute name="name"/>
+
+            <optional>
+                <attribute name="if"/>
+            </optional>
+
             <optional>
                 <attribute name="section"/>
-            </optional>
-            <optional>
-                <attribute name="build-for"/>
-            </optional>
-            <optional>
-                <attribute name="supported-on"/>
             </optional>
             <optional>
                 <attribute name="xml:base"/>
@@ -344,6 +360,11 @@
                             <zeroOrMore>
                                 <element name="dir">
                                     <attribute name="src"/>
+
+                                    <optional>
+                                        <attribute name="if"/>
+                                    </optional>
+
                                     <optional>
                                         <attribute name="owner"/>
                                     </optional>
@@ -359,6 +380,11 @@
                             <zeroOrMore>
                                 <element name="file">
                                     <attribute name="src"/>
+
+                                    <optional>
+                                        <attribute name="if"/>
+                                    </optional>
+
                                     <optional>
                                         <attribute name="owner"/>
                                     </optional>

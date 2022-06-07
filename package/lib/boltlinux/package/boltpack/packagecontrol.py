@@ -64,8 +64,17 @@ class PackageControl:
         else:
             machine = Platform.target_machine()
 
-        xml_doc = Specfile(filename).xml_doc
-        self.info = {}
+        specfile = Specfile(filename) \
+            .validate() \
+            .preprocess(
+                true_terms=[
+                    "{}-build".format(build_for),
+                    machine,
+                    Platform.libc_name()
+                ]
+            )
+
+        xml_doc = specfile.xml_doc
 
         if not cache_dir:
             cache_dir = UserInfo.cache_dir()
@@ -119,7 +128,8 @@ class PackageControl:
             "BOLT_WORK_DIR": os.getcwd(),
             "BOLT_BUILD_TYPE": Platform.target_type(),
             "BOLT_TOOLS_TYPE": Platform.tools_type(),
-            "BOLT_BUILD_FOR": build_for
+            "BOLT_BUILD_FOR": build_for,
+            "BOLT_LIBC_NAME": Platform.libc_name()
         }
 
         if build_for == "tools":
@@ -192,11 +202,6 @@ class PackageControl:
                 if pkg.name in self.parms["disable_packages"]:
                     continue
 
-            if not pkg.builds_for(build_for):
-                continue
-            if not pkg.is_supported_on(machine):
-                continue
-
             if build_for == "tools":
                 pkg.name = "tools-" + pkg.name
             elif build_for == "cross-tools":
@@ -218,20 +223,10 @@ class PackageControl:
         if action not in ["list_deps", "unpack", "clean"]:
             build_for = self.parms["build_for"]
 
-            if not self.src_pkg.builds_for(build_for):
+            if self.src_pkg.skip:
                 raise SkipBuild(
-                    "package won't build for '{}'.".format(build_for)
-                )
-            #end if
-
-            if build_for in ["tools", "cross-tools"]:
-                machine = Platform.tools_machine()
-            else:
-                machine = Platform.target_machine()
-
-            if not self.src_pkg.is_supported_on(machine):
-                raise SkipBuild(
-                    "package is not supported on '{}'.".format(machine)
+                    'package is marked to be skipped unless "{}".'
+                    .format(self.src_pkg.skip)
                 )
             #end if
 

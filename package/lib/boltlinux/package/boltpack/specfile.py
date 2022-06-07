@@ -29,6 +29,7 @@ import re
 from lxml import etree
 
 from boltlinux.error import InvocationError, MalformedSpecfile
+from boltlinux.package.boltpack.filterparser import FilterParser
 from boltlinux.package.boltpack.serialize import SpecfileSerializer
 
 class Specfile:
@@ -54,9 +55,41 @@ class Specfile:
             raise MalformedSpecfile(str(e))
 
         self.xml_doc = xml_doc
+    #end function
 
+    def preprocess(self, true_terms=None):
+        if true_terms is None:
+            true_terms = []
+
+        parser = FilterParser(true_terms)
+        nodes_to_remove = set()
+
+        for element in self.xml_doc.getroot().iter():
+            expr = element.attrib.get("if")
+
+            if expr is None:
+                continue
+            if parser.parse(expr) == False:
+                if element.tag != "source":
+                    nodes_to_remove.add(element)
+                else:
+                    element.attrib["skip"] = expr
+            #end if
+        #end for
+
+        for element in nodes_to_remove:
+            parent = element.getparent()
+            if parent is not None:
+                parent.remove(element)
+        #end for
+
+        return self
+    #end function
+
+    def validate(self):
         self.validate_structure()
         self.validate_format()
+        return self
     #end function
 
     def validate_structure(self):
@@ -201,35 +234,6 @@ class Specfile:
         return self.xml_doc.xpath(
             "string(/control/source/description/summary)"
         )
-    #end function
-
-    @property
-    def build_for(self):
-        build_for_str = self.xml_doc.xpath(
-            "string(/control/source/@build-for)"
-        )
-
-        if not build_for_str:
-            repo = self.xml_doc.xpath("string(/control/source/@repo)")
-
-            if repo == "core":
-                build_for_str = "target,tools"
-            else:
-                build_for_str = "target"
-        #end if
-
-        build_for_items = [v.strip() for v in build_for_str.split(",")]
-
-        for v in build_for_items:
-            if v not in ["tools", "target", "cross-tools"]:
-                raise MalformedSpecfile(
-                    "attribute @build-for has invalid contents: {}"
-                    .format(build_for_str)
-                )
-            #end if
-        #end for
-
-        return ",".join(build_for_items)
     #end function
 
 #end class
