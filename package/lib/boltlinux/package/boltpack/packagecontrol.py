@@ -64,17 +64,32 @@ class PackageControl:
         else:
             machine = Platform.target_machine()
 
-        specfile = Specfile(filename) \
-            .validate() \
-            .preprocess(
-                true_terms=[
-                    "{}-build".format(build_for),
-                    machine,
-                    Platform.libc_name()
-                ]
-            )
+        specfile = Specfile(filename)
+        specfile.validate()
 
         xml_doc = specfile.xml_doc
+
+        if self.parms["enable_packages"]:
+            for p in self.parms["enable_packages"]:
+                if not xml_doc.xpath("/control/package[@name='%s']" % p):
+                    raise InvocationError("unknown binary package '%s'." % p)
+            #end for
+        #end if
+
+        if self.parms["disable_packages"]:
+            for p in self.parms["disable_packages"]:
+                if not xml_doc.xpath("/control/package[@name='%s']" % p):
+                    raise InvocationError("unknown binary package '%s'." % p)
+            #end for
+        #end if
+
+        specfile.preprocess(
+            true_terms=[
+                "{}-build".format(build_for),
+                machine,
+                Platform.libc_name()
+            ]
+        )
 
         if not cache_dir:
             cache_dir = UserInfo.cache_dir()
@@ -169,20 +184,6 @@ class PackageControl:
             copy_archives=self.parms["copy_archives"]
         )
         self.src_pkg.basedir = os.path.realpath(os.path.dirname(filename))
-
-        if self.parms["enable_packages"]:
-            for p in self.parms["enable_packages"]:
-                if not xml_doc.xpath("/control/package[@name='%s']" % p):
-                    raise InvocationError("unknown binary package '%s'." % p)
-            #end for
-        #end if
-
-        if self.parms["disable_packages"]:
-            for p in self.parms["disable_packages"]:
-                if not xml_doc.xpath("/control/package[@name='%s']" % p):
-                    raise InvocationError("unknown binary package '%s'." % p)
-            #end for
-        #end if
 
         self.bin_pkgs = []
         for node in xml_doc.xpath("/control/package"):
