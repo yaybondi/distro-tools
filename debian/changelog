@@ -1,3 +1,11 @@
+bolt-distro-tools (1.8.0-1) unstable; urgency=medium
+
+  * Implement "if" dynamic filters
+  * boltpack: add filterparser
+  * platform: have separate libc_name and libc_vendor functions
+
+ -- Tobias Koch <tobias.koch@gmail.com>  Tue, 07 Jun 2022 13:57:23 +0300
+
 bolt-distro-tools (1.7.0-1) unstable; urgency=medium
 
   * Move all of boltpack.platform into misc.platform
