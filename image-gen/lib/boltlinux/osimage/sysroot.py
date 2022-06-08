@@ -101,12 +101,12 @@ class Sysroot:
                 try:
                     proc_entry = "/proc/{}".format(entry)
 
-                    os.kill(-pid, signal.SIGTERM)
+                    os.kill(pid, signal.SIGTERM)
                     for i in range(10):
                         os.lstat(proc_entry)
                         time.sleep(0.05 * 1.1**i)
 
-                    os.kill(-pid, signal.SIGKILL)
+                    os.kill(pid, signal.SIGKILL)
                     for i in range(10):
                         os.lstat(proc_entry)
                         time.sleep(0.05 * 1.1**i)
