@@ -43,15 +43,24 @@ class PackageControl:
 
     def __init__(self, filename, cache_dir=None, **kwargs):
         self.parms = {
-            "build_for": "target",
-            "copy_archives": True,
-            "debug_pkgs": True,
-            "disable_packages": [],
-            "enable_packages": [],
-            "force_local": False,
-            "format": "deb",
-            "ignore_deps": False,
-            "outdir": None,
+            "build_for":
+                "target",
+            "copy_archives":
+                True,
+            "debug_pkgs":
+                True,
+            "disable_packages":
+                [],
+            "enable_packages":
+                [],
+            "force_local":
+                False,
+            "ignore_deps":
+                False,
+            "libc_name":
+                Platform.libc_name(),
+            "outdir":
+                None,
         }
         self.parms.update(kwargs)
 
@@ -85,9 +94,8 @@ class PackageControl:
 
         specfile.preprocess(
             true_terms=[
-                "{}-build".format(build_for),
-                machine,
-                Platform.libc_name()
+                # For example: "target-build", "riscv64", "glibc"
+                "{}-build".format(build_for), machine, self.parms["libc_name"]
             ]
         )
 
@@ -144,7 +152,7 @@ class PackageControl:
             "BOLT_BUILD_TYPE": Platform.target_type(),
             "BOLT_TOOLS_TYPE": Platform.tools_type(),
             "BOLT_BUILD_FOR": build_for,
-            "BOLT_LIBC_NAME": Platform.libc_name()
+            "BOLT_LIBC_NAME": self.parms["libc_name"]
         }
 
         if build_for == "tools":
@@ -230,6 +238,10 @@ class PackageControl:
                     .format(self.src_pkg.skip)
                 )
             #end if
+
+            # Nothing else to do, we return and the app exits with 0, now.
+            if action == "would_build":
+                return
 
             if not self.parms.get("ignore_deps"):
                 missing_deps = self._missing_build_dependencies()

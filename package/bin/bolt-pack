@@ -52,7 +52,7 @@ LOGGER = logging.getLogger()
 def print_usage():
     print(textwrap.dedent(
         """\
-        Copyright (C) 2016-2021 Tobias Koch <tobias.koch@gmail.com>
+        Copyright (C) 2016-2022 Tobias Koch <tobias.koch@gmail.com>
 
         This is the Bolt Linux package build tool.
 
@@ -64,12 +64,29 @@ def print_usage():
 
           -h, --help           Print this help message.
 
-          --list-deps          List all build dependencies.
+          --list-deps          Print all build dependencies to stdout (single line
+                               comma-separated list).
+
+          --would-build        Check if the package would be built for the given
+                               target environment, architecture and libc. Exits
+                               with 0 if yes and with 42 if not.
+
           --work-dir=<dir>     Change to the given directory before doing anything
                                else.
+
+        USED FOR BOOTSTRAPPING Bolt Linux:
+
           --release=<release>  The Bolt release to build for. The default is the
-                               latest release.
+                               active release, if it can be detected, or the latest
+                               release otherwise.
+
+        MEANT TO BE USED WITH --would-build:
+
           --arch=<arch>        Override auto-detection of the target architecture.
+                               The value provided is not validated.
+
+          --libc=<libc>        Override auto-detection of the target C runtime
+                               library (must be "musl" or "glibc").
 
         PACKAGE BUILD OPTIONS:
 
@@ -107,22 +124,33 @@ def print_usage():
 def parse_cmd_line():
     # define default configuration
     config = {
-        "action": "default",
-        "arch": None,
-        "build_for": "target",
-        "build_type": None,
-        "copy_archives": True,
-        "debug_pkgs": True,
-        "disable_packages": [],
-        "enable_packages": [],
-        "force_local": False,
-        "format": "deb",
-        "host_type": None,
-        "ignore_deps": False,
-        "outdir": None,
-        "release": None,
-        "target_type": None,
-        "work_dir": None,
+        "action":
+            "default",
+        "arch":
+            None,
+        "build_for":
+            "target",
+        "copy_archives":
+            True,
+        "debug_pkgs":
+            True,
+        "disable_packages":
+            [],
+        "enable_packages":
+            [],
+        "force_local":
+            False,
+        "ignore_deps":
+            False,
+        "libc_name":
+            Platform.libc_name(),
+        "outdir":
+            None,
+        "release":
+            (Platform.is_bolt() and Platform.active_release())
+                or DistroInfo().latest_release(),
+        "work_dir":
+            None,
     }
 
     try:
@@ -137,6 +165,7 @@ def parse_cmd_line():
             "list-deps",
             "ignore-deps",
             "install",
+            "libc=",
             "no-debug-pkgs",
             "no-copy-archives",
             "outdir=",
@@ -145,6 +174,7 @@ def parse_cmd_line():
             "repackage",
             "unpack",
             "work-dir=",
+            "would-build",
         ])
     except getopt.GetoptError as e:
         raise InvocationError("Error parsing command line: %s" % str(e))
@@ -175,14 +205,19 @@ def parse_cmd_line():
                 print_usage()
                 sys.exit(0)
                 break
-            if case("--list-deps"):
-                config["action"] = "list_deps"
-                break
             if case("--ignore-deps"):
                 config["ignore_deps"] = True
                 break
             if case("--install", "-i"):
                 config["action"] = "install"
+                break
+            if case("--libc"):
+                if v not in ["glibc", "musl"]:
+                    raise InvocationError('libc must be "musl" or "glibc".')
+                config["libc_name"] = v
+                break
+            if case("--list-deps"):
+                config["action"] = "list_deps"
                 break
             if case("--no-debug-pkgs"):
                 config["debug_pkgs"] = False
@@ -211,6 +246,9 @@ def parse_cmd_line():
                 if not os.path.isdir(v):
                     raise InvocationError("no such directory '%s'." % v)
                 config["work_dir"] = v
+                break
+            if case("--would-build"):
+                config["action"] = "would_build"
                 break
         #end switch
     #end for
@@ -241,21 +279,6 @@ if __name__ == "__main__":
                 os.chdir(options["work_dir"])
             except OSError as e:
                 raise BoltError("failed to set working directory: " + str(e))
-
-        distro_info = DistroInfo()
-
-        try:
-            latest_release = list(distro_info.list(supported=True).keys())[-1]
-        except KeyError:
-            latest_release = None
-
-        if options.get("release") is None:
-            options["release"] = latest_release
-
-        if not options["release"]:
-            raise BoltError(
-                "unable to determine latest release and no release specified."
-            )
 
         if not options.get("machine"):
             if options["build_for"] in ["tools", "cross-tools"]:
