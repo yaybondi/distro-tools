@@ -33,8 +33,9 @@ from boltlinux.miscellaneous.packagemanager import PackageManager
 
 class Platform:
 
-    CONFIG_GUESS   = '/usr/share/misc/config.guess'
-    LIBC_NAME_FILE = "/usr/share/misc/libc.name"
+    CONFIG_GUESS           = "/usr/share/misc/config.guess"
+    LIBC_NAME_FILE         = "/usr/share/misc/libc.name"
+    OPKG_MUSL_CONTROL_FILE = "/var/lib/opkg/info/musl-libc.control"
 
     @staticmethod
     def config_guess():
@@ -180,8 +181,8 @@ class Platform:
         if os.path.exists(Platform.LIBC_NAME_FILE):
             with open(Platform.LIBC_NAME_FILE, "r", encoding="utf-8") as f:
                 result = f.read().strip()
-        else:
-            result = Platform.uname("-o").lower().split("/")[0]
+        elif os.path.exists(Platform.OPKG_MUSL_CONTROL_FILE):
+            result = "musl"
 
         return result
     #end function
@@ -198,6 +199,12 @@ class Platform:
     def is_bolt():
         result = Platform._key_value_file_lookup("ID", "/etc/os-release")
         return result.lower() == "bolt"
+
+    @staticmethod
+    def active_release():
+        return Platform._key_value_file_lookup(
+            "VERSION_CODENAME", "/etc/os-release"
+        )
 
     @staticmethod
     def target_machine():
