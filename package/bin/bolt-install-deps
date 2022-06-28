@@ -63,7 +63,7 @@ determine_install_command() {
 # Check if invoking bolt-pack on the input file works, at all.
 #
 try_list_build_dependencies() {
-    if ! bolt-pack --build-for="$BUILD_FOR" --list-deps $1 >/dev/null 2>&1; then
+    if ! bolt-pack --build-for="$BUILD_FOR" --list-deps "$1" >/dev/null 2>&1; then
         die "failed to list build dependencies, check input file!"
     fi
 }
@@ -72,7 +72,7 @@ try_list_build_dependencies() {
 # Use bolt-pack to list the build dependencies and turn them into a plain list.
 #
 list_build_dependencies() {
-    bolt-pack --build-for="$BUILD_FOR" --list-deps $1 | \
+    bolt-pack --build-for="$BUILD_FOR" --list-deps "$1" | \
         sed -e 's/,/\n/g' -e 's/([^)]\+)//g' | awk '{print $1}'
 }
 
