@@ -27,6 +27,7 @@ setup(
     ],
     data_files=[
         ('bin', [
+            'bin/bolt-install-deps',
             'bin/bolt-pack',
             'bin/deb2bolt',
         ]),
