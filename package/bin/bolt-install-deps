@@ -37,7 +37,8 @@ die() {
     ESC_BLD="\033[1m"
     ESC_END="\033[0m"
 
-    if [ -t 1 ]; then
+    # Ash's echo somehow prints escape sequences verbatim.
+    if [ -t 2 ] && [ "x$BB_ASH_VERSION" = "x" ]; then
         echo "${ESC_BLD}bolt-install-deps${ESC_END}: ${ESC_RED}${ESC_BLD}error${ESC_END}: $1" >&2
     else
         echo "bolt-install-deps: error: $1" >&2
