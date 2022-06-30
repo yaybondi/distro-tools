@@ -1,3 +1,11 @@
+bolt-distro-tools (1.9.3-1) unstable; urgency=medium
+
+  * bolt-install-deps:
+    * don't use ANSI escapes while running under BusyBox' Ash
+    * small fixes
+
+ -- Tobias Koch <tobias.koch@gmail.com>  Thu, 30 Jun 2022 09:55:45 +0300
+
 bolt-distro-tools (1.9.2-1) unstable; urgency=medium
 
   * Add script bolt-install-deps for convenient installation of the build
