@@ -85,6 +85,9 @@ def print_usage():
           --arch=<arch>        Override auto-detection of the target architecture.
                                The value provided is not validated.
 
+          --tools-arch=<arch>  Override auto-detections of the tools architecture.
+                               The value provided is not validated.
+
           --libc=<libc>        Override auto-detection of the target C runtime
                                library (must be "musl" or "glibc").
 
@@ -127,7 +130,7 @@ def parse_cmd_line():
         "action":
             "default",
         "arch":
-            None,
+            Platform.target_machine(),
         "build_for":
             "target",
         "copy_archives":
@@ -149,6 +152,8 @@ def parse_cmd_line():
         "release":
             (Platform.is_bolt() and Platform.active_release())
                 or DistroInfo().latest_release(),
+        "tools_arch":
+            Platform.tools_machine(),
         "work_dir":
             None,
     }
@@ -172,6 +177,7 @@ def parse_cmd_line():
             "prepare",
             "release=",
             "repackage",
+            "tools-arch=",
             "unpack",
             "work-dir=",
             "would-build",
@@ -182,7 +188,7 @@ def parse_cmd_line():
     for o, v in opts:
         for case in switch(o):
             if case("--arch"):
-                config["machine"] = v
+                config["arch"] = v
                 break
             if case("--build", "-b"):
                 config["action"] = "build"
@@ -239,6 +245,9 @@ def parse_cmd_line():
             if case("--release"):
                 config["release"] = v
                 break
+            if case("--tools-arch"):
+                config["tools_arch"] = v
+                break
             if case("--unpack", "-u"):
                 config["action"] = "unpack"
                 break
@@ -279,12 +288,6 @@ if __name__ == "__main__":
                 os.chdir(options["work_dir"])
             except OSError as e:
                 raise BoltError("failed to set working directory: " + str(e))
-
-        if not options.get("machine"):
-            if options["build_for"] in ["tools", "cross-tools"]:
-                options["machine"] = Platform.tools_machine()
-            else:
-                options["machine"] = Platform.target_machine()
 
         PackageControl(args[0], **options)\
             (options["action"])

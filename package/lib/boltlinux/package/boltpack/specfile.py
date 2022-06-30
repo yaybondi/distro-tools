@@ -67,8 +67,10 @@ class Specfile:
         for element in self.xml_doc.getroot().iter():
             expr = element.attrib.get("if")
 
+            # Default is to keep/build element/package.
             if expr is None:
                 continue
+
             if parser.parse(expr) == False:
                 if element.tag != "source":
                     nodes_to_remove.add(element)

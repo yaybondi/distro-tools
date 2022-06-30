@@ -43,6 +43,8 @@ class PackageControl:
 
     def __init__(self, filename, cache_dir=None, **kwargs):
         self.parms = {
+            "arch":
+                Platform.target_machine(),
             "build_for":
                 "target",
             "copy_archives":
@@ -61,17 +63,14 @@ class PackageControl:
                 Platform.libc_name(),
             "outdir":
                 None,
+            "tools_arch":
+                Platform.tools_machine()
         }
         self.parms.update(kwargs)
 
         build_for = self.parms["build_for"]
-
-        if "machine" in kwargs:
-            machine = kwargs["machine"]
-        elif build_for in ["tools", "cross-tools"]:
-            machine = Platform.tools_machine()
-        else:
-            machine = Platform.target_machine()
+        pkg_arch  = self.parms["arch"] if build_for == "target" \
+                        else self.parms["tools_arch"]
 
         specfile = Specfile(filename)
         specfile.validate()
@@ -94,8 +93,11 @@ class PackageControl:
 
         specfile.preprocess(
             true_terms=[
-                # For example: "target-build", "riscv64", "glibc"
-                "{}-build".format(build_for), machine, self.parms["libc_name"]
+                # Example: "target-build", "tools-x86_64", "riscv64", "glibc"
+                "{}-build".format(build_for),
+                "tools-{}".format(self.parms["tools_arch"]),
+                self.parms["arch"],
+                self.parms["libc_name"]
             ]
         )
 
@@ -139,7 +141,7 @@ class PackageControl:
             elif is_arch_indep.lower() == "true":
                 pkg_node.attrib["architecture"] = "all"
             else:
-                pkg_node.attrib["architecture"] = machine
+                pkg_node.attrib["architecture"] = pkg_arch
         #end for
 
         xml_doc.xpath("/control/changelog")[0].attrib["source"] = source_name
@@ -187,9 +189,8 @@ class PackageControl:
 
         self.src_pkg = SourcePackage(
             xml_doc.xpath("/control/source")[0],
-            build_for=build_for,
-            machine=machine,
-            copy_archives=self.parms["copy_archives"]
+            copy_archives=self.parms["copy_archives"],
+            build_for=build_for
         )
         self.src_pkg.basedir = os.path.realpath(os.path.dirname(filename))
 
@@ -200,8 +201,7 @@ class PackageControl:
                 debug_pkgs=self.parms["debug_pkgs"],
                 install_prefix=self.defines["BOLT_INSTALL_PREFIX"],
                 host_type=self.defines["BOLT_HOST_TYPE"],
-                build_for=build_for,
-                machine=machine
+                build_for=build_for
             )
 
             if self.parms["enable_packages"]:
