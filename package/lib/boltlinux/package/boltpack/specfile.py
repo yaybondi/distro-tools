@@ -238,4 +238,11 @@ class Specfile:
         )
     #end function
 
+    @property
+    def build_if(self):
+        return self.xml_doc.xpath(
+            "string(/control/source/@if)"
+        )
+    #end function
+
 #end class
