@@ -72,7 +72,7 @@ class WorkerThread(threading.Thread):
             #end try
 
             LOGGER.info(
-                "re-running thread {} in {}s"
+                "re-running thread {} in {:.2f}s"
                 .format(self.name, max(0.0, next_start - time.time()))
             )
 
