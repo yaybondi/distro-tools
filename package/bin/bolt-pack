@@ -302,6 +302,6 @@ if __name__ == "__main__":
         sys.exit(BOLT_ERR_RUNTIME)
     except KeyboardInterrupt:
         LOGGER.warning("caught keyboard interrupt, exiting.")
-        sys.exit(0)
+        sys.exit(BOLT_ERR_RUNTIME)
     #end try
 #end __main__

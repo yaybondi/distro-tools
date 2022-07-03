@@ -133,6 +133,6 @@ if __name__ == "__main__":
         sys.exit(EXIT_ERROR)
     except KeyboardInterrupt:
         LOGGER.warning("caught keyboard interrupt, exiting.")
-        sys.exit(EXIT_OK)
+        sys.exit(EXIT_ERROR)
     #end try
 #end __main__
