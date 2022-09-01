@@ -16,8 +16,8 @@ else
     fi
 
     if [ -d ../build-system/lib/boltlinux ]; then
-        ln -sf ../../../build-system/lib/boltlinux/packagedb   .pythonpath/boltlinux/
-        ln -sf ../../../build-system/lib/boltlinux/build       .pythonpath/boltlinux/
+        ln -sf ../../../build-system/lib/boltlinux/packagedb .pythonpath/boltlinux/
+        ln -sf ../../../build-system/lib/boltlinux/builder   .pythonpath/boltlinux/
     fi
 
     touch .pythonpath/boltlinux/__init__.py
