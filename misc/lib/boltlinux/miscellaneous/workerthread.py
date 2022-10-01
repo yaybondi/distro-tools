@@ -71,6 +71,9 @@ class WorkerThread(threading.Thread):
                 LOGGER.error(msg)
             #end try
 
+            if self._stop_event.is_set():
+                continue
+
             LOGGER.info(
                 "re-running thread {} in {:.2f}s"
                 .format(self.name, max(0.0, next_start - time.time()))
