@@ -38,6 +38,9 @@ class DistroInfo:
 
     base_url = "http://archive.boltlinux.org/config/v1"
 
+    def __init__(self):
+        self._dict = {}
+
     def refresh(self, releases=False, mirrors=False,
             overwrite_existing=False, **kwargs):
         items_to_fetch = []
@@ -46,6 +49,9 @@ class DistroInfo:
             items_to_fetch.append("releases")
         if mirrors:
             items_to_fetch.append("mirrors")
+
+        # Reset _dict so that fetching is not being short-cut.
+        self._dict.clear()
 
         for item in items_to_fetch:
             os.makedirs(UserInfo.config_folder(), exist_ok=True)
@@ -59,6 +65,7 @@ class DistroInfo:
             getattr(self, "_merge_{}".format(item))(
                 data, dest_file, overwrite_existing=overwrite_existing
             )
+    #end function
 
     def list(self, supported=False, unsupported=False, *kwargs):
         releases = self._load_json_file("releases")
@@ -104,6 +111,26 @@ class DistroInfo:
         #end for
 
         return releases[release]
+    #end function
+
+    def get_git_url(self, release, repo_name, **kwargs):
+        repo_info = self.find(release).get("repositories", {}).get(repo_name)
+        if not repo_info:
+            raise DistroInfoError(
+                "could not find information for release '{}' and repo '{}'."
+                .format(release, repo_name)
+            )
+        #end if
+
+        pkg_rules = repo_info.get("rules")
+        if not pkg_rules:
+            raise DistroInfoError(
+                "could not find package rules for release '{}' and repo '{}'."
+                .format(release, repo_name)
+            )
+        #end if
+
+        return pkg_rules
     #end function
 
     def pick_mirror(self, release, repo_name, **kwargs):
@@ -193,6 +220,8 @@ class DistroInfo:
             raise DistroInfoError(
                 "failed to store '{}': {}".format(filename, str(e))
             )
+
+        self._dict["releases"] = releases
     #end function
 
     def _merge_mirrors(self, data, filename, overwrite_existing=False):
@@ -243,9 +272,14 @@ class DistroInfo:
             raise DistroInfoError(
                 "failed to store '{}': {}".format(filename, str(e))
             )
+
+        self._dict["mirrors"] = mirrors
     #end function
 
     def _load_json_file(self, which):
+        if which in self._dict:
+            return self._dict[which]
+
         result = collections.OrderedDict()
 
         json_file = os.path.join(
@@ -269,6 +303,7 @@ class DistroInfo:
                 "error loading '{}': {}".format(json_file, str(e))
             )
 
+        self._dict[which] = result
         return result
     #end function
 
