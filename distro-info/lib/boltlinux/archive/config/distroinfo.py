@@ -47,6 +47,9 @@ class DistroInfo:
     def find(self, **kwargs):
         return self.implementation.find(**kwargs)
 
+    def get_git_url_and_ref(self, **kwargs):
+        return self.implementation.get_git_url_and_ref(**kwargs)
+
     def pick_mirror(self, **kwargs):
         return self.implementation.pick_mirror(**kwargs)
 

@@ -28,6 +28,7 @@ import contextlib
 import fcntl
 import json
 import os
+import re
 import urllib.request
 
 from boltlinux.miscellaneous.userinfo import UserInfo
@@ -104,6 +105,40 @@ class DistroInfo:
         #end for
 
         return releases[release]
+    #end function
+
+    def get_git_url_and_ref(self, release, repo_name, **kwargs):
+        repo_info = self.find(release).get("repositories", {}).get(repo_name)
+
+        if not repo_info:
+            raise DistroInfoError(
+                "could not find information for release '{}' and repo '{}'."
+                .format(release, repo_name)
+            )
+        #end if
+
+        rules_url = repo_info.get("rules")
+        if not rules_url:
+            raise DistroInfoError(
+                "could not find package rules for release '{}' and repo '{}'."
+                .format(release, repo_name)
+            )
+        #end if
+
+        m = re.match(
+            r"""^
+                (?P<url>
+                    (?:(?P<proto>[^:]+)://)?
+                    (?:[^/@]+@)?
+                    (?:[^/@]+/)*
+                    (?:[^@]+)
+                )
+                (?:@(?P<ref>\S+))?
+            """,
+            rules_url, re.VERBOSE
+        )
+
+        return (m.group("url"), m.group("ref") or "master")
     #end function
 
     def pick_mirror(self, release, repo_name, **kwargs):
