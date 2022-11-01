@@ -42,7 +42,7 @@ class WorkerThread(threading.Thread):
     #end function
 
     def run(self):
-        LOGGER.info('thread "{}" is starting up.'.format(self.name))
+        LOGGER.debug('thread "{}" is starting up.'.format(self.name))
 
         while not self._stop_event.is_set():
             next_start = time.time() + random.uniform(
@@ -74,7 +74,7 @@ class WorkerThread(threading.Thread):
             if self._stop_event.is_set():
                 continue
 
-            LOGGER.info(
+            LOGGER.warning(
                 "re-running thread {} in {:.2f}s"
                 .format(self.name, max(0.0, next_start - time.time()))
             )
@@ -82,7 +82,7 @@ class WorkerThread(threading.Thread):
             self._stop_event.wait(timeout=max(0.0, next_start - time.time()))
         #end while
 
-        LOGGER.info('thread "{}" is shutting down.'.format(self.name))
+        LOGGER.debug('thread "{}" is shutting down.'.format(self.name))
     #end function
 
     def work(self):
