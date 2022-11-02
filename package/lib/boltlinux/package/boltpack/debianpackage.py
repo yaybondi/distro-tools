@@ -50,17 +50,20 @@ class DebianPackage(BinaryPackage):
             self.pack_package(debug_pkg=True)
     #end function
 
-    def pack_package(self, debug_pkg=False):
-        epoch, version, release = self.version_tuple
+    def pkg_filename(self, debug_pkg=False):
+        _, version, revision = self.version_tuple
 
         debug_suffix = "-dbg" if debug_pkg else ""
 
-        pkg_filename = "_".join([
+        return "_".join([
             self.name + debug_suffix,
-            version + "-" + release,
+            version + "-" + revision,
             self.architecture.replace("_", "-")
         ]) + ".bolt"
+    #end function
 
+    def pack_package(self, debug_pkg=False):
+        pkg_filename = self.pkg_filename(debug_pkg=debug_pkg)
         pkg_abspath  = self.output_dir + os.sep + pkg_filename
         meta_data    = self.meta_data(debug_pkg=debug_pkg)
 

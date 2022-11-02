@@ -206,8 +206,10 @@ class PackageControl:
         )
         self.src_pkg.basedir = os.path.realpath(os.path.dirname(filename))
 
+        self.bin_pkgs = []
+
         if self.parms.get("action") == "mk_build_deps":
-            self.dep_pkg = DebianPackage(
+            pkg = DebianPackage(
                 copy.deepcopy(source_pkg_node),
                 debug_pkgs=False,
                 install_prefix=self.defines["BOLT_INSTALL_PREFIX"],
@@ -215,13 +217,12 @@ class PackageControl:
                 build_for=build_for
             )
 
-            self.dep_pkg.name = "bolt-build-deps"
-            self.dep_pkg.version = "1.0-0"
-            self.dep_pkg.architecture = "all"
-            self.dep_pkg.maintainer = "Package Control"
-            self.dep_pkg.source = "no-source"
-
-            self.dep_pkg.description = PackageDescription(
+            pkg.name        += "-build-deps"
+            pkg.architecture = "all"
+            pkg.maintainer   = "Package Control"
+            pkg.source       = "no-source"
+            pkg.section      = "devel"
+            pkg.description  = PackageDescription(
                 """
                 <description>
                     <summary>Build dependencies for {name} {version}</summary>
@@ -233,42 +234,45 @@ class PackageControl:
                 """  # noqa
                 .format(
                     name=self.src_pkg.name,
-                    version=self.src_pkg.version,
+                    version=pkg.version,
                     arch=architecture
                 )
             )
+
+            self.bin_pkgs.append(pkg)
+        else:
+            for node in xml_doc.xpath("/control/package"):
+                pkg = DebianPackage(
+                    node,
+                    debug_pkgs=self.parms["debug_pkgs"],
+                    install_prefix=self.defines["BOLT_INSTALL_PREFIX"],
+                    host_type=self.defines["BOLT_HOST_TYPE"],
+                    build_for=build_for
+                )
+
+                if self.parms["enable_packages"]:
+                    if pkg.name not in self.parms["enable_packages"]:
+                        continue
+                if self.parms["disable_packages"]:
+                    if pkg.name in self.parms["disable_packages"]:
+                        continue
+
+                pkg.basedir = self.defines["BOLT_INSTALL_DIR"]
+
+                if self.parms.get("outdir"):
+                    pkg.output_dir = os.path.realpath(self.parms["outdir"])
+
+                self.bin_pkgs.append(pkg)
+            #end for
         #end if
 
-        self.bin_pkgs = []
-        for node in xml_doc.xpath("/control/package"):
-            pkg = DebianPackage(
-                node,
-                debug_pkgs=self.parms["debug_pkgs"],
-                install_prefix=self.defines["BOLT_INSTALL_PREFIX"],
-                host_type=self.defines["BOLT_HOST_TYPE"],
-                build_for=build_for
-            )
-
-            if self.parms["enable_packages"]:
-                if pkg.name not in self.parms["enable_packages"]:
-                    continue
-            if self.parms["disable_packages"]:
-                if pkg.name in self.parms["disable_packages"]:
-                    continue
-
+        for pkg in self.bin_pkgs:
             if build_for == "tools":
                 pkg.name = "tools-" + pkg.name
             elif build_for == "cross-tools":
                 pkg.name = "tools-target-" + pkg.name
             #end if
-
-            pkg.basedir = self.defines["BOLT_INSTALL_DIR"]
-
-            if self.parms.get("outdir"):
-                pkg.output_dir = os.path.realpath(self.parms["outdir"])
-
-            self.bin_pkgs.append(pkg)
-        #end for
+        #end function
 
         self.changelog = Changelog(xml_doc.xpath('/control/changelog')[0])
     #end function
@@ -299,7 +303,21 @@ class PackageControl:
     #end function
 
     def mk_build_deps(self):
-        self.dep_pkg.do_pack()
+        pkg = self.bin_pkgs[0]
+        pkg.do_pack()
+
+        bolt_build_deps_symlink = "bolt-build-deps.bolt"
+
+        if os.path.islink(bolt_build_deps_symlink):
+            os.unlink(bolt_build_deps_symlink)
+        if os.path.exists(bolt_build_deps_symlink):
+            return
+
+        try:
+            os.symlink(pkg.pkg_filename(), bolt_build_deps_symlink)
+        except OSError:
+            pass
+    #end function
 
     def list_deps(self):
         print(self.src_pkg.build_dependencies())
