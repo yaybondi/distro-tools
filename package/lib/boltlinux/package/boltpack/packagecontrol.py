@@ -23,6 +23,8 @@
 # THE SOFTWARE.
 #
 
+import copy
+import logging
 import os
 import shutil
 
@@ -32,12 +34,15 @@ from boltlinux.miscellaneous.platform import Platform
 from boltlinux.miscellaneous.userinfo import UserInfo
 
 from boltlinux.package.boltpack.basepackage import BasePackage
-from boltlinux.package.boltpack.sourcepackage import SourcePackage
-from boltlinux.package.boltpack.debianpackage import DebianPackage
-from boltlinux.package.boltpack.shlibcache import ShlibCache
-from boltlinux.package.boltpack.specfile import Specfile
 from boltlinux.package.boltpack.changelog import Changelog
+from boltlinux.package.boltpack.debianpackage import DebianPackage
+from boltlinux.package.boltpack.packagedesc import PackageDescription
+from boltlinux.package.boltpack.shlibcache import ShlibCache
 from boltlinux.package.boltpack.sourcecache import SourceCache
+from boltlinux.package.boltpack.sourcepackage import SourcePackage
+from boltlinux.package.boltpack.specfile import Specfile
+
+LOGGER = logging.getLogger(__name__)
 
 class PackageControl:
 
@@ -132,16 +137,21 @@ class PackageControl:
             is_arch_indep = "false"
         #end try
 
-        for pkg_node in xml_doc.xpath("/control/package"):
-            pkg_node.attrib["source"] = source_name
-            pkg_node.attrib["repo"] = repo_name
+        if build_for in ["tools", "cross-tools"]:
+            architecture = "tools"
+        elif is_arch_indep.lower() == "true":
+            architecture = "all"
+        else:
+            architecture = pkg_arch
 
-            if build_for in ["tools", "cross-tools"]:
-                pkg_node.attrib["architecture"] = "tools"
-            elif is_arch_indep.lower() == "true":
-                pkg_node.attrib["architecture"] = "all"
-            else:
-                pkg_node.attrib["architecture"] = pkg_arch
+        for pkg_node in xml_doc.xpath(
+                "/control/*[name() = 'source' or name() = 'package']"):
+            pkg_node.attrib["source"] = source_name
+
+            if pkg_node.tag != "source":
+                pkg_node.attrib["repo"] = repo_name
+
+            pkg_node.attrib["architecture"] = architecture
         #end for
 
         xml_doc.xpath("/control/changelog")[0].attrib["source"] = source_name
@@ -187,12 +197,47 @@ class PackageControl:
             #end if
         #end for
 
+        source_pkg_node = xml_doc.xpath("/control/source")[0]
+
         self.src_pkg = SourcePackage(
-            xml_doc.xpath("/control/source")[0],
+            copy.deepcopy(source_pkg_node),
             copy_archives=self.parms["copy_archives"],
             build_for=build_for
         )
         self.src_pkg.basedir = os.path.realpath(os.path.dirname(filename))
+
+        if self.parms.get("action") == "mk_build_deps":
+            self.dep_pkg = DebianPackage(
+                copy.deepcopy(source_pkg_node),
+                debug_pkgs=False,
+                install_prefix=self.defines["BOLT_INSTALL_PREFIX"],
+                host_type=self.defines["BOLT_HOST_TYPE"],
+                build_for=build_for
+            )
+
+            self.dep_pkg.name = "bolt-build-deps"
+            self.dep_pkg.version = "1.0-0"
+            self.dep_pkg.architecture = "all"
+            self.dep_pkg.maintainer = "Package Control"
+            self.dep_pkg.source = "no-source"
+
+            self.dep_pkg.description = PackageDescription(
+                """
+                <description>
+                    <summary>Build dependencies for {name} {version}</summary>
+                    <p>
+                    Install this package to pull in all build dependencies
+                    required to build "{name}" version "{version}" for "{arch}".
+                    </p>
+                </description>
+                """  # noqa
+                .format(
+                    name=self.src_pkg.name,
+                    version=self.src_pkg.version,
+                    arch=architecture
+                )
+            )
+        #end if
 
         self.bin_pkgs = []
         for node in xml_doc.xpath("/control/package"):
@@ -229,9 +274,7 @@ class PackageControl:
     #end function
 
     def __call__(self, action):
-        if action not in ["list_deps", "unpack", "clean"]:
-            build_for = self.parms["build_for"]
-
+        if action not in {"list_deps", "mk_build_deps", "unpack", "clean"}:
             if self.src_pkg.skip:
                 raise SkipBuild(
                     'package is marked to be skipped unless "{}".'
@@ -254,6 +297,9 @@ class PackageControl:
 
         getattr(self, action)()
     #end function
+
+    def mk_build_deps(self):
+        self.dep_pkg.do_pack()
 
     def list_deps(self):
         print(self.src_pkg.build_dependencies())

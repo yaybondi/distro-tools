@@ -67,6 +67,9 @@ def print_usage():
           --list-deps          Print all build dependencies to stdout (single line
                                comma-separated list).
 
+          --mk-build-deps      Create the bolt-build-deps meta package for
+                               installing build dependencies.
+
           --would-build        Check if the package would be built for the given
                                target environment, architecture and libc. Exits
                                with 0 if yes and with 42 if not.
@@ -168,6 +171,7 @@ def parse_cmd_line():
             "force-local",
             "help",
             "list-deps",
+            "mk-build-deps",
             "ignore-deps",
             "install",
             "libc=",
@@ -224,6 +228,9 @@ def parse_cmd_line():
                 break
             if case("--list-deps"):
                 config["action"] = "list_deps"
+                break
+            if case("--mk-build-deps"):
+                config["action"] = "mk_build_deps"
                 break
             if case("--no-debug-pkgs"):
                 config["debug_pkgs"] = False

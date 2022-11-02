@@ -71,7 +71,7 @@ class Specfile:
             if expr is None:
                 continue
 
-            if parser.parse(expr) == False:
+            if parser.parse(expr) is False:
                 if element.tag != "source":
                     nodes_to_remove.add(element)
                 else:

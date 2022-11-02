@@ -199,7 +199,7 @@ class FilterParser:
                 expr_val = self._p_expr(tokens, lvl+1)
 
                 if not tokens or tokens[FilterParser.NEXT_TOKEN] \
-                        [FilterParser.TOKEN_TYPE] != "close":
+                        [FilterParser.TOKEN_TYPE] != "close":  # noqa
                     raise FilterParser.SyntaxError(
                         'missing closing parenthesis for parenthesis at position {}'  # noqa
                         .format(pos)
@@ -222,7 +222,7 @@ class FilterParser:
 
         # Ensure that all tokens have been processed.
         if lvl == 0:
-            assert(not tokens)
+            assert not tokens
 
         return result
     #end function
@@ -352,7 +352,7 @@ class FilterParser:
                 "expression":
                     "s390x or !and",
                 "expected":
-                    """operator "and" at position 11 is missing its left hand operand"""
+                    """operator "and" at position 11 is missing its left hand operand"""  # noqa
             },
             {
                 "description":
@@ -360,7 +360,7 @@ class FilterParser:
                 "expression":
                     "s390x or and !aarch64",
                 "expected":
-                    """operator "and" at position 10 is missing its left hand operand"""
+                    """operator "and" at position 10 is missing its left hand operand"""  # noqa
             },
             {
                 "description":
@@ -368,7 +368,7 @@ class FilterParser:
                 "expression":
                     "and",
                 "expected":
-                    """operator "and" at position 1 is missing its left hand operand"""
+                    """operator "and" at position 1 is missing its left hand operand"""  # noqa
             },
             {
                 "description":
@@ -376,7 +376,7 @@ class FilterParser:
                 "expression":
                     "s390x and !or",
                 "expected":
-                    """operator "or" at position 12 is missing its left hand operand"""
+                    """operator "or" at position 12 is missing its left hand operand"""  # noqa
             },
             {
                 "description":
@@ -384,7 +384,7 @@ class FilterParser:
                 "expression":
                     "s390x and or !aarch64",
                 "expected":
-                    """operator "or" at position 11 is missing its left hand operand"""
+                    """operator "or" at position 11 is missing its left hand operand"""  # noqa
             },
             {
                 "description":
@@ -392,7 +392,7 @@ class FilterParser:
                 "expression":
                     "or",
                 "expected":
-                    """operator "or" at position 1 is missing its left hand operand"""
+                    """operator "or" at position 1 is missing its left hand operand"""  # noqa
             },
             {
                 "description":
@@ -400,7 +400,7 @@ class FilterParser:
                 "expression":
                     "s390x and",
                 "expected":
-                    """operator "and" at position 7 is missing its right hand operand"""
+                    """operator "and" at position 7 is missing its right hand operand"""  # noqa
             },
             {
                 "description":
@@ -408,7 +408,7 @@ class FilterParser:
                 "expression":
                     "s390x and ()",
                 "expected":
-                    """operator "and" at position 7 is missing its right hand operand"""
+                    """operator "and" at position 7 is missing its right hand operand"""  # noqa
             },
             {
                 "description":
@@ -416,7 +416,7 @@ class FilterParser:
                 "expression":
                     "s390x or",
                 "expected":
-                    """operator "or" at position 7 is missing its right hand operand"""
+                    """operator "or" at position 7 is missing its right hand operand"""  # noqa
             },
             {
                 "description":
@@ -424,7 +424,7 @@ class FilterParser:
                 "expression":
                     "s390x or ()",
                 "expected":
-                    """operator "or" at position 7 is missing its right hand operand"""
+                    """operator "or" at position 7 is missing its right hand operand"""  # noqa
             },
             {
                 "description":
@@ -432,7 +432,7 @@ class FilterParser:
                 "expression":
                     "(()()",
                 "expected":
-                    """missing closing parenthesis for parenthesis at position 1"""
+                    """missing closing parenthesis for parenthesis at position 1"""  # noqa
             },
             {
                 "description":
@@ -440,7 +440,7 @@ class FilterParser:
                 "expression":
                     ")",
                 "expected":
-                    """missing opening parenthesis for parenthesis at position 1"""
+                    """missing opening parenthesis for parenthesis at position 1"""  # noqa
             },
             {
                 "description":
@@ -521,7 +521,7 @@ class FilterParser:
         for sym in parser.symbols.keys():
             try:
                 parser.parse(sym)
-            except FilterParser.Error as e:
+            except FilterParser.Error:
                 print("Symbol {} wasn't parsed correctly.".format(sym))
                 success = False
 
@@ -530,8 +530,9 @@ class FilterParser:
 
 #end class
 
+
 if __name__ == "__main__":
-    if FilterParser._test() == True:
+    if FilterParser._test() is True:
         sys.exit(0)
     else:
         sys.exit(1)
