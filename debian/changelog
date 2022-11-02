@@ -1,3 +1,9 @@
+bolt-distro-tools (1.10.3-1) unstable; urgency=medium
+
+  * bolt-pack: more meaningful naming and metadata for bolt-build-deps.bolt
+
+ -- Tobias Koch <tobias.koch@gmail.com>  Wed, 02 Nov 2022 21:18:12 +0300
+
 bolt-distro-tools (1.10.2-1) unstable; urgency=medium
 
   * package/setup.py: don't try to install removed bolt-install-deps script
