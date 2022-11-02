@@ -1,3 +1,9 @@
+bolt-distro-tools (1.10.2-1) unstable; urgency=medium
+
+  * package/setup.py: don't try to install removed bolt-install-deps script
+
+ -- Tobias Koch <tobias.koch@gmail.com>  Wed, 02 Nov 2022 15:48:30 +0300
+
 bolt-distro-tools (1.10.1-1) unstable; urgency=medium
 
   * Remove bolt-install-deps script
