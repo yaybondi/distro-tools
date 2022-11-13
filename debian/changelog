@@ -1,3 +1,9 @@
+bolt-distro-tools (1.10.4-1) unstable; urgency=medium
+
+  * packagecontrol: don't parse bin packages on would_build action
+
+ -- Tobias Koch <tobias.koch@gmail.com>  Sun, 13 Nov 2022 21:17:57 +0100
+
 bolt-distro-tools (1.10.3-1) unstable; urgency=medium
 
   * bolt-pack: more meaningful naming and metadata for bolt-build-deps.bolt
