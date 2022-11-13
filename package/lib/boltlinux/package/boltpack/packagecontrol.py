@@ -210,7 +210,7 @@ class PackageControl:
 
         if self.parms.get("action") == "would_build":
             pass
-        if self.parms.get("action") == "mk_build_deps":
+        elif self.parms.get("action") == "mk_build_deps":
             pkg = DebianPackage(
                 copy.deepcopy(source_pkg_node),
                 debug_pkgs=False,
