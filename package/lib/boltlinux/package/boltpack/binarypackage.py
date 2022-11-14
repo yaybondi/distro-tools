@@ -126,32 +126,8 @@ class BinaryPackage(BasePackage):
                 dep_name    = pkg_node.get("name").strip()
 
                 if dep_version.endswith("=="):
-                    is_own_package = False
-
-                    if dep_type == "provides":
-                        is_own_package = True
-
-                    for tmp_node in bin_node.getparent().iterfind("package"):
-                        if tmp_node.get("name") == dep_name:
-                            is_own_package = True
-                            break
-                    #end for
-
-                    if is_own_package:
-                        pkg_node.attrib["version"] = dep_version[:-1] \
-                            + " " + self.version
-                    else:
-                        pkg_manager = PackageManager.instance()
-                        tmp_version = pkg_manager\
-                                .installed_version_of_package(dep_name)
-                        if not tmp_version:
-                            raise UnmetDependency(
-                                "cannot resolve dependency '%s'." % dep_name
-                            )
-                        pkg_node.attrib["version"] = dep_version[:-1] \
-                            + " " + tmp_version
-                    #end if
-                #end if
+                    pkg_node.attrib["version"] = dep_version[:-1] \
+                        + " " + self.version
 
                 pkg_prefix = pkg_node.get(build_for + "-prefix", None)
 
