@@ -241,6 +241,10 @@ class PackageControl:
                 )
             )
 
+            # The source package duplicates all dependencies, requiring them
+            # once for tools and once for target.
+            pkg.relations["requires"] = self.src_pkg.relations["requires"]
+
             self.bin_pkgs.append(pkg)
         else:
             for node in xml_doc.xpath("/control/package"):
