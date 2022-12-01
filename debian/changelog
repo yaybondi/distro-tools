@@ -1,3 +1,9 @@
+bolt-distro-tools (1.11.1-1) unstable; urgency=medium
+
+  * packagecontrol: build-deps package uses source package dependencies
+
+ -- Tobias Koch <tobias.koch@gmail.com>  Thu, 01 Dec 2022 19:58:53 +0100
+
 bolt-distro-tools (1.11.0-1) unstable; urgency=medium
 
   * binarypackage: version == implies same source
