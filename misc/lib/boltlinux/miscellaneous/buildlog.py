@@ -8,11 +8,12 @@
 import os
 import select
 
+from boltlinux.error import BoltError
 from boltlinux.miscellaneous.workerthread import WorkerThread
 
 class BuildLog:
 
-    class Error(Exception):
+    class Error(BoltError):
         pass
 
     class LogForwarder(WorkerThread):
@@ -90,7 +91,7 @@ class BuildLog:
             try:
                 self._logfilefd = os.open(self._logfile, flags)
             except OSError as e:
-                raise BuildLog(
+                raise BuildLog.Error(
                     'failed to open logfile "{}": {}'.format(
                         self._logfile, str(e)
                     )
