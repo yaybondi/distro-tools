@@ -175,6 +175,18 @@ class Platform:
             .split("-")[0]
 
     @staticmethod
+    def docker_arch():
+        machine = Platform.machine_name()
+
+        if machine in ["x86_64", "x86-64", "amd64"]:
+            return "amd64"
+        if machine in ["aarch64", "arm64"]:
+            return "arm64v8"
+
+        return None
+    #end function
+
+    @staticmethod
     def libc_name():
         result = "glibc"
 
