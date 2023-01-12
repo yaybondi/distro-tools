@@ -33,11 +33,15 @@ class BuildLog:
         def work(self):
             p = select.poll()
 
-            os.set_blocking(self._stdout_read, False)
             os.set_blocking(self._stderr_read, False)
 
-            p.register(self._stdout_read, select.POLLIN)
-            p.register(self._stderr_read, select.POLLIN)
+            if self._stdout_read:
+                os.set_blocking(self._stdout_read, False)
+                p.register(self._stdout_read, select.POLLIN)
+
+            if self._stderr_read:
+                os.set_blocking(self._stderr_read, False)
+                p.register(self._stderr_read, select.POLLIN)
 
             while not self._stop_event.is_set():
                 fds = p.poll(500)
@@ -45,16 +49,23 @@ class BuildLog:
                 for fd, _ in fds:
                     try:
                         bytes_ = os.read(fd, 4096)
-                    except BlockingIOError:
+                    except OSError:
                         continue
 
                     if not bytes_:
                         continue
 
                     if fd == self._stderr_read:
-                        os.write(self._stderr_write, bytes_)
+                        if self._stderr_write:
+                            os.write(self._stderr_write, bytes_)
+                        elif self._stdout_write:
+                            os.write(self._stdout_write, bytes_)
                     else:
-                        os.write(self._stdout_write, bytes_)
+                        if self._stdout_write:
+                            os.write(self._stdout_write, bytes_)
+                        elif self._stderr_write:
+                            os.write(self._stderr_write, bytes_)
+                    #end if
 
                     if self._logfilefd:
                         os.write(self._logfilefd, bytes_)
