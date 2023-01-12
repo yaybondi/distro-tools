@@ -33,6 +33,9 @@ class BuildLog:
         def work(self):
             p = select.poll()
 
+            os.set_blocking(self._stdout_read, False)
+            os.set_blocking(self._stderr_read, False)
+
             p.register(self._stdout_read, select.POLLIN)
             p.register(self._stderr_read, select.POLLIN)
 
@@ -40,12 +43,16 @@ class BuildLog:
                 fds = p.poll(500)
 
                 for fd, _ in fds:
-                    bytes_ = os.read(fd, 4096)
+                    try:
+                        bytes_ = os.read(fd, 4096)
+                    except BlockingIOError:
+                        continue
+
                     if not bytes_:
                         continue
 
                     if fd == self._stderr_read:
-                        os.write(self._stdout_write, bytes_)
+                        os.write(self._stderr_write, bytes_)
                     else:
                         os.write(self._stdout_write, bytes_)
 
