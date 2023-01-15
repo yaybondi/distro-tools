@@ -26,6 +26,8 @@
 import sys
 import logging
 
+from boltlinux.error import BoltValueError
+
 class LogFormatter(logging.Formatter):
 
     ESC_BLUE   = '\033[34m'
@@ -67,6 +69,23 @@ class LogFormatter(logging.Formatter):
         )
 
         return message
+    #end function
+
+    @staticmethod
+    def configure(logger, style, app_name):
+        if style not in ["cli", "plain"]:
+            raise BoltValueError(
+                'invalid logging style "{}".'.format(style)
+            )
+
+        logger.handlers.clear()
+        handler = logging.StreamHandler()
+
+        if style == "cli":
+            handler.setFormatter(LogFormatter(app_name))
+
+        logger.addHandler(handler)
+        logger.setLevel(logging.INFO)
     #end function
 
 #end class
