@@ -26,6 +26,12 @@
 class BoltError(Exception):
     pass
 
+class ExitOK(BoltError):
+    pass
+
+class ExitError(BoltError):
+    pass
+
 class InvocationError(BoltError):
     pass
 
