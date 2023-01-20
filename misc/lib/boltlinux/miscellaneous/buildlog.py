@@ -84,6 +84,13 @@ class BuildLog:
             #end for
         #end function
 
+        def __enter__(self):
+            self.start()
+
+        def __exit__(self, type_, value, traceback):
+            self.stop()
+            self.join()
+
     #end class
 
     def __init__(self, logfile=None, preserve=True, callbacks=None):
