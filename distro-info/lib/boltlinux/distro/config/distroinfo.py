@@ -23,8 +23,8 @@
 # THE SOFTWARE.
 #
 
-from boltlinux.archive.config.error import DistroInfoError
-from boltlinux.archive.config.v1.distroinfo import (
+from boltlinux.distro.config.error import DistroInfoError
+from boltlinux.distro.config.v1.distroinfo import (
     DistroInfo as DistroInfoV1
 )
 

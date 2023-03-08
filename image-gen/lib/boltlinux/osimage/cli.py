@@ -28,7 +28,7 @@ import os
 import sys
 import textwrap
 
-from boltlinux.archive.config.distroinfo import DistroInfo
+from boltlinux.distro.config.distroinfo import DistroInfo
 from boltlinux.error import BoltError
 from boltlinux.miscellaneous.platform import Platform
 from boltlinux.osimage.sysroot import Sysroot

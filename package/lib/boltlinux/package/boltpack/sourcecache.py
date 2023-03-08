@@ -28,7 +28,7 @@ import logging
 import os
 import urllib.request
 
-from boltlinux.archive.config.distroinfo import DistroInfo
+from boltlinux.distro.config.distroinfo import DistroInfo
 from boltlinux.error import BoltError, NetworkError
 from boltlinux.miscellaneous.progressbar import ProgressBar
 from boltlinux.miscellaneous.downloader import Downloader, DownloadError

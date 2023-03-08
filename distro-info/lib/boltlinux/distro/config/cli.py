@@ -29,8 +29,8 @@ import json
 import sys
 import textwrap
 
-from boltlinux.archive.config.distroinfo import DistroInfo
-from boltlinux.archive.config.error import DistroInfoError
+from boltlinux.distro.config.distroinfo import DistroInfo
+from boltlinux.distro.config.error import DistroInfoError
 
 EXIT_OK    = 0
 EXIT_ERROR = 1

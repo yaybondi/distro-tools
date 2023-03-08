@@ -20,8 +20,8 @@ setup(
     author_email='tobias.koch@gmail.com',
     license='MIT',
     packages=[
-        'boltlinux.archive.config',
-        'boltlinux.archive.config.v1',
+        'boltlinux.distro.config',
+        'boltlinux.distro.config.v1',
     ],
     package_dir={'': 'lib'},
     data_files=[

@@ -35,7 +35,7 @@ INSTALL_DIR = os.path.normpath(os.path.dirname(
     os.path.realpath(sys.argv[0])) + os.sep + ".." )
 sys.path.insert(1, INSTALL_DIR + os.sep + 'lib')
 
-from boltlinux.archive.config.distroinfo import DistroInfo
+from boltlinux.distro.config.distroinfo import DistroInfo
 from boltlinux.error import BoltError, InvocationError, SkipBuild
 from boltlinux.miscellaneous.logformatter import LogFormatter
 from boltlinux.miscellaneous.platform import Platform

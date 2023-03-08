@@ -4,7 +4,7 @@ else
     mkdir -p .pythonpath/boltlinux
 
     ln -sf ../../ffi-libarchive/lib/boltlinux/ffi    .pythonpath/boltlinux/
-    ln -sf ../../distro-info/lib/boltlinux/archive   .pythonpath/boltlinux/
+    ln -sf ../../distro-info/lib/boltlinux.distro    .pythonpath/boltlinux/
     ln -sf ../../misc/lib/boltlinux/error.py         .pythonpath/boltlinux/
     ln -sf ../../misc/lib/boltlinux/miscellaneous    .pythonpath/boltlinux/
     ln -sf ../../package/lib/boltlinux/package       .pythonpath/boltlinux/

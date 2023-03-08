@@ -32,7 +32,7 @@ import re
 import urllib.request
 
 from boltlinux.miscellaneous.userinfo import UserInfo
-from boltlinux.archive.config.error import \
+from boltlinux.distro.config.error import \
         DistroInfoError, ReleaseNotFoundError
 
 class DistroInfo:

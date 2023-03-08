@@ -35,10 +35,10 @@ INSTALL_DIR = os.path.normpath(os.path.dirname(
     os.path.realpath(sys.argv[0])) + os.sep + ".." )
 sys.path.insert(1, INSTALL_DIR + os.sep + 'lib')
 
-from boltlinux.archive.config.cli import (
+from boltlinux.distro.config.cli import (
     Cli as DistroInfoCli, EXIT_OK, EXIT_ERROR
 )
-from boltlinux.archive.config.error import DistroInfoError
+from boltlinux.distro.config.error import DistroInfoError
 from boltlinux.miscellaneous.logformatter import LogFormatter
 
 LOGGER = logging.getLogger()
