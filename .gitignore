@@ -17,3 +17,4 @@ __pycache__/
 /debian/python3-bolt-misc/
 /debian/python3-bolt-package/
 /debian/python3-bolt-repository/
+/development.sqlite3
