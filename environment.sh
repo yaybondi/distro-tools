@@ -4,7 +4,7 @@ else
     mkdir -p .pythonpath/boltlinux
 
     ln -sf ../../ffi-libarchive/lib/boltlinux/ffi    .pythonpath/boltlinux/
-    ln -sf ../../distro-info/lib/boltlinux.distro    .pythonpath/boltlinux/
+    ln -sf ../../distro-info/lib/boltlinux/distro    .pythonpath/boltlinux/
     ln -sf ../../misc/lib/boltlinux/error.py         .pythonpath/boltlinux/
     ln -sf ../../misc/lib/boltlinux/miscellaneous    .pythonpath/boltlinux/
     ln -sf ../../package/lib/boltlinux/package       .pythonpath/boltlinux/
@@ -18,6 +18,7 @@ else
     if [ -d ../build-system/lib/boltlinux ]; then
         ln -sf ../../../build-system/lib/boltlinux/packagedb .pythonpath/boltlinux/
         ln -sf ../../../build-system/lib/boltlinux/builder   .pythonpath/boltlinux/
+        ln -sf ../../../build-system/lib/boltlinux/archive   .pythonpath/boltlinux/
     fi
 
     touch .pythonpath/boltlinux/__init__.py
