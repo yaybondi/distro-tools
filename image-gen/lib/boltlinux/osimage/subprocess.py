@@ -150,7 +150,7 @@ class Subprocess:
             )
         #end for
 
-        encoding = locale.getpreferredencoding(do_setlocale=False)
+        encoding = locale.getpreferredencoding(False)
 
         child_stdout = open(context.pty_m, "r", encoding=encoding, buffering=1)
         child_stderr = open(context.err_r, "r", encoding=encoding, buffering=1)

@@ -388,7 +388,7 @@ class RepoIndexer:
             except subprocess.CalledProcessError as e:
                 raise BoltError(
                     "failed to sign Packages file: {}"
-                    .format(e.stderr.decode(locale.getpreferredencoding())
+                    .format(e.stderr.decode(locale.getpreferredencoding(False))
                         .strip())
                 )
             #end try
