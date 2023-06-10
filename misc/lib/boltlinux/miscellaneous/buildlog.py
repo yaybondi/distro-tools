@@ -33,8 +33,6 @@ class BuildLog:
         def work(self):
             p = select.poll()
 
-            os.set_blocking(self._stderr_read, False)
-
             if self._stdout_read:
                 os.set_blocking(self._stdout_read, False)
                 p.register(self._stdout_read, select.POLLIN)
