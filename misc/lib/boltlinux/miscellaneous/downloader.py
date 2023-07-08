@@ -63,7 +63,7 @@ class Downloader:
                         progress_bar(bytes_read)
                 #end for
             #end with
-        except urllib.error.URLError as e:
+        except Exception as e:
             raise DownloadError(
                 'error retrieving "{}": {}'.format(url, str(e))
             )
@@ -131,7 +131,7 @@ class Downloader:
                     "Last-Modified",
                     "".join([random.choice(alphabet) for i in range(16)])
                 )
-        except urllib.error.URLError as e:
+        except Exception as e:
             raise DownloadError(
                 "error generating etag for '{}': {}".format(url, str(e))
             )
