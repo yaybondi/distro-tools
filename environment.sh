@@ -32,7 +32,7 @@ else
         PATH="$(pwd)/repository/bin:$PATH"
 
         PATH="$(pwd)/../build-system/bin:$PATH"
-        PATH="$(pwd)/../build-box-utils:$PATH"
+        PATH="$(pwd)/../build-box-utils/bin:$PATH"
 
         export PATH
         export PS1="(distro-tools)$PS1"
