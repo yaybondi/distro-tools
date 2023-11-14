@@ -60,8 +60,8 @@ class Platform:
                             .strip()
             m = re.match(r"^([^-]+)(?:-([^-]+))?-([^-]+)-([^-]+)$", result)
             if m:
-                arch, platform, libc = \
-                    m.group(1, 3) + (Platform.libc_vendor(),)
+                arch, platform, libc = m.group(1, 3, 4)
+                return "-".join([arch, platform, libc])
         #end if
 
         return ""
