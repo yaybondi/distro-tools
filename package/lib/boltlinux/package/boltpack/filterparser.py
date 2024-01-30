@@ -88,7 +88,7 @@ class FilterParser:
                 token_type = token
             elif token_type == "unknown":
                 raise FilterParser.SyntaxError(
-                    'invalid token "{}" at position {}.'
+                    'invalid token "{}" at position {}'
                     .format(token, token_start)
                 )
             #end if
@@ -113,7 +113,7 @@ class FilterParser:
     def _p_expr(self, tokens, lvl=0, short_cut=False):
         if lvl > 64:
             raise FilterParser.Error(
-                "expression generates too many levels of recursion."
+                "expression generates too many levels of recursion"
             )
         #end if
 
@@ -474,6 +474,30 @@ class FilterParser:
                 "expected":
                     True
             },
+            {
+                "description":
+                    "Test recursion limit.",
+                "expression":
+                    "(((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((",
+                "expected":
+                    "expression generates too many levels of recursion"
+            },
+            {
+                "description":
+                    "Test invalid token.",
+                "expression":
+                    "a = 2",
+                "expected":
+                    "invalid token \"=\" at position 3"
+            },
+            {
+                "description":
+                    "Empty string is True.",
+                "expression":
+                    "",
+                "expected":
+                    True
+            }
         ]
 
         success = True
