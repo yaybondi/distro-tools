@@ -51,7 +51,7 @@ class UserInfo:
     #end function
 
     @staticmethod
-    def cache_dir():
+    def cache_dir() -> str | None:
         home = UserInfo.homedir()
         if not home:
             return None
