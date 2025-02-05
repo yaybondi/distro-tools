@@ -63,8 +63,6 @@ class ImageGenCli:
 
                   --repo-base      Repository base URL not including the release
                                    name.
-                  --copy-qemu      Copy the appropriate QEMU interpreter to the
-                                   chroot (should not be necessary).
                   --no-verify      Do not verify package list signatures.
                 """  # noqa
             ))
@@ -80,7 +78,6 @@ class ImageGenCli:
             opts, args = getopt.getopt(
                 args, "a:hl:r:", [
                     "arch=",
-                    "copy-qemu",
                     "help",
                     "libc=",
                     "no-verify",
@@ -104,8 +101,6 @@ class ImageGenCli:
                 Platform.uname("-m"),
             "repo_base":
                 "http://archive.boltlinux.org/dists",
-            "copy_qemu":
-                False,
             "verify":
                 True,
         }
@@ -122,8 +117,6 @@ class ImageGenCli:
                 kwargs["libc"] = v.strip()
             elif o == "--repo-base":
                 kwargs["repo_base"] = v.strip()
-            elif o == "--copy-qemu":
-                kwargs["copy_qemu"] = True
             elif o == "--no-verify":
                 kwargs["verify"] = False
         #end for

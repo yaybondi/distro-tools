@@ -165,13 +165,19 @@ class ImageGenerator:
     class Error(BoltError):
         pass
 
-    def __init__(self, release, arch, libc="musl", verify=True,
-            copy_qemu=False, repo_base=None, **kwargs):
+    def __init__(
+        self,
+        release,
+        arch,
+        libc="musl",
+        verify=True,
+        repo_base=None,
+        **kwargs
+    ):
         self._release   = release
         self._arch      = arch
         self._libc      = libc
         self._verify    = verify
-        self._copy_qemu = copy_qemu
         self._repo_base = repo_base or "http://archive.boltlinux.org/dists"
 
         opt_check_sig = "option check_signature" if self._verify else ""
@@ -220,9 +226,6 @@ class ImageGenerator:
         var_run_symlink = sysroot + "/var/run"
         if not os.path.exists(var_run_symlink):
             os.symlink("../run", var_run_symlink)
-
-        if self._copy_qemu:
-            self._copy_qemu_to_sysroot(sysroot)
 
         self._write_config_files(sysroot)
 
@@ -360,61 +363,6 @@ class ImageGenerator:
         env["BOLT_HOST_ARCH"] = self.context["host_arch"]
 
         return env
-    #end function
-
-    def _copy_qemu_to_sysroot(self, sysroot):
-        qemu_user_static = ""
-
-        prefix_map = collections.OrderedDict([
-            ("aarch64",
-                "qemu-aarch64-static"),
-            ("arm",
-                "qemu-arm-static"),
-            ("i",
-                "qemu-i386-static"),
-            ("mips64el",
-                "qemu-mips64el-static"),
-            ("mipsel",
-                "qemu-mipsel-static"),
-            ("powerpc64el",
-                "qemu-ppc64le-static"),
-            ("powerpc64le",
-                "qemu-ppc64le-static"),
-            ("ppc64le",
-                "qemu-ppc64le-static"),
-            ("powerpc",
-                "qemu-ppc-static"),
-            ("riscv64",
-                "qemu-riscv64-static"),
-            ("s390x",
-                "qemu-s390x-static"),
-            ("x86_64",
-                "qemu-x86_64-static"),
-        ])
-
-        for prefix, qemu_binary in prefix_map.items():
-            if self._arch.startswith(prefix):
-                qemu_user_static = qemu_binary
-                break
-
-        if not qemu_user_static:
-            return
-
-        qemu_exe = Platform.find_executable(qemu_user_static)
-        if not qemu_exe:
-            LOGGER.warning(
-                'could not find QEMU executable "{}".'.format(qemu_user_static)
-            )
-            return
-
-        target_dir = os.path.dirname(
-            os.path.join(sysroot, qemu_exe.lstrip("/"))
-        )
-        if not os.path.exists(target_dir):
-            os.makedirs(target_dir, exist_ok=True)
-
-        LOGGER.info('copying QEMU binary "{}".'.format(qemu_exe))
-        shutil.copy2(qemu_exe, target_dir)
     #end function
 
     def _write_config_files(self, sysroot):
