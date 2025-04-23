@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""Bolt miscellaneous Python modules."""
+"""Bondi miscellaneous Python modules."""
 
 import os
 
@@ -10,18 +10,18 @@ from os import path
 
 here = path.abspath(path.dirname(__file__))
 
-VERSION = os.environ.get("BOLT_DISTRO_TOOLS_VERSION", "0.0.0")
+VERSION = os.environ.get("BONDI_DISTRO_TOOLS_VERSION", "0.0.0")
 
 setup(
-    name='bolt-misc',
+    name='bondi-misc',
     version=VERSION,
-    url='https://github.com/boltlinux/bolt-distro-tools',
+    url='https://github.com/yaybondi/bondi-distro-tools',
     author='Tobias Koch',
     author_email='tobias.koch@gmail.com',
     license='MIT',
     packages=[
-        'boltlinux',
-        'boltlinux.miscellaneous',
+        'yaybondi',
+        'yaybondi.miscellaneous',
     ],
     package_dir={'': 'lib'},
     platforms=['Linux'],
@@ -34,7 +34,7 @@ setup(
         'Programming Language :: Python :: 3'
     ],
 
-    keywords='Bolt Linux shared modules',
-    description='Python modules shared between Bolt Linux Python projects',
-    long_description='Python modules shared between Bolt Linux Python projects',
+    keywords='Bondi OS shared modules',
+    description='Python modules shared between Bondi OS Python projects',
+    long_description='Python modules shared between Bondi OS Python projects',
 )

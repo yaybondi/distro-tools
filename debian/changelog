@@ -1,52 +1,52 @@
-bolt-distro-tools (1.11.1-1) unstable; urgency=medium
+bondi-distro-tools (1.11.1-1) unstable; urgency=medium
 
   * packagecontrol: build-deps package uses source package dependencies
 
  -- Tobias Koch <tobias.koch@gmail.com>  Thu, 01 Dec 2022 19:58:53 +0100
 
-bolt-distro-tools (1.11.0-1) unstable; urgency=medium
+bondi-distro-tools (1.11.0-1) unstable; urgency=medium
 
   * binarypackage: version == implies same source
 
  -- Tobias Koch <tobias.koch@gmail.com>  Mon, 14 Nov 2022 20:01:38 +0100
 
-bolt-distro-tools (1.10.5-1) unstable; urgency=medium
+bondi-distro-tools (1.10.5-1) unstable; urgency=medium
 
   * packagecontrol: elif not if if, duh...
 
  -- Tobias Koch <tobias.koch@gmail.com>  Sun, 13 Nov 2022 21:37:09 +0100
 
-bolt-distro-tools (1.10.4-1) unstable; urgency=medium
+bondi-distro-tools (1.10.4-1) unstable; urgency=medium
 
   * packagecontrol: don't parse bin packages on would_build action
 
  -- Tobias Koch <tobias.koch@gmail.com>  Sun, 13 Nov 2022 21:17:57 +0100
 
-bolt-distro-tools (1.10.3-1) unstable; urgency=medium
+bondi-distro-tools (1.10.3-1) unstable; urgency=medium
 
-  * bolt-pack: more meaningful naming and metadata for bolt-build-deps.bolt
+  * bondi-pack: more meaningful naming and metadata for bondi-build-deps.bondi
 
  -- Tobias Koch <tobias.koch@gmail.com>  Wed, 02 Nov 2022 21:18:12 +0300
 
-bolt-distro-tools (1.10.2-1) unstable; urgency=medium
+bondi-distro-tools (1.10.2-1) unstable; urgency=medium
 
-  * package/setup.py: don't try to install removed bolt-install-deps script
+  * package/setup.py: don't try to install removed bondi-install-deps script
 
  -- Tobias Koch <tobias.koch@gmail.com>  Wed, 02 Nov 2022 15:48:30 +0300
 
-bolt-distro-tools (1.10.1-1) unstable; urgency=medium
+bondi-distro-tools (1.10.1-1) unstable; urgency=medium
 
-  * Remove bolt-install-deps script
+  * Remove bondi-install-deps script
 
  -- Tobias Koch <tobias.koch@gmail.com>  Wed, 02 Nov 2022 15:40:26 +0300
 
-bolt-distro-tools (1.10.0-1) unstable; urgency=medium
+bondi-distro-tools (1.10.0-1) unstable; urgency=medium
 
-  * bolt-pack can generate bolt-build-deps package
+  * bondi-pack can generate bondi-build-deps package
 
  -- Tobias Koch <tobias.koch@gmail.com>  Wed, 02 Nov 2022 11:56:09 +0300
 
-bolt-distro-tools (1.9.4-1) unstable; urgency=medium
+bondi-distro-tools (1.9.4-1) unstable; urgency=medium
 
   * misc:
   * workerthread: start/shutdown messages only in debug level
@@ -54,7 +54,7 @@ bolt-distro-tools (1.9.4-1) unstable; urgency=medium
   * logformatter: check stdout.isatty() only once during initialization
   * workerthread: short-cut execution when stop event is set
   * distroinfo: implement get_git_url_and_ref
-  * environment.sh: add boltlinux/builder to pythonpath
+  * environment.sh: add yaybondi/builder to pythonpath
   * Exit with error when interrupted by sigint
   * Cut decimal points in log messages
   * specfile: have 'build_if' property
@@ -62,149 +62,149 @@ bolt-distro-tools (1.9.4-1) unstable; urgency=medium
 
  -- Tobias Koch <tobias.koch@gmail.com>  Tue, 01 Nov 2022 10:38:59 +0300
 
-bolt-distro-tools (1.9.3-1) unstable; urgency=medium
+bondi-distro-tools (1.9.3-1) unstable; urgency=medium
 
-  * bolt-install-deps:
+  * bondi-install-deps:
     * don't use ANSI escapes while running under BusyBox' Ash
     * small fixes
 
  -- Tobias Koch <tobias.koch@gmail.com>  Thu, 30 Jun 2022 09:55:45 +0300
 
-bolt-distro-tools (1.9.2-1) unstable; urgency=medium
+bondi-distro-tools (1.9.2-1) unstable; urgency=medium
 
-  * Add script bolt-install-deps for convenient installation of the build
+  * Add script bondi-install-deps for convenient installation of the build
     dependencies of a build recipe.
 
  -- Tobias Koch <tobias.koch@gmail.com>  Wed, 29 Jun 2022 01:08:31 +0300
 
-bolt-distro-tools (1.9.1-1) unstable; urgency=medium
+bondi-distro-tools (1.9.1-1) unstable; urgency=medium
 
   * shlibcache: accept ld.*?\.so\.* as valid shared object name (fixes
     mips64el bootstrap)
 
  -- Tobias Kochs <tobias.koch@gmail.com>  Fri, 17 Jun 2022 01:06:23 +0300
 
-bolt-distro-tools (1.9.0-1) unstable; urgency=medium
+bondi-distro-tools (1.9.0-1) unstable; urgency=medium
 
-  * bolt-pack: implement --would-build command
+  * bondi-pack: implement --would-build command
   * misc/platform: add active_release() method
 
  -- Tobias Koch <tobias.koch@gmail.com>  Fri, 10 Jun 2022 00:36:25 +0300
 
-bolt-distro-tools (1.8.2-1) unstable; urgency=medium
+bondi-distro-tools (1.8.2-1) unstable; urgency=medium
 
   * osimage/sysroot: terminate_subprocesses kills process not pgroup
 
  -- Tobias Koch <tobias.koch@gmail.com>  Wed, 08 Jun 2022 22:23:26 +0300
 
-bolt-distro-tools (1.8.1-1) unstable; urgency=medium
+bondi-distro-tools (1.8.1-1) unstable; urgency=medium
 
   * packagecontrol: check for enabled/disabled packages before running the
     preprocessor
 
  -- Tobias Koch <tobias.koch@gmail.com>  Tue, 07 Jun 2022 20:15:20 +0300
 
-bolt-distro-tools (1.8.0-1) unstable; urgency=medium
+bondi-distro-tools (1.8.0-1) unstable; urgency=medium
 
   * Implement "if" dynamic filters
-  * boltpack: add filterparser
+  * bondipack: add filterparser
   * platform: have separate libc_name and libc_vendor functions
 
  -- Tobias Koch <tobias.koch@gmail.com>  Tue, 07 Jun 2022 13:57:23 +0300
 
-bolt-distro-tools (1.7.0-1) unstable; urgency=medium
+bondi-distro-tools (1.7.0-1) unstable; urgency=medium
 
-  * Move all of boltpack.platform into misc.platform
+  * Move all of bondipack.platform into misc.platform
 
  -- Tobias Koch <tobias.koch@gmail.com>  Sun, 29 May 2022 23:10:39 +0300
 
-bolt-distro-tools (1.6.5-1) unstable; urgency=medium
+bondi-distro-tools (1.6.5-1) unstable; urgency=medium
 
   * misc/platform: fix broken elif logic (used if...return previously)
 
  -- Tobias Koch <tobias.koch@gmail.com>  Thu, 26 May 2022 11:21:46 +0300
 
-bolt-distro-tools (1.6.4-1) unstable; urgency=medium
+bondi-distro-tools (1.6.4-1) unstable; urgency=medium
 
   * osimage/generator: fix syntax error
 
  -- Tobias Koch <tobias.koch@gmail.com>  Wed, 25 May 2022 12:17:57 +0300
 
-bolt-distro-tools (1.6.3-1) unstable; urgency=medium
+bondi-distro-tools (1.6.3-1) unstable; urgency=medium
 
   * shlibcache: overlay_package recognizes ld64* as possible SO dependency
   * Run chrpath -c silently
   * Replace Platform.num_cpus with os.cpu_count
-  * misc/platform: no -bolt- in target triplets
+  * misc/platform: no -bondi- in target triplets
   * osimage/generator: simplify Platform.target_for_machine call
 
  -- Tobias Koch <tobias.koch@gmail.com>  Wed, 25 May 2022 12:10:06 +0300
 
-bolt-distro-tools (1.6.2-1) unstable; urgency=medium
+bondi-distro-tools (1.6.2-1) unstable; urgency=medium
 
   * image-gen/generator: ensure tools triplet is *-tools-*-*
 
  -- Tobias Koch <tobias.koch@gmail.com>  Wed, 18 May 2022 01:09:54 +0300
 
-bolt-distro-tools (1.6.1-1) unstable; urgency=medium
+bondi-distro-tools (1.6.1-1) unstable; urgency=medium
 
   * image-gen/generator: don't assume libc vendor is musl
 
  -- Tobias Koch <tobias.koch@gmail.com>  Wed, 18 May 2022 00:33:28 +0300
 
-bolt-distro-tools (1.6.0-1) unstable; urgency=medium
+bondi-distro-tools (1.6.0-1) unstable; urgency=medium
 
   * Allow choosing between musl and glibc
 
  -- Tobias Koch <tobias.koch@gmail.com>  Mon, 16 May 2022 11:58:20 +0300
 
-bolt-distro-tools (1.5.9-1) unstable; urgency=medium
+bondi-distro-tools (1.5.9-1) unstable; urgency=medium
 
-  * sourcepackage: don't break early when loading bolt_helpers
+  * sourcepackage: don't break early when loading bondi_helpers
 
  -- Tobias Koch <tobias.koch@gmail.com>  Thu, 12 May 2022 09:55:38 +0300
 
-bolt-distro-tools (1.5.8-1) unstable; urgency=medium
+bondi-distro-tools (1.5.8-1) unstable; urgency=medium
 
-  * boltpack: convert rpath to runpath instead of deleting either
+  * bondipack: convert rpath to runpath instead of deleting either
   * build-essential: install GNU grep
   * specfile: TLDs can have up to 63 characters
 
  -- Tobias Koch <tobias.koch@gmail.com>  Wed, 11 May 2022 23:14:30 +0300
 
-bolt-distro-tools (1.5.7-1) unstable; urgency=medium
+bondi-distro-tools (1.5.7-1) unstable; urgency=medium
 
-  * shlibcache: never use ldconfig on Bolt OS (even with glibc)
+  * shlibcache: never use ldconfig on Bondi OS (even with glibc)
   * shlibcache: overlay_package recognizes ld-* as possible SO dependency
 
  -- Tobias Koch <tobias.koch@gmail.com>  Tue, 26 Apr 2022 23:33:48 +0300
 
-bolt-distro-tools (1.5.6-1) unstable; urgency=medium
+bondi-distro-tools (1.5.6-1) unstable; urgency=medium
 
   * shlibcache: fall back to path based lookups when ldconfig -p fails
-  * deb2bolt: create subdirectories while copying patches
+  * deb2bondi: create subdirectories while copying patches
   * misc: replace obsolete base64.encodestring with encodebytes
 
  -- Tobias Koch <tobias.koch@gmail.com>  Wed, 06 Apr 2022 10:02:35 +0300
 
-bolt-distro-tools (1.5.5-1) unstable; urgency=medium
+bondi-distro-tools (1.5.5-1) unstable; urgency=medium
 
   * packagedesc: support 'tt' element
-  * boltpack/serialize: configure html2text to not break lines (confuses
+  * bondipack/serialize: configure html2text to not break lines (confuses
     JavaScrip 'marked')
-  * boltpack/specfile: provide source_version property
-  * boltpack/sourcecache: assume there could be a 'lib' package
+  * bondipack/specfile: provide source_version property
+  * bondipack/sourcecache: assume there could be a 'lib' package
   * specfile: serialization includes maintainer and date
 
  -- Tobias Koch <tobias.koch@gmail.com>  Sun, 13 Mar 2022 22:02:37 +0300
 
-bolt-distro-tools (1.5.4-1) unstable; urgency=medium
+bondi-distro-tools (1.5.4-1) unstable; urgency=medium
 
   * misc/workerthread: log when thread is going to re-run
 
  -- Tobias Koch <tobias.koch@gmail.com>  Sat, 08 Jan 2022 19:26:23 +0300
 
-bolt-distro-tools (1.5.3-1) unstable; urgency=medium
+bondi-distro-tools (1.5.3-1) unstable; urgency=medium
 
   * specfile: add build_for method returning comma-separated build-targets
   * build-essential: remove hard-coded x86_64 in log message
@@ -212,32 +212,32 @@ bolt-distro-tools (1.5.3-1) unstable; urgency=medium
 
  -- Tobias Koch <tobias.koch@gmail.com>  Tue, 28 Dec 2021 23:48:39 +0300
 
-bolt-distro-tools (1.5.2-1) unstable; urgency=medium
+bondi-distro-tools (1.5.2-1) unstable; urgency=medium
 
   * Small improvements to DebianPackageMetaData class
 
  -- Tobias Koch <tobias.koch@gmail.com>  Fri, 10 Dec 2021 23:34:14 +0300
 
-bolt-distro-tools (1.5.1-1) unstable; urgency=medium
+bondi-distro-tools (1.5.1-1) unstable; urgency=medium
 
-  * deb2bolt/debianpackagecache: revamp
+  * deb2bondi/debianpackagecache: revamp
 
  -- Tobias Koch <tobias.koch@gmail.com>  Fri, 03 Dec 2021 12:33:00 +0100
 
-bolt-distro-tools (1.5.0-1) unstable; urgency=medium
+bondi-distro-tools (1.5.0-1) unstable; urgency=medium
 
-  * boltpack/debianpackagemetadata: DebianPackageMetaData has setdefault
+  * bondipack/debianpackagemetadata: DebianPackageMetaData has setdefault
     method
   * misc/downloader: delete symlink and symlink target on error
-  * deb2bolt/debianpackagecache: avoid instantiating the downloader multiple
+  * deb2bondi/debianpackagecache: avoid instantiating the downloader multiple
     times in loop
-  * deb2bolt/debianpackagecache: replace _download_tagged_http_resource with
+  * deb2bondi/debianpackagecache: replace _download_tagged_http_resource with
     downloader.download_named_tag
   * misc/downloader: provide 'download_named_tag' method
 
  -- Tobias Koch <tobias.koch@gmail.com>  Fri, 26 Nov 2021 09:56:39 +0300
 
-bolt-distro-tools (1.4.9-1) unstable; urgency=medium
+bondi-distro-tools (1.4.9-1) unstable; urgency=medium
 
   * debianpackagecache: pass connection timeout to downloader
   * repository/repoindexer: create InPackages.gz with inline signature
@@ -246,41 +246,41 @@ bolt-distro-tools (1.4.9-1) unstable; urgency=medium
 
  -- Tobias Koch <tobias.koch@gmail.com>  Mon, 15 Nov 2021 23:21:50 +0300
 
-bolt-distro-tools (1.4.8-1) unstable; urgency=medium
+bondi-distro-tools (1.4.8-1) unstable; urgency=medium
 
   * Introduce new cache directory layout
   * image-gen: add ca-certificates and tools-openssl to build-essentials
   * image-gen: install ca-certificates *after* tools-openssl
-  * deb2bolt: DebianPackageCache cache_dir is fixed in class
+  * deb2bondi: DebianPackageCache cache_dir is fixed in class
 
  -- Tobias Koch <tobias.koch@gmail.com>  Mon, 18 Oct 2021 23:25:41 +0300
 
-bolt-distro-tools (1.4.7-1) unstable; urgency=medium
+bondi-distro-tools (1.4.7-1) unstable; urgency=medium
 
   * image-gen: fix duplicate stream name in build-essential spec.
 
  -- Tobias Koch <tobias.koch@gmail.com>  Fri, 15 Oct 2021 00:43:06 +0300
 
-bolt-distro-tools (1.4.6-1) unstable; urgency=medium
+bondi-distro-tools (1.4.6-1) unstable; urgency=medium
 
   * image-gen: build-essential spec uses cross-tools component
   * miscellaneous: add workerthread.py
   * distroinfo: don't truncate JSON files before they are locked
-  * boltpack/debianpackagemetadata: meta data class has keys, items, values methods
-  * deb2bolt: use DEBIAN_ARCHIVE_KEYRING_FILE instead of literal string
+  * bondipack/debianpackagemetadata: meta data class has keys, items, values methods
+  * deb2bondi: use DEBIAN_ARCHIVE_KEYRING_FILE instead of literal string
   * osimage/generator: copy qemu-user-static also for PC (e.g. on AArch64 host)
-  * bolt-distro-info: use EXIT_OK instead of 0
+  * bondi-distro-info: use EXIT_OK instead of 0
   * environment.sh: prevent wrong sourcing and link external projects
 
  -- Tobias Koch <tobias.koch@gmail.com>  Thu, 14 Oct 2021 23:36:31 +0300
 
-bolt-distro-tools (1.4.5-1) unstable; urgency=medium
+bondi-distro-tools (1.4.5-1) unstable; urgency=medium
 
-  * deb2bolt: make package cache work with Bullseye infrastructure
+  * deb2bondi: make package cache work with Bullseye infrastructure
 
  -- Tobias Koch <tobias.koch@gmail.com>  Sat, 04 Sep 2021 14:58:59 +0300
 
-bolt-distro-tools (1.4.4-1) unstable; urgency=medium
+bondi-distro-tools (1.4.4-1) unstable; urgency=medium
 
   * package: send stderr to devnull when interacting with package manager
   * image-gen: ollie/build-essential - don't configure tools repo in build-box
@@ -288,14 +288,14 @@ bolt-distro-tools (1.4.4-1) unstable; urgency=medium
 
  -- Tobias Koch <tobias.koch@gmail.com>  Tue, 31 Aug 2021 21:05:59 +0300
 
-bolt-distro-tools (1.4.3-1) unstable; urgency=medium
+bondi-distro-tools (1.4.3-1) unstable; urgency=medium
 
   * image-gen: fix duplicate newlines in script batches
-  * image-gen: set env variable BOLT_HOST_ARCH
+  * image-gen: set env variable BONDI_HOST_ARCH
 
  -- Tobias Koch <tobias.koch@gmail.com>  Sun, 08 Aug 2021 13:01:15 +0300
 
-bolt-distro-tools (1.4.2-1) unstable; urgency=medium
+bondi-distro-tools (1.4.2-1) unstable; urgency=medium
 
   * image-gen: use build-box run instead of chroot'ing when running under
     build-box
@@ -304,7 +304,7 @@ bolt-distro-tools (1.4.2-1) unstable; urgency=medium
 
  -- Tobias Koch <tobias.koch@gmail.com>  Tue, 03 Aug 2021 23:08:40 +0300
 
-bolt-distro-tools (1.4.1-1) unstable; urgency=medium
+bondi-distro-tools (1.4.1-1) unstable; urgency=medium
 
   * minor code cleanups and refactoring
   * image-gen: small usability improvements in user-interaction.
@@ -313,53 +313,53 @@ bolt-distro-tools (1.4.1-1) unstable; urgency=medium
 
  -- Tobias Koch <tobias.koch@gmail.com>  Fri, 30 Jul 2021 00:39:41 +0300
 
-bolt-distro-tools (1.4.0-1) unstable; urgency=medium
+bondi-distro-tools (1.4.0-1) unstable; urgency=medium
 
-  * bolt-pack: make helpers and relaxng package_data
-  * bolt-image: first release
+  * bondi-pack: make helpers and relaxng package_data
+  * bondi-image: first release
 
  -- Tobias Koch <tobias.koch@gmail.com>  Sun, 25 Jul 2021 19:48:58 +0300
 
-bolt-distro-tools (1.3.1-1) unstable; urgency=medium
+bondi-distro-tools (1.3.1-1) unstable; urgency=medium
 
-  * deb2bolt: move source archives into 'archive' folder
-  * deb2bolt: copy patches to 'patches' folder, make tarball creation optional
+  * deb2bondi: move source archives into 'archive' folder
+  * deb2bondi: copy patches to 'patches' folder, make tarball creation optional
 
  -- Tobias Koch <tobias.koch@gmail.com>  Sun, 06 Jun 2021 15:13:32 +0300
 
-bolt-distro-tools (1.3.0-1) unstable; urgency=medium
+bondi-distro-tools (1.3.0-1) unstable; urgency=medium
 
-  * bolt-pack: search patches relative to XML spec before looking in work dir
-  * bolt-pack: fall back to fetching 'upstream-src' if specified
-  * bolt-pack: create local copies of source archives per default
+  * bondi-pack: search patches relative to XML spec before looking in work dir
+  * bondi-pack: fall back to fetching 'upstream-src' if specified
+  * bondi-pack: create local copies of source archives per default
   * ffi-libarchive: fix error while overwriting symlinks from archive in
     unpack_to_disk
-  * boltpack/shlibcache: handle /usr merge on Debian systems
-  * bolt-pack: make --force-local mean 'local' (including cache)
+  * bondipack/shlibcache: handle /usr merge on Debian systems
+  * bondi-pack: make --force-local mean 'local' (including cache)
 
  -- Tobias Koch <tobias.koch@gmail.com>  Sun, 06 Jun 2021 11:39:54 +0300
 
-bolt-distro-tools (1.2.2-1) unstable; urgency=medium
+bondi-distro-tools (1.2.2-1) unstable; urgency=medium
 
   * distro-info: ensure that the config folder exists, before trying
     to store a file inside it.
 
  -- Tobias Koch <tobias.koch@gmail.com>  Sat, 29 May 2021 17:51:07 +0300
 
-bolt-distro-tools (1.2.1-1) unstable; urgency=medium
+bondi-distro-tools (1.2.1-1) unstable; urgency=medium
 
   * Allow overriding arch to get correct build-deps when running
-    bolt-pack on foreign distro.
+    bondi-pack on foreign distro.
 
  -- Tobias Koch <tobias.koch@gmail.com>  Sun, 09 May 2021 00:06:44 +0300
 
-bolt-distro-tools (1.2.0-1) unstable; urgency=medium
+bondi-distro-tools (1.2.0-1) unstable; urgency=medium
 
   * Process supported-on attribute also on dependencies.
 
  -- Tobias Koch <tobias.koch@gmail.com>  Fri, 07 May 2021 00:56:27 +0300
 
-bolt-distro-tools (1.1.9-1) unstable; urgency=medium
+bondi-distro-tools (1.1.9-1) unstable; urgency=medium
 
   * New attribute 'supported-on' allows filtering by architecture.
   * Filtering via build-for and supported-on works on source *and* binary
@@ -367,57 +367,57 @@ bolt-distro-tools (1.1.9-1) unstable; urgency=medium
 
  -- Tobias Koch <tobias.koch@gmail.com>  Wed, 05 May 2021 23:45:19 +0300
 
-bolt-distro-tools (1.1.8-1) unstable; urgency=medium
+bondi-distro-tools (1.1.8-1) unstable; urgency=medium
 
   * Package helpers: explicitly disable decimal float on powerpc.
 
  -- Tobias Koch <tobias.koch@gmail.com>  Fri, 23 Apr 2021 23:13:59 +0300
 
-bolt-distro-tools (1.1.7-1) unstable; urgency=medium
+bondi-distro-tools (1.1.7-1) unstable; urgency=medium
 
   * Handle license references in copyright file.
 
  -- Tobias Koch <tobias.koch@gmail.com>  Sun, 04 Apr 2021 10:42:14 +0300
 
-bolt-distro-tools (1.1.6-1) unstable; urgency=medium
+bondi-distro-tools (1.1.6-1) unstable; urgency=medium
 
   * Ignore "no machine" ELF files while stripping debug symbols
 
  -- Tobias Koch <tobias.koch@gmail.com>  Mon, 29 Mar 2021 23:17:59 +0300
 
-bolt-distro-tools (1.1.5.4-1) unstable; urgency=medium
+bondi-distro-tools (1.1.5.4-1) unstable; urgency=medium
 
-  * Remove stray print in deb2bolt/copyright.py
+  * Remove stray print in deb2bondi/copyright.py
 
  -- Tobias Koch <tobias.koch@gmail.com>  Thu, 25 Feb 2021 06:59:19 +0300
 
-bolt-distro-tools (1.1.5.3-1) unstable; urgency=medium
+bondi-distro-tools (1.1.5.3-1) unstable; urgency=medium
 
-  * deb2bolt handles entries with no license in copyright file (for
+  * deb2bondi handles entries with no license in copyright file (for
     example if the code is in the public domain).
 
  -- Tobias Koch <tobias.koch@gmail.com>  Thu, 25 Feb 2021 06:51:24 +0300
 
-bolt-distro-tools (1.1.5.2-1) unstable; urgency=medium
+bondi-distro-tools (1.1.5.2-1) unstable; urgency=medium
 
-  * Fix package dependencies of python3-bolt-package
+  * Fix package dependencies of python3-bondi-package
 
  -- Tobias Koch <tobias.koch@gmail.com>  Tue, 09 Feb 2021 00:38:34 +0300
 
-bolt-distro-tools (1.1.5.1-1) unstable; urgency=medium
+bondi-distro-tools (1.1.5.1-1) unstable; urgency=medium
 
-  * Fix: Python module 'boltlinux.error' was missing.
+  * Fix: Python module 'yaybondi.error' was missing.
 
  -- Tobias Koch <tobias.koch@gmail.com>  Wed, 03 Feb 2021 22:36:27 +0300
 
-bolt-distro-tools (1.1.5-1) unstable; urgency=medium
+bondi-distro-tools (1.1.5-1) unstable; urgency=medium
 
-  * Add bolt-repo-index tool.
+  * Add bondi-repo-index tool.
 
  -- Tobias Koch <tobias.koch@gmail.com>  Wed, 03 Feb 2021 22:27:23 +0300
 
-bolt-distro-tools (1.1.4-1) unstable; urgency=medium
+bondi-distro-tools (1.1.4-1) unstable; urgency=medium
 
-  * Combine former bolt-package and new distro-info into distro-tools package.
+  * Combine former bondi-package and new distro-info into distro-tools package.
 
  -- Tobias Koch <tobias.koch@gmail.com>  Sun, 31 Jan 2021 22:44:47 +0300

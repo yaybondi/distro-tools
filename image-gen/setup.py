@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""Bolt OS image generator tool."""
+"""Bondi OS image generator tool."""
 
 import os
 
@@ -10,24 +10,24 @@ from os import path
 
 here = path.abspath(path.dirname(__file__))
 
-VERSION = os.environ.get("BOLT_DISTRO_TOOLS_VERSION", "0.0.0")
+VERSION = os.environ.get("BONDI_DISTRO_TOOLS_VERSION", "0.0.0")
 
 setup(
-    name='bolt-image',
+    name='bondi-image',
     version=VERSION,
-    url='https://github.com/boltlinux/image-generator',
+    url='https://github.com/yaybondi/image-generator',
     author='Tobias Koch',
     author_email='tobias.koch@gmail.com',
     license='MIT',
     packages=[
-        'boltlinux.osimage',
+        'yaybondi.osimage',
     ],
     package_dir={'': 'lib'},
     data_files=[
-        ('bin', ['bin/bolt-image']),
+        ('bin', ['bin/bondi-image']),
     ],
     package_data={
-        'boltlinux.osimage': [
+        'yaybondi.osimage': [
             "customize/ollie/build-essential",
             "customize/ollie/minimal",
             "package/common/tarball",
@@ -43,7 +43,7 @@ setup(
         'Programming Language :: Python :: 3'
     ],
 
-    keywords='Bolt Linux image generator',
-    description='Bolt Linux image generator tool',
-    long_description='Bolt Linux image generator tool',
+    keywords='Bondi OS image generator',
+    description='Bondi OS image generator tool',
+    long_description='Bondi OS image generator tool',
 )

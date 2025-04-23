@@ -1,0 +1,96 @@
+#!/bin/sh -e
+
+TAR_EXTRA_ARGS=""
+
+###############################################################################
+# Functions
+###############################################################################
+
+die() {
+    local _bld='\033[1m'
+    local _red='\033[31m'
+    local _rst='\033[0m'
+
+    if [ -t 1 ]; then
+        echo "${_bld}bondi-image package $(basename $0)${_rst}: ${_bld}${_red}error${_rst}: $1" >&2
+    else
+        echo "bondi-image package $(basename $0): error: $1" >&2
+    fi
+
+    exit 1
+}
+
+usage() {
+    cat << EOF
+
+USAGE:
+
+  bondi-image package <sysroot> $(basename $0) [OPTIONS] <name>.tar.<format>
+
+OPTIONS:
+
+  -h, --help          Print this help message.
+  -v, --verbose       Enable verbose output.
+
+  Example invocation:
+
+    bondi-image package sysroot/ tarball --verbose minimal.tar.gz
+
+  The "format" may be one of gz, bz2 or xz.
+
+EOF
+}
+
+###############################################################################
+# Setup
+###############################################################################
+
+while true; do
+    case "$1" in
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        -v|--verbose)
+            TAR_EXTRA_ARGS="$TAR_EXTRA_ARGS -v"
+            shift
+            ;;
+        -*|--*)
+            die "unknown command line option \"$1\""
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
+
+if [ $# -ne 2 ]; then
+    usage
+    exit 1
+fi
+
+TARNAME="$1"
+SYSROOT="$2"
+
+COMPRESSION_FORMAT="$(echo $TARNAME | sed 's/^.*\.\(.*\)$/\1/g')"
+
+case "$COMPRESSION_FORMAT" in
+    gz|gzip)
+        TAR_EXTRA_ARGS="$TAR_EXTRA_ARGS -z"
+        ;;
+    bz2|bzip2)
+        TAR_EXTRA_ARGS="$TAR_EXTRA_ARGS -j"
+        ;;
+    xz)
+        TAR_EXTRA_ARGS="$TAR_EXTRA_ARGS -J"
+        ;;
+    *)
+        die "unknown compression format \"$COMPRESSION_FORMAT\"."
+        ;;
+esac
+
+###############################################################################
+# Setup
+###############################################################################
+
+tar $TAR_EXTRA_ARGS -C "$SYSROOT" -f "$TARNAME" -c .

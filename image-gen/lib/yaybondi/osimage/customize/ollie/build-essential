@@ -1,0 +1,85 @@
+===============================================================================
+= Bootstrap a minimal base system.
+===============================================================================
+
++base-files
++busybox-all-symlinks
++opkg-minimal
++bondi-repo-keys
++pam-config
++libc-dev
+
+===============================================================================
+= Installing mount, sysctl, file and binutils may remove some of the busybox
+= symlinks, that's why they are installed separately.
+===============================================================================
+
++mount
++sysctl
++file
++binutils
+
+===============================================================================
+= Configure tools repository for BONDI_HOST_ARCH and update the package cache.
+===============================================================================
+
+#!(chroot)/bin/sh
+
+#
+# Inside a build box target, the tools repository is configured per default, so
+# we can skip it here.
+#
+if [ -f /etc/target ]; then
+    exit 0
+fi
+
+echo "Configuring tools repository for $BONDI_HOST_ARCH."
+
+cat << EOF > /etc/opkg/tools.conf
+arch tools 1
+src/gz tools http://archive.yaybondi.com/dists/$BONDI_RELEASE/core/$BONDI_ARCH/$BONDI_LIBC/tools/$BONDI_HOST_ARCH
+src/gz cross-tools http://archive.yaybondi.com/dists/$BONDI_RELEASE/core/$BONDI_ARCH/$BONDI_LIBC/cross-tools/$BONDI_HOST_ARCH
+EOF
+
+opkg update
+
+===============================================================================
+= Install a minimal base system into the tools folder.
+===============================================================================
+
++tools-base-files
++tools-busybox-all-symlinks
++tools-opkg-minimal
+
+===============================================================================
+= Add compilers, build systems and other tools commonly needed during software
+= development.
+===============================================================================
+
++tools-target-gcc
++tools-target-g++
++tools-gcc
++tools-g++
++tools-gawk
++tools-grep
++tools-perl
++tools-autoconf
++tools-automake
++tools-make
++tools-cmake
++tools-patch
++tools-diffutils
++tools-file
++tools-tar
++tools-bzip2
++tools-xz-utils
++tools-pkg-config
++tools-libtool
++tools-gettext
++tools-autopoint
++tools-bash
++tools-libc-dev
++tools-bondi-package
++tools-openssl
+
++ca-certificates

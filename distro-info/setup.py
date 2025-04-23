@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""Bolt OS distro info."""
+"""Bondi OS distro info."""
 
 import os
 
@@ -10,23 +10,23 @@ from os import path
 
 here = path.abspath(path.dirname(__file__))
 
-VERSION = os.environ.get("BOLT_DISTRO_TOOLS_VERSION", "0.0.0")
+VERSION = os.environ.get("BONDI_DISTRO_TOOLS_VERSION", "0.0.0")
 
 setup(
-    name='bolt-distro-info',
+    name='bondi-distro-info',
     version=VERSION,
-    url='https://github.com/boltlinux/bolt-distro-tools',
+    url='https://github.com/yaybondi/bondi-distro-tools',
     author='Tobias Koch',
     author_email='tobias.koch@gmail.com',
     license='MIT',
     packages=[
-        'boltlinux.distro.config',
-        'boltlinux.distro.config.v1',
+        'yaybondi.distro.config',
+        'yaybondi.distro.config.v1',
     ],
     package_dir={'': 'lib'},
     data_files=[
         ('bin', [
-            'bin/bolt-distro-info',
+            'bin/bondi-distro-info',
         ]),
     ],
     platforms=['Linux'],
@@ -39,7 +39,7 @@ setup(
         'Programming Language :: Python :: 3'
     ],
 
-    keywords='Bolt Linux distro versions releases mirrors',
-    description='Bolt Linux distro info',
-    long_description='Bolt Linux distro info',
+    keywords='Bondi OS distro versions releases mirrors',
+    description='Bondi OS distro info',
+    long_description='Bondi OS distro info',
 )

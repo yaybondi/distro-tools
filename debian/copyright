@@ -1,6 +1,6 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: bolt-distro-tools
-Source: https://github.com/boltlinux/distro-tools
+Upstream-Name: bondi-distro-tools
+Source: https://github.com/yaybondi/distro-tools
 
 Files: *
 Copyright: 2016-2021 Tobias Koch <tobias.koch@gmail.com>
@@ -27,7 +27,7 @@ License: MIT
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
 
-Files: misc/lib/boltlinux/miscellaneous/braceexpand.py
+Files: misc/lib/yaybondi/miscellaneous/braceexpand.py
 Copyright: 2015 Stanis Trendelenburg
 License: MIT
  The MIT License (MIT)

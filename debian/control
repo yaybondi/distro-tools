@@ -1,4 +1,4 @@
-Source: bolt-distro-tools
+Source: bondi-distro-tools
 Section: admin
 Priority: optional
 Maintainer: Tobias Koch <tobias.koch@gmail.com>
@@ -8,10 +8,10 @@ Build-Depends:
  python3-all,
  python3-setuptools
 Standards-Version: 4.1.3
-Homepage: https://github.com/boltlinux/bolt-distro-tools
+Homepage: https://github.com/yaybondi/distro-tools
 X-Python3-Version: >= 3.2
 
-Package: python3-bolt-ffi-libarchive
+Package: python3-bondi-ffi-libarchive
 Architecture: all
 Depends:
  libarchive-dev,
@@ -20,42 +20,42 @@ Depends:
 Description: ffi bindings to libarchive-dev (Python 3)
  Foreign function interface bindinds to libarchive.
 
-Package: python3-bolt-misc
+Package: python3-bondi-misc
 Architecture: all
 Depends:
  ${python3:Depends},
  ${misc:Depends}
-Description: Utilities shared among other Bolt Linux Python packages (Python 3)
- Collection of scripts shared among other Bolt Linux Python packages.
+Description: Utilities shared among other Bondi OS Python packages (Python 3)
+ Collection of scripts shared among other Bondi OS Python packages.
 
-Package: python3-bolt-distro-info
+Package: python3-bondi-distro-info
 Architecture: all
 Depends:
- python3-bolt-misc (= ${binary:Version}),
+ python3-bondi-misc (= ${binary:Version}),
  ${python3:Depends},
  ${misc:Depends}
-Description: Bolt distro info tool (Python 3)
- This package contains the bolt-distro-info tool.
+Description: Bondi distro info tool (Python 3)
+ This package contains the bondi-distro-info tool.
 
-Package: bolt-distro-info
+Package: bondi-distro-info
 Architecture: all
 Depends:
- python3-bolt-distro-info (= ${binary:Version}),
+ python3-bondi-distro-info (= ${binary:Version}),
  ${misc:Depends}
-Description: Bolt distro info tool (meta package)
- This pulls in python3-bolt-distro-info package which contains the
- bolt-distro-info tool.
+Description: Bondi distro info tool (meta package)
+ This pulls in python3-bondi-distro-info package which contains the
+ bondi-distro-info tool.
 
-Package: python3-bolt-package
+Package: python3-bondi-package
 Architecture: all
 Depends:
  autotools-dev,
  binutils,
  chrpath,
  patch,
- python3-bolt-ffi-libarchive (= ${binary:Version}),
- python3-bolt-misc (= ${binary:Version}),
- python3-bolt-distro-info (= ${binary:Version}),
+ python3-bondi-ffi-libarchive (= ${binary:Version}),
+ python3-bondi-misc (= ${binary:Version}),
+ python3-bondi-distro-info (= ${binary:Version}),
  python3-dateutil,
  python3-html2text,
  python3-lxml,
@@ -63,51 +63,51 @@ Depends:
  usign,
  ${python3:Depends},
  ${misc:Depends}
-Description: Bolt Linux packaging tools (Python 3)
- This package contains the bolt-pack and deb2bolt tools.
+Description: Bondi OS packaging tools (Python 3)
+ This package contains the bondi-pack and deb2bondi tools.
 
-Package: bolt-package
+Package: bondi-package
 Architecture: all
 Depends:
- python3-bolt-package (= ${binary:Version}),
+ python3-bondi-package (= ${binary:Version}),
  ${misc:Depends}
-Description: Bolt Linux packaging tools (meta package)
- This pulls in the python3-bolt-package package, which contains the bolt-pack
- and deb2bolt tools.
+Description: Bondi OS packaging tools (meta package)
+ This pulls in the python3-bondi-package package, which contains the bondi-pack
+ and deb2bondi tools.
 
-Package: python3-bolt-repository
+Package: python3-bondi-repository
 Architecture: all
 Depends:
  usign,
- python3-bolt-package (= ${binary:Version}),
+ python3-bondi-package (= ${binary:Version}),
  ${python3:Depends},
  ${misc:Depends}
-Description: Bolt Linux repo management tools (Python 3)
- This package contains the bolt-repo-index tool.
+Description: Bondi OS repo management tools (Python 3)
+ This package contains the bondi-repo-index tool.
 
-Package: bolt-repo-index
+Package: bondi-repo-index
 Architecture: all
 Depends:
- python3-bolt-repository (= ${binary:Version}),
+ python3-bondi-repository (= ${binary:Version}),
  ${misc:Depends}
-Description: Bolt Linux package repo index generator (meta package)
- This pulls in the python3-bolt-repository package, which contains the
- bolt-repo-index tool.
+Description: Bondi OS package repo index generator (meta package)
+ This pulls in the python3-bondi-repository package, which contains the
+ bondi-repo-index tool.
 
-Package: python3-bolt-image-gen
+Package: python3-bondi-image-gen
 Architecture: all
 Depends:
- python3-bolt-misc (= ${binary:Version}),
+ python3-bondi-misc (= ${binary:Version}),
  ${python3:Depends},
  ${misc:Depends}
-Description: Bolt Linux image generator scripts (Python 3)
- This package contains the bolt-image tool.
+Description: Bondi OS image generator scripts (Python 3)
+ This package contains the bondi-image tool.
 
-Package: bolt-image
+Package: bondi-image
 Architecture: all
 Depends:
- python3-bolt-image-gen (= ${binary:Version}),
+ python3-bondi-image-gen (= ${binary:Version}),
  ${misc:Depends}
-Description: Bolt Linux image generator (meta package)
- This pulls in the python3-bolt-image-generator package, which contains the
- bolt-image tool.
+Description: Bondi OS image generator (meta package)
+ This pulls in the python3-bondi-image-generator package, which contains the
+ bondi-image tool.

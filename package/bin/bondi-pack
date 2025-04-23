@@ -1,0 +1,314 @@
+#!/usr/bin/env python3
+# -*- encoding: utf-8 -*-
+#
+# The MIT License (MIT)
+#
+# Copyright (c) 2016-2018 Tobias Koch <tobias.koch@gmail.com>
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+#
+
+import getopt
+import logging
+import os
+import sys
+import textwrap
+
+# make relocatable
+INSTALL_DIR = os.path.normpath(os.path.dirname(
+    os.path.realpath(sys.argv[0])) + os.sep + ".." )
+sys.path.insert(1, INSTALL_DIR + os.sep + 'lib')
+
+from yaybondi.distro.config.distroinfo import DistroInfo
+from yaybondi.error import BondiError, InvocationError, SkipBuild
+from yaybondi.miscellaneous.logformatter import LogFormatter
+from yaybondi.miscellaneous.platform import Platform
+from yaybondi.miscellaneous.switch import switch
+from yaybondi.miscellaneous.userinfo import UserInfo
+from yaybondi.package.bondipack.packagecontrol import PackageControl
+
+BONDI_ERR_INVOCATION =  1
+BONDI_ERR_RUNTIME    =  2
+BONDI_ERR_SKIPPED    = 42
+
+LOGGER = logging.getLogger()
+
+def print_usage():
+    print(textwrap.dedent(
+        """\
+        Copyright (C) 2016-2022 Tobias Koch <tobias.koch@gmail.com>
+
+        This is the Bondi OS package build tool.
+
+        USAGE:
+
+          bondi-pack [OPTIONS] <specfile>
+
+        MISCELLANEOUS OPTIONS:
+
+          -h, --help           Print this help message.
+
+          --list-deps          Print all build dependencies to stdout (single line
+                               comma-separated list).
+
+          --mk-build-deps      Create the bondi-build-deps meta package for
+                               installing build dependencies.
+
+          --would-build        Check if the package would be built for the given
+                               target environment, architecture and libc. Exits
+                               with 0 if yes and with 42 if not.
+
+          --work-dir=<dir>     Change to the given directory before doing anything
+                               else.
+
+        USED FOR BOOTSTRAPPING Bondi OS:
+
+          --release=<release>  The Bondi release to build for. The default is the
+                               active release, if it can be detected, or the latest
+                               release otherwise.
+
+        MEANT TO BE USED WITH --would-build:
+
+          --arch=<arch>        Override auto-detection of the target architecture.
+                               The value provided is not validated.
+
+          --tools-arch=<arch>  Override auto-detections of the tools architecture.
+                               The value provided is not validated.
+
+          --libc=<libc>        Override auto-detection of the target C runtime
+                               library (must be "musl" or "glibc").
+
+        PACKAGE BUILD OPTIONS:
+
+          --ignore-deps        Ignore missing build dependencies.
+          --no-debug-pkgs      Don't generate debug packages.
+          --no-copy-archives   Do not create local copies of sources archives.
+          --force-local        Use local sources only (including the cache), don't
+                               perform any downloads.
+
+          -o, --outdir=<dir>   Place resulting binary packages in this directory.
+
+          -u, --unpack         Unpack and patch the sources.
+          -p, --prepare        Run the prepare target defined in the rules file.
+          -b, --build          Run the build target defined in the rules file.
+          -i, --install        Run the install target defined in the rules file.
+          -r, --repackage      Run the install target and generate binary packages.
+
+        FILTER OPTIONS:
+
+          --enable-packages=<list>
+                               A comma-separated list of binary packages. Only the
+                               binary packages in this list will be generated.
+
+          --disable-packages=<list>
+                               A comma-separated list of binary packages. The
+                               packages in this list will not be generated.
+
+          --build-for=<what>   Specify if a package should be built for the target
+                               or for the tools folder. `what` must be one of
+                               'target' (default), 'tools' or 'cross-tools'.
+        """
+    ))
+#end function
+
+def parse_cmd_line():
+    # define default configuration
+    config = {
+        "action":
+            "default",
+        "arch":
+            Platform.target_machine(),
+        "build_for":
+            "target",
+        "copy_archives":
+            True,
+        "debug_pkgs":
+            True,
+        "disable_packages":
+            [],
+        "enable_packages":
+            [],
+        "force_local":
+            False,
+        "ignore_deps":
+            False,
+        "libc_name":
+            Platform.libc_name(),
+        "outdir":
+            None,
+        "release":
+            (Platform.is_bondi() and Platform.active_release())
+                or DistroInfo().latest_release(),
+        "tools_arch":
+            Platform.tools_machine(),
+        "work_dir":
+            None,
+    }
+
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "ho:upbir", [
+            "arch=",
+            "build",
+            "build-for=",
+            "disable-packages=",
+            "enable-packages=",
+            "force-local",
+            "help",
+            "list-deps",
+            "mk-build-deps",
+            "ignore-deps",
+            "install",
+            "libc=",
+            "no-debug-pkgs",
+            "no-copy-archives",
+            "outdir=",
+            "prepare",
+            "release=",
+            "repackage",
+            "tools-arch=",
+            "unpack",
+            "work-dir=",
+            "would-build",
+        ])
+    except getopt.GetoptError as e:
+        raise InvocationError("Error parsing command line: %s" % str(e))
+
+    for o, v in opts:
+        for case in switch(o):
+            if case("--arch"):
+                config["arch"] = v
+                break
+            if case("--build", "-b"):
+                config["action"] = "build"
+                break
+            if case("--build-for"):
+                if not v in ["target", "tools", "cross-tools"]:
+                    raise InvocationError("cannot build for '%s'." % v)
+                config["build_for"] = v
+                break
+            if case("--disable-packages"):
+                config["disable_packages"] = [x.strip() for x in v.split(",")]
+                break
+            if case("--enable-packages"):
+                config["enable_packages"] = [x.strip() for x in v.split(",")]
+                break
+            if case("--force-local"):
+                config["force_local"] = True
+                break
+            if case("--help", "-h"):
+                print_usage()
+                sys.exit(0)
+                break
+            if case("--ignore-deps"):
+                config["ignore_deps"] = True
+                break
+            if case("--install", "-i"):
+                config["action"] = "install"
+                break
+            if case("--libc"):
+                if v not in ["glibc", "musl"]:
+                    raise InvocationError('libc must be "musl" or "glibc".')
+                config["libc_name"] = v
+                break
+            if case("--list-deps"):
+                config["action"] = "list_deps"
+                break
+            if case("--mk-build-deps"):
+                config["action"] = "mk_build_deps"
+                break
+            if case("--no-debug-pkgs"):
+                config["debug_pkgs"] = False
+                break
+            if case("--no-copy-archives"):
+                config["copy_archives"] = False
+                break
+            if case("--outdir", "-o"):
+                if not os.path.isdir(v):
+                    raise InvocationError("no such directory '%s'" % v)
+                config["outdir"] = v
+                break
+            if case("--prepare", "-p"):
+                config["action"] = "prepare"
+                break
+            if case("--repackage", "-r"):
+                config["action"] = "repackage"
+                break
+            if case("--release"):
+                config["release"] = v
+                break
+            if case("--tools-arch"):
+                config["tools_arch"] = v
+                break
+            if case("--unpack", "-u"):
+                config["action"] = "unpack"
+                break
+            if case("--work-dir"):
+                if not os.path.isdir(v):
+                    raise InvocationError("no such directory '%s'." % v)
+                config["work_dir"] = v
+                break
+            if case("--would-build"):
+                config["action"] = "would_build"
+                break
+        #end switch
+    #end for
+
+    return config, args
+#end function
+
+def configure_logging():
+    fmt = LogFormatter("bondi-pack")
+    handler = logging.StreamHandler()
+    handler.setFormatter(fmt)
+    LOGGER.addHandler(handler)
+    LOGGER.setLevel(logging.INFO)
+#end function
+
+if __name__ == "__main__":
+    try:
+        configure_logging()
+
+        options, args = parse_cmd_line()
+
+        if len(args) != 1:
+            print_usage()
+            sys.exit(BONDI_ERR_INVOCATION)
+
+        if options["work_dir"]:
+            try:
+                os.chdir(options["work_dir"])
+            except OSError as e:
+                raise BondiError("failed to set working directory: " + str(e))
+
+        PackageControl(args[0], **options)\
+            (options["action"])
+    except InvocationError as e:
+        LOGGER.error(e)
+        sys.exit(BONDI_ERR_INVOCATION)
+    except SkipBuild as e:
+        LOGGER.error(e)
+        sys.exit(BONDI_ERR_SKIPPED)
+    except BondiError as e:
+        LOGGER.error(e)
+        sys.exit(BONDI_ERR_RUNTIME)
+    except KeyboardInterrupt:
+        LOGGER.warning("caught keyboard interrupt, exiting.")
+        sys.exit(BONDI_ERR_RUNTIME)
+    #end try
+#end __main__

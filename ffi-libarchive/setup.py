@@ -10,17 +10,17 @@ from os import path
 
 here = path.abspath(path.dirname(__file__))
 
-VERSION = os.environ.get("BOLT_DISTRO_TOOLS_VERSION", "0.0.0")
+VERSION = os.environ.get("BONDI_DISTRO_TOOLS_VERSION", "0.0.0")
 
 setup(
-    name='bolt-ffi-libarchive',
+    name='bondi-ffi-libarchive',
     version=VERSION,
-    url='https://github.com/boltlinux/bolt-distro-tools',
+    url='https://github.com/yaybondi/bondi-distro-tools',
     author='Tobias Koch',
     author_email='tobias.koch@gmail.com',
     license='MIT',
     packages=[
-        'boltlinux.ffi',
+        'yaybondi.ffi',
     ],
     package_dir={'': 'lib'},
     platforms=['Linux'],

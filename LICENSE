@@ -22,7 +22,7 @@ This source code is published under the following license:
     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
     IN THE SOFTWARE.
 
-The file misc/lib/boltlinux/miscellaneous/braceexpand.py has a different author:
+The file misc/lib/yaybondi/miscellaneous/braceexpand.py has a different author:
 
     The MIT License (MIT)
 

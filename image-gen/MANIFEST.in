@@ -1,2 +1,2 @@
-include lib/boltlinux/osimage/customize/**/*
-include lib/boltlinux/osimage/package/**/*
+include lib/yaybondi/osimage/customize/**/*
+include lib/yaybondi/osimage/package/**/*
