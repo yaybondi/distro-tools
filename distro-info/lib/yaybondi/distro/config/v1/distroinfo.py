@@ -175,7 +175,7 @@ class DistroInfo:
                 "error retrieving '{}': {}"
                 .format(url, str(e))
             )
-        except UnicodeDecodeError as e:
+        except (UnicodeDecodeError, json.JSONDecodeError) as e:
             raise DistroInfoError(
                 "failed to decode contents of '{}': {}"
                 .format(url, str(e))
