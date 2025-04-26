@@ -153,8 +153,12 @@ class Cli:
             supported=supported, unsupported=unsupported
         )
 
-        if dists:
-            print("\n".join(dists.keys()))
+        for name, metadata in dists.items():
+            if metadata.get("status") == "unstable":
+                print("{} (unstable)".format(name))
+            else:
+                print(name)
+        #end for
     #end function
 
     def show(self, *args):
