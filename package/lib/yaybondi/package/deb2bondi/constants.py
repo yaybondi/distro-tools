@@ -23,4 +23,5 @@
 # THE SOFTWARE.
 #
 
-DEBIAN_ARCHIVE_KEYRING_FILE = "/usr/share/keyrings/debian-archive-keyring.gpg"
+DEBIAN_ARCHIVE_KEYRING_FILE = "/usr/share/keyrings/debian-archive-keyring.pgp"
+DEBIAN_ARCHIVE_REMOVED_KEYS_FILE = "/usr/share/keyrings/debian-archive-removed-keys.pgp"

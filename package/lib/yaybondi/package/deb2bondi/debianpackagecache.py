@@ -86,7 +86,7 @@ class DebianPackageCache:
         pass
 
     def __init__(self, release, arch="amd64", components=None, cache_dir=None,
-            security_enabled=True, updates_enabled=False, keyring=None):
+            security_enabled=True, updates_enabled=False, keyrings=None):
         self.release = release
         self.arch = arch
 
@@ -100,7 +100,7 @@ class DebianPackageCache:
             )
 
         self._cache_dir = cache_dir
-        self._keyring = keyring
+        self._keyrings = keyrings
 
         self.sources_list = [
             (
@@ -251,15 +251,16 @@ class DebianPackageCache:
                 os.path.join(cache_dir, new_tag or old_tag)
             )
 
-            if self._keyring:
-                if not os.path.exists(self._keyring):
-                    raise BondiError(
-                        'keyring file "{}" not found, cannot check signature '
-                        'of "{}".'.format(self._keyring, target)
-                    )
-                #end if
+            if self._keyrings:
+                for k in self._keyrings:
+                    if not os.path.exists(k):
+                        raise BondiError(
+                            'keyring file "{}" not found, cannot check '
+                            'signature of "{}".'.format(k, target)
+                        )
+                    #end if
 
-                if not inrelease.valid_signature(keyring=self._keyring):
+                if not inrelease.valid_signature(keyrings=self._keyrings):
                     raise BondiError(
                         'unable to verify the authenticity of "{}"'
                         .format(target)

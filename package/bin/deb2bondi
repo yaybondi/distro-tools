@@ -43,7 +43,10 @@ from yaybondi.miscellaneous.logformatter import LogFormatter
 from yaybondi.miscellaneous.switch import switch
 
 from yaybondi.package.deb2bondi.debianpackagecache import DebianPackageCache
-from yaybondi.package.deb2bondi.constants import DEBIAN_ARCHIVE_KEYRING_FILE
+from yaybondi.package.deb2bondi.constants import (
+    DEBIAN_ARCHIVE_KEYRING_FILE,
+    DEBIAN_ARCHIVE_REMOVED_KEYS_FILE
+)
 from yaybondi.package.deb2bondi.converter import Deb2BondiPackageConverter
 
 BONDI_ERR_INVOCATION = 1
@@ -226,19 +229,26 @@ if __name__ == "__main__":
         keyring = None
 
         if options["do_gpg_checks"]:
-            keyring = DEBIAN_ARCHIVE_KEYRING_FILE
+            keyrings = [
+                DEBIAN_ARCHIVE_KEYRING_FILE,
+                DEBIAN_ARCHIVE_REMOVED_KEYS_FILE
+            ]
 
-            if not os.path.exists(keyring):
-                raise BondiError(
-                    "GPG keyring file '{}' not found.".format(keyring)
-                )
+            for k in keyrings:
+                if not os.path.exists(k):
+                    raise BondiError(
+                        "GPG keyring file '{}' not found.".format(k)
+                    )
+                #end if
+            #end for
+        #end if
 
         pkg_cache = DebianPackageCache(
             options["release"],
             arch=options["arch"],
             updates_enabled=options["updates_enabled"],
             security_enabled=options["security_enabled"],
-            keyring=keyring
+            keyrings=keyrings
         )
 
         if options["do_update_cache"]:

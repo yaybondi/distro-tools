@@ -80,13 +80,13 @@ class InReleaseFile:
             self.hash_for_filename(filename)
         )
 
-    def valid_signature(self, keyring=None):
+    def valid_signature(self, keyrings=None):
         command = ["gpg", "--verify"]
-        if keyring:
-            command.extend([
-                "--no-default-keyring",
-                "--keyring", keyring
-            ])
+        if keyrings:
+            command.append("--no-default-keyring")
+
+            for k in keyrings:
+                command.extend(["--keyring", k])
         #end if
 
         proc = subprocess.run(
