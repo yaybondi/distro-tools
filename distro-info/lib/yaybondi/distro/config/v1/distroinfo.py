@@ -31,6 +31,7 @@ import os
 import re
 import urllib.request
 
+from yaybondi.miscellaneous.downloader import Downloader
 from yaybondi.miscellaneous.userinfo import UserInfo
 from yaybondi.distro.config.error import \
         DistroInfoError, ReleaseNotFoundError
@@ -48,18 +49,17 @@ class DistroInfo:
         if mirrors:
             items_to_fetch.append("mirrors")
 
-        for item in items_to_fetch:
-            os.makedirs(UserInfo.config_folder(), exist_ok=True)
+        os.makedirs(UserInfo.config_folder(), exist_ok=True)
+        downloader = Downloader()
 
+        for item in items_to_fetch:
             filename  = "{}.json".format(item)
             src_url   = '/'.join([self.base_url, filename])
-            data      = self._fetch_json(src_url)
             dest_file = os.path.join(UserInfo.config_folder(), filename)
 
-            # Run the appropriate merge helper.
-            getattr(self, "_merge_{}".format(item))(
-                data, dest_file, overwrite_existing=overwrite_existing
-            )
+            downloader.download_tagged_file(src_url, dest_file)
+        #end for
+    #end function
 
     def list(
         self,
@@ -193,104 +193,6 @@ class DistroInfo:
             )
     #end function
 
-    @contextlib.contextmanager
-    def _lock_file(self, file_):
-        try:
-            fcntl.flock(file_.fileno(), fcntl.LOCK_EX)
-            yield file_
-        finally:
-            try:
-                fcntl.flock(file_.fileno(), fcntl.LOCK_UN)
-            except Exception:
-                pass
-    #end function
-
-    def _merge_releases(self, data, filename, overwrite_existing=False):
-        releases = collections.OrderedDict()
-
-        try:
-            with open(filename, "r", encoding="utf-8") as f, \
-                    self._lock_file(f) as f:
-                releases = json.load(
-                    f, object_pairs_hook=collections.OrderedDict
-                )
-        except FileNotFoundError:
-            pass
-        except Exception as e:
-            raise DistroInfoError(
-                "failed to load '{}': {}".format(filename, str(e))
-            )
-
-        if overwrite_existing or not releases:
-            releases = data
-        else:
-            for release_name, release_data in data.items():
-                status = release_data.get("status", "supported")
-                releases\
-                    .setdefault(release_name, release_data)["status"] = status
-
-        flags = os.O_RDWR | os.O_CREAT
-        try:
-            with os.fdopen(os.open(filename, flags), 'r+', encoding="utf-8") \
-                    as f, self._lock_file(f) as f:
-                os.ftruncate(f.fileno(), 0)
-                json.dump(releases, f, ensure_ascii=False, indent=4)
-        except Exception as e:
-            raise DistroInfoError(
-                "failed to store '{}': {}".format(filename, str(e))
-            )
-    #end function
-
-    def _merge_mirrors(self, data, filename, overwrite_existing=False):
-        mirrors = collections.OrderedDict()
-
-        try:
-            with open(filename, "r", encoding="utf-8") as f, \
-                    self._lock_file(f) as f:
-                mirrors = json.load(
-                    f, object_pairs_hook=collections.OrderedDict
-                )
-        except FileNotFoundError:
-            pass
-        except Exception as e:
-            raise DistroInfoError(
-                "failed to load '{}': {}".format(filename, str(e))
-            )
-
-        if overwrite_existing or not mirrors:
-            mirrors = data
-        else:
-            for mirror_id, mirror_dict in data.items():
-                if mirror_id not in mirrors:
-                    mirrors[mirror_id] = mirror_dict
-                else:
-                    regions = mirrors[mirror_id]
-
-                    for region_id, mirror_list in mirror_dict.items():
-                        if region_id not in regions:
-                            regions[region_id] = mirror_list
-                        else:
-                            url_set = set(regions[region_id])
-                            for url in mirror_list:
-                                url_set.add(url)
-                            regions[region_id] = list(url_set)
-                    #end for
-                #end if
-            #end for
-        #end if
-
-        flags = os.O_RDWR | os.O_CREAT
-        try:
-            with os.fdopen(os.open(filename, flags), 'r+', encoding="utf-8") \
-                    as f, self._lock_file(f) as f:
-                os.ftruncate(f.fileno(), 0)
-                json.dump(mirrors, f, ensure_ascii=False, indent=4)
-        except Exception as e:
-            raise DistroInfoError(
-                "failed to store '{}': {}".format(filename, str(e))
-            )
-    #end function
-
     def _load_json_file(self, which):
         result = collections.OrderedDict()
 
@@ -302,8 +204,7 @@ class DistroInfo:
             self.refresh(**{which: True})
 
         try:
-            with open(json_file, "r", encoding="utf-8") as f, \
-                    self._lock_file(f) as f:
+            with open(json_file, "r", encoding="utf-8") as f:
                 result = json.load(
                     f, object_pairs_hook=collections.OrderedDict
                 )
