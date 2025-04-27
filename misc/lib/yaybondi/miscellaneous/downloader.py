@@ -76,6 +76,35 @@ class Downloader:
         return old_tag != new_tag
     #end function
 
+    def download_tagged_file(self, url, filename, connection_timeout=30,
+            permissions=None):
+        old_blob = ""
+        old_tag  = ""
+
+        if os.path.islink(filename):
+            old_blob = os.path.realpath(filename)
+            old_tag  = os.path.basename(old_blob)
+
+        new_tag = self.tag(url)
+
+        if old_tag != new_tag:
+            self.download_named_tag(
+                url,
+                filename,
+                new_tag,
+                connection_timeout=connection_timeout,
+                permissions=permissions
+            )
+
+            if old_blob:
+                try:
+                    os.unlink(old_blob)
+                except OSError:
+                    pass
+            #end if
+        #end if
+    #end function
+
     def download_named_tag(self, url, symlink, tag, digest=None,
             connection_timeout=30, permissions=None):
         directory = os.path.dirname(os.path.realpath(symlink))
