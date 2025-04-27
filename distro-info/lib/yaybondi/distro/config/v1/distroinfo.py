@@ -173,26 +173,6 @@ class DistroInfo:
 
     # HELPER
 
-    def _fetch_json(self, url, connection_timeout=30):
-        try:
-            with urllib.request.urlopen(url, timeout=connection_timeout) \
-                    as response:
-                return json.loads(
-                    response.read().decode("utf-8"),
-                    object_pairs_hook=collections.OrderedDict
-                )
-        except urllib.error.URLError as e:
-            raise DistroInfoError(
-                "error retrieving '{}': {}"
-                .format(url, str(e))
-            )
-        except (UnicodeDecodeError, json.JSONDecodeError) as e:
-            raise DistroInfoError(
-                "failed to decode contents of '{}': {}"
-                .format(url, str(e))
-            )
-    #end function
-
     def _load_json_file(self, which):
         result = collections.OrderedDict()
 
