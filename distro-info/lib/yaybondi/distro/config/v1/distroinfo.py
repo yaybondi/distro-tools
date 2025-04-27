@@ -40,8 +40,7 @@ class DistroInfo:
 
     base_url = "http://archive.yaybondi.com/config/v1"
 
-    def refresh(self, releases=False, mirrors=False,
-            overwrite_existing=False, **kwargs):
+    def refresh(self, releases=False, mirrors=False, **kwargs):
         items_to_fetch = []
 
         if releases:

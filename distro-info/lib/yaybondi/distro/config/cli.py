@@ -55,15 +55,12 @@ class Cli:
                   -h, --help              Print this help message.
                   -r, --releases          Update release info.
                   -m, --mirrors           Update mirrors list.
-                  --overwrite-existing    Overwrite existing entries.
                 """
             ))
 
         try:
             opts, args = getopt.getopt(
-                args, "hmr", [
-                    "help", "mirrors", "overwrite-existing", "releases"
-                ]
+                args, "hmr", ["help", "mirrors", "releases"]
             )
         except getopt.GetoptError as e:
             raise DistroInfoError(
@@ -75,8 +72,6 @@ class Cli:
                 False,
             "mirrors":
                 False,
-            "overwrite_existing":
-                False,
         }
 
         for o, v in opts:
@@ -87,8 +82,6 @@ class Cli:
                 kwargs["releases"] = True
             elif o in ["-m", "--mirrors"]:
                 kwargs["mirrors"] = True
-            elif o == "--overwrite-existing":
-                kwargs["overwrite_existing"] = True
         #end for
 
         if args:
