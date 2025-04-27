@@ -56,7 +56,9 @@ class DistroInfo:
             src_url   = '/'.join([self.base_url, filename])
             dest_file = os.path.join(UserInfo.config_folder(), filename)
 
-            downloader.download_tagged_file(src_url, dest_file)
+            downloader.download_tagged_file(
+                src_url, dest_file, permissions=0o0644
+            )
         #end for
     #end function
 
