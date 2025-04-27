@@ -116,41 +116,50 @@ class Cli:
                   -h, --help           Print this help message.
                   -s, --supported      Show supported releases.
                   -u, --unsupported    Show old, unsupported releases.
+                  --include-unstable   Also list the unstable distribution.
 
-                Per default supported and unsupported releases are listed.
-                """
+                Per default supported and unsupported releases are listed and the unstable
+                distribution is excluded.
+                """  # noqa
             ))
 
         try:
             opts, args = getopt.getopt(
-                args, "hsu", ["help", "supported", "unsupported"]
+                args, "hsu", [
+                    "help", "supported", "unsupported", "include-unstable"
+                ]
             )
         except getopt.GetoptError as e:
             raise DistroInfoError(
                 "error parsing command line: {}".format(str(e))
             )
 
-        supported   = False
-        unsupported = False
+        show_supported   = False
+        show_unsupported = False
+        show_unstable    = False
 
         for o, v in opts:
             if o in ["-h", "--help"]:
                 print_usage()
                 sys.exit(EXIT_OK)
             elif o in ["-s", "--supported"]:
-                supported = True
+                show_supported = True
             elif o in ["-u", "--unsupported"]:
-                unsupported = True
+                show_unsupported = True
+            elif o == "--include-unstable":
+                show_unstable = True
 
-        if not (supported or unsupported):
-            supported = unsupported = True
+        if not (show_supported or show_unsupported):
+            show_supported = show_unsupported = True
 
         if args:
             print_usage()
             sys.exit(EXIT_ERROR)
 
         dists = DistroInfo(**config).list(
-            supported=supported, unsupported=unsupported
+            supported=show_supported,
+            unsupported=show_unsupported,
+            unstable=show_unstable
         )
 
         for name, metadata in dists.items():

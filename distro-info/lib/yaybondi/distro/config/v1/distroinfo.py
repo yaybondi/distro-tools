@@ -61,16 +61,27 @@ class DistroInfo:
                 data, dest_file, overwrite_existing=overwrite_existing
             )
 
-    def list(self, supported=False, unsupported=False, *kwargs):
+    def list(
+        self,
+        supported=False,
+        unsupported=False,
+        unstable=False,
+        *kwargs
+    ):
         releases = self._load_json_file("releases")
         result   = collections.OrderedDict()
 
         for release_name, release_data in releases.items():
-            is_supported = \
-                release_data.get("status", "supported") in [None, "supported"]
-            if supported and is_supported:
-                result[release_name] = release_data
-            if unsupported and not is_supported:
+            distro_status = release_data.get("status", "supported")
+
+            is_supported = distro_status == "supported"
+            is_unstable  = distro_status == "unstable"
+
+            if (
+                (supported   and is_supported) or
+                (unstable    and is_unstable)  or
+                (unsupported and not (is_supported or is_unstable))
+            ):
                 result[release_name] = release_data
         #end for
 
