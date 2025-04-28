@@ -70,9 +70,11 @@ class DistroInfo:
         *kwargs
     ):
         releases = self._load_json_file("releases")
-        result   = collections.OrderedDict()
+        result   = []
 
         for release_name, release_data in releases.items():
+            release_data["version_codename"] = release_name
+
             distro_status = release_data.get("status", "supported")
 
             is_supported = distro_status == "supported"
@@ -83,8 +85,10 @@ class DistroInfo:
                 (unstable    and is_unstable)  or
                 (unsupported and not (is_supported or is_unstable))
             ):
-                result[release_name] = release_data
+                result.append(release_data)
         #end for
+
+        result.sort(key=lambda x: float(x.get("version_id", 0)), reverse=True)
 
         return result
     #end function

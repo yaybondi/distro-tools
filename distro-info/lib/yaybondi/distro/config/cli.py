@@ -155,11 +155,13 @@ class Cli:
             unstable=show_unstable
         )
 
-        for name, metadata in dists.items():
+        for metadata in dists:
+            version_codename = metadata.get("version_codename", "")
+
             if metadata.get("status") == "unstable":
-                print("{} (unstable)".format(name))
+                print("{} (unstable)".format(version_codename))
             else:
-                print(name)
+                print(version_codename)
         #end for
     #end function
 
