@@ -28,8 +28,8 @@ setup(
     ],
     package_data={
         'yaybondi.osimage': [
-            "customize/ollie/build-essential",
-            "customize/ollie/minimal",
+            "customize/sydney/build-essential",
+            "customize/sydney/minimal",
             "package/common/tarball",
         ],
     },
