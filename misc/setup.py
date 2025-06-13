@@ -30,7 +30,6 @@ setup(
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Cool Kids',
         'Topic :: Admin :: Configuration',
-        'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 3'
     ],
 
